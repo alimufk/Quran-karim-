@@ -1,0 +1,10 @@
+{
+	"appId": "com.example.alquran",
+	"appName": "Al Quran",
+	"webDir": "dist",
+	"plugins": {
+		"CapacitorHttp": {
+			"enabled": true
+		}
+	}
+}

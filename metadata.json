@@ -1,0 +1,11 @@
+{
+  "name": "القرآن الكريم",
+  "description": "تطبيق إسلامي شامل للقرآن الكريم، الأذكار، مواقيت الصلاة والقبلة",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

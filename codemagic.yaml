@@ -1,0 +1,41 @@
+workflows:
+  android-build:
+    name: Arabic Quran Kareem Android App Build
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      node: 18
+      java: 17
+      groups:
+        - keystore_credentials # Optional: for automated deployment signing
+    triggering:
+      events:
+        - push
+        - pull_request
+      branches:
+        - main
+        - master
+    scripts:
+      - name: Install Web Dependencies
+        script: |
+          npm ci
+      - name: Compile and Build Web Assets
+        script: |
+          npm run build
+      - name: Bundle Web Assets into Android App Assets
+        script: |
+          rm -rf android/app/src/main/assets/dist
+          mkdir -p android/app/src/main/assets/dist
+          cp -r dist/* android/app/src/main/assets/dist/
+      - name: Build Android App (APK)
+        script: |
+          cd android
+          gradle wrapper --gradle-version 8.2
+          chmod +x gradlew
+          ./gradlew assembleDebug assembleRelease
+    artifacts:
+      - android/app/build/outputs/apk/**/*.apk
+    publishing:
+      email:
+        recipients:
+          - alirsool444@gmail.com

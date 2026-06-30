@@ -1,0 +1,241 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #059669;
+  --color-primary-dark: #064e3b;
+  --color-primary-light: #059669;
+  --color-gold: #fbbf24;
+  --color-gold-light: #d97706;
+  --color-bg-dark: #022c22;
+  
+  --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
+  --font-quran: "Amiri", serif;
+}
+
+body {
+  background-color: var(--color-bg-dark);
+  color: #f0f9ff;
+  -webkit-tap-highlight-color: transparent;
+  font-family: var(--font-sans);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.light-mode {
+  background-color: #f4f8f5;
+  color: #1e293b;
+}
+
+/* LIGHT MODE COMPREHENSIVE STYLE OVERRIDES */
+.light-mode {
+  background-color: #f4f8f5 !important;
+  color: #1e293b !important;
+}
+
+/* Override dark green page backgrounds */
+.light-mode .bg-\[\#022c22\] {
+  background-color: #f4f8f5 !important;
+}
+
+/* Override dark/green cards & items */
+.light-mode .bg-\[\#064e3b\] {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+}
+
+.light-mode .bg-\[\#064e3b\]\/90 {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(12px) !important;
+  border-color: #e2e8f0 !important;
+}
+
+.light-mode .bg-\[\#064e3b\]\/80 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #e2e8f0 !important;
+}
+
+.light-mode .bg-\[\#064e3b\]\/60 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(148, 163, 184, 0.15) !important;
+}
+
+.light-mode .bg-\[\#064e3b\]\/50 {
+  background-color: rgba(248, 250, 252, 0.8) !important;
+  border-color: rgba(148, 163, 184, 0.15) !important;
+}
+
+.light-mode .bg-\[\#064e3b\]\/40 {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(148, 163, 184, 0.15) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+}
+
+.light-mode .bg-\[\#064e3b\]\/30 {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  border-color: rgba(148, 163, 184, 0.1) !important;
+}
+
+.light-mode .bg-\[\#064e3b\]\/20 {
+  background-color: rgba(241, 245, 249, 0.5) !important;
+  border-color: rgba(148, 163, 184, 0.1) !important;
+}
+
+/* Hero Cards / Gradients */
+.light-mode .bg-gradient-to-br.from-\[\#064e3b\] {
+  background-image: linear-gradient(to bottom right, #ecfdf5, #ffffff) !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Translucent Highlights */
+.light-mode .bg-\[\#059669\]\/20 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #047857 !important;
+}
+
+.light-mode .bg-\[\#fbbf24\]\/10 {
+  background-color: rgba(217, 119, 6, 0.12) !important;
+  color: #b45309 !important;
+}
+
+/* Borders */
+.light-mode .border-\[\#059669\]\/20 {
+  border-color: rgba(148, 163, 184, 0.15) !important;
+}
+.light-mode .border-\[\#059669\]\/30 {
+  border-color: rgba(148, 163, 184, 0.2) !important;
+}
+.light-mode .border-\[\#059669\]\/40 {
+  border-color: rgba(148, 163, 184, 0.25) !important;
+}
+.light-mode .border-\[\#059669\]\/50 {
+  border-color: rgba(148, 163, 184, 0.3) !important;
+}
+
+/* High Contrast Texts */
+.light-mode .text-\[\#f0f9ff\] {
+  color: #1e293b !important;
+}
+.light-mode .text-\[\#f0f9ff\]\/90 {
+  color: rgba(30, 41, 59, 0.9) !important;
+}
+.light-mode .text-\[\#f0f9ff\]\/80 {
+  color: rgba(30, 41, 59, 0.8) !important;
+}
+.light-mode .text-\[\#f0f9ff\]\/70 {
+  color: rgba(30, 41, 59, 0.7) !important;
+}
+.light-mode .text-white\/50,
+.light-mode .text-[#f0f9ff]/50 {
+  color: rgba(71, 85, 105, 0.6) !important;
+}
+
+/* Brand Emerald Green Text */
+.light-mode .text-\[\#059669\] {
+  color: #047857 !important;
+}
+
+/* Brand Amber/Gold Text for higher contrast on light bg */
+.light-mode .text-\[\#fbbf24\] {
+  color: #b45309 !important;
+}
+
+/* Solid Buttons & Highlights */
+.light-mode .bg-\[\#fbbf24\] {
+  background-color: #d97706 !important;
+  color: #ffffff !important;
+}
+
+.light-mode .bg-\[\#fbbf24\] .text-\[\#022c22\] {
+  color: #ffffff !important;
+}
+
+.light-mode .text-\[\#022c22\] {
+  color: #1e293b !important;
+}
+
+.light-mode button.bg-\[\#fbbf24\] {
+  background-color: #d97706 !important;
+  color: #ffffff !important;
+}
+
+.light-mode .bg-\[\#059669\] {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+}
+
+/* Hover adjustments */
+.light-mode .hover\:bg-\[\#059669\]\/30:hover {
+  background-color: rgba(5, 150, 105, 0.12) !important;
+}
+.light-mode .hover\:bg-\[\#059669\]\/20:hover {
+  background-color: rgba(5, 150, 105, 0.08) !important;
+}
+
+/* Input elements */
+.light-mode input[type="range"] {
+  background-color: #e2e8f0 !important;
+}
+
+/* Custom Scrollbar for light mode */
+.light-mode ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+.light-mode ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Secondary helper variables */
+.light-mode .from-\[\#042f2e\] {
+  --tw-gradient-from: #e2e8f0 !important;
+}
+.light-mode .to-\[\#022c22\] {
+  --tw-gradient-to: #f1f5f9 !important;
+}
+
+.light-mode .text-emerald-300 {
+  color: #065f46 !important;
+}
+.light-mode .bg-emerald-950\/50 {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  color: #065f46 !important;
+}
+.light-mode .border-emerald-500\/30 {
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+.light-mode .border-emerald-500\/20 {
+  border-color: rgba(16, 185, 129, 0.1) !important;
+}
+.light-mode .text-emerald-100 {
+  color: #065f46 !important;
+}
+
+/* Qibla and Other special screens overlay support */
+.light-mode .shadow-2xl {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03) !important;
+}
+
+.quran-text {
+  font-family: var(--font-quran);
+  line-height: 2.2;
+}
+
+/* Custom Scrollbar for a cleaner look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #059669;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #fbbf24;
+}
