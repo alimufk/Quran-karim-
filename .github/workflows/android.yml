@@ -34,12 +34,12 @@ jobs:
       - name: Sync Capacitor Android
         run: npx cap sync android
 
-      - name: Generate Clean Gradle 8.7 Wrapper
+      - name: Generate Clean Gradle 8.13 Wrapper
         run: |
-          # 1. إنشاء مجلد مؤقت لتوليد الـ Wrapper بأمان لتفادي فحص المشروع المعطوب
+          # 1. إنشاء مجلد مؤقت لتوليد الـ Wrapper بأمان لتفادي فحص المشروع
           mkdir clean-wrapper
           cd clean-wrapper
-          gradle wrapper --gradle-version 8.7
+          gradle wrapper --gradle-version 8.13
           cd ..
           
           # 2. استبدال ونسخ الملفات السليمة والنظيفة إلى مجلد الأندرويد بمشروعك
