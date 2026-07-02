@@ -36,15 +36,16 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
-
+        
       - name: Download Clean Gradle Wrapper
         run: |
           cd android
           mkdir -p gradle/wrapper
-          curl -L https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradlew -o gradlew
-          curl -L https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
+          curl -L https://raw.githubusercontent.com/gradle/gradle/v8.13/gradlew -o gradlew
+          curl -L https://raw.githubusercontent.com/gradle/gradle/v8.13/gradle/wrapper/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
           chmod +x gradlew
-          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip" > gradle/wrapper/gradle-wrapper.properties
+          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-bin.zip" > gradle/wrapper/gradle-wrapper.properties
+
 
       - name: Build Debug APK
         run: cd android && ./gradlew assembleDebug --stacktrace --no-daemon -x lint -x test
