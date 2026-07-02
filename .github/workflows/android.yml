@@ -36,13 +36,14 @@ jobs:
 
       - name: Generate Clean Gradle 8.13 Wrapper
         run: |
-          # 1. إنشاء مجلد مؤقت لتوليد الـ Wrapper بأمان لتفادي فحص المشروع
+          # 1. إنشاء مجلد مؤقت وتأسيس مشروع فارغ لتفادي فحص مشروع الأندرويد الأساسي
           mkdir clean-wrapper
           cd clean-wrapper
+          touch settings.gradle
           gradle wrapper --gradle-version 8.13
           cd ..
           
-          # 2. استبدال ونسخ الملفات السليمة والنظيفة إلى مجلد الأندرويد بمشروعك
+          # 2. نسخ الملفات النظيفة والإصدار الصحيح إلى مجلد الأندرويد
           cp clean-wrapper/gradlew android/
           mkdir -p android/gradle/wrapper
           cp clean-wrapper/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/
