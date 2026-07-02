@@ -5,15 +5,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
-env:
-  GRADLE_USER_HOME: ${{ github.workspace }}/.gradle_home
-
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Setup Java
@@ -22,34 +19,44 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
+          node-version: '22'
+          cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
 
-      - name: Build Web
+      - name: Build Web Project
         run: npm run build
 
-      - name: Sync Capacitor
+      - name: Sync Capacitor Android
         run: npx cap sync android
 
-      # هنا نقوم بتثبيت إصدار Gradle 8.13 المتوافق تماماً مع مشروعك بشكل نظيف وآمن
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.13'
+      - name: Generate Clean Gradle 8.7 Wrapper
+        run: |
+          # 1. إنشاء مجلد مؤقت لتوليد الـ Wrapper بأمان لتفادي فحص المشروع المعطوب
+          mkdir clean-wrapper
+          cd clean-wrapper
+          gradle wrapper --gradle-version 8.7
+          cd ..
+          
+          # 2. استبدال ونسخ الملفات السليمة والنظيفة إلى مجلد الأندرويد بمشروعك
+          cp clean-wrapper/gradlew android/
+          mkdir -p android/gradle/wrapper
+          cp clean-wrapper/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/
+          cp clean-wrapper/gradle/wrapper/gradle-wrapper.properties android/gradle/wrapper/
+          
+          # 3. إعطاء صلاحية التشغيل لملف gradlew
+          chmod +x android/gradlew
 
-      # نقوم بالبناء باستخدام امر gradle مباشرة لتخطي ملف الـ Wrapper التالف في مستودعك
       - name: Build Debug APK
         run: |
           cd android
-          gradle assembleDebug --stacktrace --no-daemon -x lint -x test
+          ./gradlew assembleDebug --stacktrace --no-daemon -x lint -x test
 
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
