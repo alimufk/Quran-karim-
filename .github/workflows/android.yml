@@ -5,49 +5,47 @@ on:
     branches: [main]
   workflow_dispatch:
 
-env:
-  GRADLE_USER_HOME: ${{ github.workspace }}/.gradle_home
-
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
+          node-version: '22'
+          cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
 
-      - name: Build Web
+      - name: Build Web Project
         run: npm run build
-        
+
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Generate Clean Gradle Wrapper
-        run: |
-          cd android
-          gradle wrapper --gradle-version 8.13
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13' # الإصدار المتوافق تماماً مع مشروعك
 
       - name: Build Debug APK
         run: |
-          cd android && ./gradlew assembleDebug --stacktrace --no-daemon -x lint -x test
+          cd android
+          gradle assembleDebug --stacktrace --no-daemon -x lint -x test
 
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-         name: app-debug
-         path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
