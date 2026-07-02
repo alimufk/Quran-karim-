@@ -39,7 +39,7 @@ jobs:
         with:
           gradle-version: '8.2.1'
 
-      - name: Remove Corrupt Wrapper and Build
+      - name: Build Debug APK
         run: |
           cd android
           rm -rf gradle/wrapper/gradle-wrapper.jar gradlew gradlew.bat
