@@ -56,20 +56,7 @@ export function ShiaDuas() {
 
   const currentDua = duasList.find(d => d.id === currentDuaId);
 
-  const [archiveBaseUrl, setArchiveBaseUrl] = useState<string>('https://archive.org/download/duas_arabic_audio_mp3');
-
-  useEffect(() => {
-    let mounted = true;
-    fetch('https://archive.org/metadata/duas_arabic_audio_mp3')
-      .then(r => r.json())
-      .then(d => {
-        if (mounted && d.server && d.dir) {
-          setArchiveBaseUrl(`https://${d.server}${d.dir}`);
-        }
-      })
-      .catch(() => {});
-    return () => { mounted = false; };
-  }, []);
+  const [archiveBaseUrl] = useState<string>('https://archive.org/download/duas_arabic_audio_mp3');
 
   // Check which Duas are cached offline
   useEffect(() => {
@@ -359,24 +346,27 @@ export function ShiaDuas() {
               </button>
             </div>
           </div> 
-          
-            <audio 
-             ref={audioRef}
-             src={currentDua ? (cachedDuaSources[currentDua.id] || `${archiveBaseUrl}/${encodeURIComponent(currentDua.file)}`) : ''}
-             crossOrigin="anonymous"
-             onEnded={handleAudioEnded}
-             onCanPlay={() => setIsLoading(false)}
-             onWaiting={() => setIsLoading(true)}
-             onPlaying={() => setIsLoading(false)}
-             onError={(e) => {
-                 console.error("Audio error:", e);
-                 setIsLoading(false);
-                 setIsPlaying(false);
-                 if(audioRef.current) audioRef.current.load();    }}
-            	/>
+           
+            <audio> 
+            ref={audioRef}
+            src={currentDua ? (cachedDuaSources[currentDua.id] || `https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(currentDua.file)}`) : ''}
+            onEnded={handleAudioEnded}
+            onCanPlay={() => setIsLoading(false)}
+            onWaiting={() => setIsLoading(true)}
+            onPlaying={() => setIsLoading(false)}
+            onError={(e) => {
+                
+                setIsLoading(false);
+                setIsPlaying(false);
+                if(audioRef.current) audioRef.current.load();
+            }}
+          />
         </div>
-      )} 
+      )}
     </div>
-    ); 
-  } 
+  );
+}
+
+
+
           
