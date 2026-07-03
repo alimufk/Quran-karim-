@@ -70,45 +70,22 @@ export function ShiaDuas() {
     return () => { active = false; };
   }, []);
 
-    const getAudioUrlsList = (dua: typeof duasList[0]) => {
-    // إجبار الرابط دائماً على العمل عبر HTTPS
-    const rawUrl = `https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(dua.file)}`;
-    const urls: string[] = [];
-    
-    // الأولوية للملف المحفوظ (أوفلاين)
-    if (cachedDuaSources[dua.id]) {
-      urls.push(cachedDuaSources[dua.id]);
-    }
-    
-    // إضافة الرابط الآمن مباشرة
-    urls.push(rawUrl);
+const getAudioUrlsList = (dua: typeof duasList[0]) => {
+  // الرابط المباشر الآمن (بدون بروكسي)
+  const rawUrl = `https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(dua.file)}`;
+  
+  const urls: string[] = [];
+  
+  // 1. الأولوية للملف المحفوظ (أوفلاين)
+  if (cachedDuaSources[dua.id]) {
+    urls.push(cachedDuaSources[dua.id]);
+  }
+  
+  // 2. إضافة الرابط المباشر من الأرشيف
+  urls.push(rawUrl);
 
-    return urls;
-  };
-
-    
-    // 1. الملف المحفوظ محلياً (أوفلاين) له الأولوية المطلقة
-    if (cachedDuaSources[dua.id]) {
-      urls.push(cachedDuaSources[dua.id]);
-    }
-    
-    // 2. الرابط المباشر من سيرفر الأرشيف
-    urls.push(rawUrl);
-    
-    // 3. رابط معالج عبر دالة المشروع إن وجدت
-    try {
-      const customUrl = getAudioUrl(rawUrl);
-      if (customUrl && customUrl !== rawUrl) {
-        urls.push(customUrl);
-      }
-    } catch (e) {}
-    
-    // 4. الرابط الآمن عبر بروكسي مشفر بالكامل لتجاوز جدار حماية الأندرويد لغير المشفر
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(rawUrl)}`;
-    urls.push(proxyUrl);
-
-    return urls;
-  };
+  return urls;
+};
 
   // معالجة خطأ التشغيل والتحول الذكي للمسار البديل
   const handleAudioError = () => {
