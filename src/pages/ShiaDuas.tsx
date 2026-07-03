@@ -41,7 +41,7 @@ export function ShiaDuas() {
 
   const currentDua = duasList.find(d => d.id === currentDuaId);
 
-  // فحص الملفات المحفوظة أوفلاين بصمت
+  // فحص الملفات المحفوظة مسبقاً في الذاكرة المؤقتة
   useEffect(() => {
     let active = true;
     const checkCaches = async () => {
@@ -68,20 +68,20 @@ export function ShiaDuas() {
     return () => { active = false; };
   }, []);
 
-  // بناء قائمة المسارات الآمنة لتجاوز حظر الأندرويد
+  // تجهيز مصفوفة روابط آمنة وتدريجية للتغلب على قيود النظام ومشاكل الشبكة
   const getAudioUrlsList = (dua: typeof duasList[0]) => {
     const rawUrl = `${archiveBaseUrl}/${encodeURIComponent(dua.file)}`;
     const urls: string[] = [];
     
-    // 1. الأولوية القصوى للملف المحفوظ أوفلاين إن وجد
+    // 1. الملف المحفوظ محلياً (أوفلاين) له الأولوية المطلقة
     if (cachedDuaSources[dua.id]) {
       urls.push(cachedDuaSources[dua.id]);
     }
     
-    // 2. الرابط المباشر الأساسي
+    // 2. الرابط المباشر من سيرفر الأرشيف
     urls.push(rawUrl);
     
-    // 3. الرابط المعالج عبر دالة مشروعك (لتجاوز الحجب)
+    // 3. رابط معالج عبر دالة المشروع إن وجدت
     try {
       const customUrl = getAudioUrl(rawUrl);
       if (customUrl && customUrl !== rawUrl) {
@@ -89,14 +89,14 @@ export function ShiaDuas() {
       }
     } catch (e) {}
     
-    // 4. نفق العبور المشفر (SSL Proxy) لكسر حماية Cleartext Traffic في الأندرويد بنسبة 100%
+    // 4. الرابط الآمن عبر بروكسي مشفر بالكامل لتجاوز جدار حماية الأندرويد لغير المشفر
     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(rawUrl)}`;
     urls.push(proxyUrl);
 
     return urls;
   };
 
-  // معالج الخطأ والتبديل التلقائي الفوري للمسار البديل المشفر
+  // معالجة خطأ التشغيل والتحول الذكي للمسار البديل
   const handleAudioError = () => {
     const audio = audioRef.current;
     if (!audio || !currentDuaId) return;
@@ -107,11 +107,10 @@ export function ShiaDuas() {
     const urls = getAudioUrlsList(currentDuaObj);
     const nextIndex = activeUrlIndexRef.current + 1;
 
-    // إذا فشل مسار، انتقل فوراً للمسار المشفر التالي
     if (nextIndex < urls.length) {
-      console.log(`Switching to backup SSL url [${nextIndex}]:`, urls[nextIndex]);
+      console.log(`Switching to backup URL [${nextIndex}]:`, urls[nextIndex]);
       activeUrlIndexRef.current = nextIndex;
-      setAudioError(`جاري التبديل للمسار المشفر الآمن (${nextIndex})...`);
+      setAudioError(`جاري التبديل للمسار البديل الآمن (${nextIndex})...`);
       
       audio.src = urls[nextIndex];
       audio.play().catch(() => {});
@@ -122,12 +121,12 @@ export function ShiaDuas() {
       if (err?.code === 4) {
         setAudioError("تم منع الاتصال غير المشفر. جرب تشغيل الإنترنت أو حفظ الملف أوفلاين.");
       } else {
-        setAudioError("تعذر تشغيل الملف الصوتي من جميع المسارات.");
+        setAudioError("تعذر تشغيل الملف الصوتي من جميع المسارات المتاحة.");
       }
     }
   };
 
-  // التحكم بالتشغيل المتزامن
+  // التعامل مع زر التشغيل والإيقاف المؤقت
   const handlePlayToggle = (duaId: string) => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -140,7 +139,6 @@ export function ShiaDuas() {
 
     if (currentDuaId === duaId) {
       if (audio.paused) {
-        // إذا كان متوقفاً بسبب خطأ سابق، نعيد المحاولة من المسار الآمن
         if (audio.error || !audio.src) {
           activeUrlIndexRef.current = 0;
           audio.src = urls[0];
@@ -159,6 +157,7 @@ export function ShiaDuas() {
     }
   };
 
+  // الحفظ أوفلاين أو الحذف من ذاكرة الهاتف
   const handleOfflineDuaToggle = async (dua: typeof duasList[0]) => {
     const url = `${archiveBaseUrl}/${encodeURIComponent(dua.file)}`;
     const isCached = !!cachedDuaSources[dua.id];
@@ -305,7 +304,6 @@ export function ShiaDuas() {
         </div>
       )}
 
-      {/* مشغل صوت مدعم بنظام العبور التلقائي الآمن عند أخطاء الأندرويد */}
       <audio 
         ref={audioRef}
         onPlay={() => { setIsPlaying(true); setAudioError(null); }}
