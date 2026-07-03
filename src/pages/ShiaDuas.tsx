@@ -358,11 +358,12 @@ export function ShiaDuas() {
                  {isPlaying ? <Pause fill="currentColor" size={28} /> : <Play fill="currentColor" size={28} className="ml-1" />}
               </button>
             </div>
-          </div>   
-
-
-          <audio 
+          </div> 
+          
+            <audio 
              ref={audioRef}
+             src={currentDua ? (cachedDuaSources[currentDua.id] || `${archiveBaseUrl}/${encodeURIComponent(currentDua.file)}`) : ''}
+             crossOrigin="anonymous"
              onEnded={handleAudioEnded}
              onCanPlay={() => setIsLoading(false)}
              onWaiting={() => setIsLoading(true)}
@@ -372,6 +373,8 @@ export function ShiaDuas() {
                  setIsLoading(false);
                  setIsPlaying(false);
                  if(audioRef.current) audioRef.current.load();
+             }}
+          />
              }}
           />
         </div>
