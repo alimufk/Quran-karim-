@@ -71,21 +71,17 @@ export function ShiaDuas() {
   }, []);
 
 const getAudioUrlsList = (dua: typeof duasList[0]) => {
-  // الرابط المباشر الآمن (بدون بروكسي)
+  // الرابط المباشر
   const rawUrl = `https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(dua.file)}`;
   
   const urls: string[] = [];
   
-  // 1. الأولوية للملف المحفوظ (أوفلاين)
-  if (cachedDuaSources[dua.id]) {
-    urls.push(cachedDuaSources[dua.id]);
-  }
-  
-  // 2. إضافة الرابط المباشر من الأرشيف
+  // إضافة الرابط للأرشيف
   urls.push(rawUrl);
 
   return urls;
 };
+
 
   // معالجة خطأ التشغيل والتحول الذكي للمسار البديل
   const handleAudioError = () => {
