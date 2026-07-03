@@ -36,7 +36,7 @@ export function ShiaDuas() {
   
   const filteredDuas = duasList.filter(d => 
     d.name.includes(search) || d.englishName.toLowerCase().includes(search.toLowerCase())
-   // استخدم الباكتيك ` بدلاً من التنصيص `
+   
   const rawUrl = `https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(dua.file)}`;
                          
   );
