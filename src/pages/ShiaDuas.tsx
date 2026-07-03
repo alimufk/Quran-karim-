@@ -373,9 +373,10 @@ export function ShiaDuas() {
                  setIsLoading(false);
                  setIsPlaying(false);
                  if(audioRef.current) audioRef.current.load();    }}
-  />
-</div>
-    )}
-  </div>
-);
-}
+            	/>
+        </div>
+      )} 
+    </div>
+    ); 
+  } 
+          
