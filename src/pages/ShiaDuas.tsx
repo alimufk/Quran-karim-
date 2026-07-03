@@ -33,10 +33,12 @@ export function ShiaDuas() {
   const [downloadingDuaId, setDownloadingDuaId] = useState<string | null>(null);
   const [duaDownloadProgress, setDuaDownloadProgress] = useState<number>(0);
 
-  const archiveBaseUrl = 'https://archive.org/download/duas_arabic_audio_mp3';
-
+  
   const filteredDuas = duasList.filter(d => 
     d.name.includes(search) || d.englishName.toLowerCase().includes(search.toLowerCase())
+   // استخدم الباكتيك ` بدلاً من التنصيص `
+  const rawUrl = `https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(dua.file)}`;
+                         
   );
 
   const currentDua = duasList.find(d => d.id === currentDuaId);
@@ -68,10 +70,22 @@ export function ShiaDuas() {
     return () => { active = false; };
   }, []);
 
-  // تجهيز مصفوفة روابط آمنة وتدريجية للتغلب على قيود النظام ومشاكل الشبكة
-  const getAudioUrlsList = (dua: typeof duasList[0]) => {
-    const rawUrl = `${archiveBaseUrl}/${encodeURIComponent(dua.file)}`;
+    const getAudioUrlsList = (dua: typeof duasList[0]) => {
+    // إجبار الرابط دائماً على العمل عبر HTTPS
+    const rawUrl = `https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(dua.file)}`;
     const urls: string[] = [];
+    
+    // الأولوية للملف المحفوظ (أوفلاين)
+    if (cachedDuaSources[dua.id]) {
+      urls.push(cachedDuaSources[dua.id]);
+    }
+    
+    // إضافة الرابط الآمن مباشرة
+    urls.push(rawUrl);
+
+    return urls;
+  };
+
     
     // 1. الملف المحفوظ محلياً (أوفلاين) له الأولوية المطلقة
     if (cachedDuaSources[dua.id]) {
