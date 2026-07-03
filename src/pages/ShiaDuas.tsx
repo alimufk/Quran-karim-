@@ -23,6 +23,7 @@ export function ShiaDuas() {
   const [currentDuaId, setCurrentDuaId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [cachedDuaSources, setCachedDuaSources] = useState<Record<string, string>>({});
@@ -37,6 +38,7 @@ export function ShiaDuas() {
 
   const currentDua = duasList.find(d => d.id === currentDuaId);
 
+  // فحص الكاش بشكل صامت تماماً دون التأثير على الواجهة
   useEffect(() => {
     let active = true;
     const checkCaches = async () => {
@@ -56,18 +58,19 @@ export function ShiaDuas() {
           setCachedDuaSources(sources);
         }
       } catch (e) {
-        console.error("Silent cache bypass:", e);
+        console.get("Cache check bypassed safely");
       }
     };
     checkCaches();
     return () => { active = false; };
   }, []);
 
-  // دالة التشغيل الذكية: تعتمد على فحص حالة الأندرويد مباشرة بدون إعادة تهيئة (No load collision)
-  const handlePlayToggle = async (duaId: string) => {
+  // دالة التشغيل المتزامنة فائقة السرعة المتوافقة مع WebView
+  const handlePlayToggle = (duaId: string) => {
     const audio = audioRef.current;
     if (!audio) return;
 
+    setAudioError(null); // تصفير الأخطاء السابقة
     const targetDua = duasList.find(d => d.id === duaId);
     if (!targetDua) return;
 
@@ -83,17 +86,16 @@ export function ShiaDuas() {
 
       const cachedUrl = cachedDuaSources[duaId];
       const rawSrc = `${archiveBaseUrl}/${encodeURIComponent(targetDua.file)}`;
-      const targetSrc = cachedUrl || rawSrc;
-
-      // تغيير مسار الصوت فقط دون استدعاء audio.load() لمنع تصادم الأندرويد
-      if (audio.src !== targetSrc) {
-        audio.src = targetSrc;
-      }
       
+      // حقن الرابط وتشغيله فوراً في نفس مسار التنفيذ المتزامن
+      audio.src = cachedUrl || rawSrc;
       audio.play().catch(error => {
-        console.error("Playback error on switch:", error);
-        setIsLoading(false);
-        setIsPlaying(false);
+        console.error("Direct play blocked, trying standard fallback:", error);
+        // محاولة بديلة في حال تطلب النظام تهيئة مسبقة
+        try {
+          audio.load();
+          audio.play().catch(() => {});
+        } catch(e) {}
       });
     }
   };
@@ -104,7 +106,7 @@ export function ShiaDuas() {
     
     try {
       if (isCached) {
-        const confirmDelete = window.confirm(`هل تريد حذف ملف صوت (${dua.name}) من ذاكرة الهاتف لتوفير مساحة؟`);
+        const confirmDelete = window.confirm(`هل تريد حذف ملف صوت (${dua.name}) من ذاكرة الهاتف؟`);
         if (confirmDelete) {
           await deleteCachedAudio(url);
           setCachedDuaSources(prev => {
@@ -119,16 +121,15 @@ export function ShiaDuas() {
         const cachedUrl = await cacheAudio(url, (percent) => {
           setDuaDownloadProgress(percent);
         }).catch(() => {
-          throw new Error("CORS_LIMIT");
+          throw new Error("CORS_OR_NETWORK_LIMIT");
         });
         
         setCachedDuaSources(prev => ({ ...prev, [dua.id]: cachedUrl }));
         setDownloadingDuaId(null);
       }
     } catch (error: any) {
-      console.error("Dua caching failed:", error);
       setDownloadingDuaId(null);
-      alert("تنبيه: لا يمكن حفظ الملف أوفلاين حالياً بسبب قيود النظام، ولكن يمكنك الاستماع إليه مباشرة بالضغط على زر التشغيل.");
+      alert("يمكنك الاستماع للدعاء مباشرة عبر الإنترنت الآن بالضغط على زر التشغيل.");
     }
   };
 
@@ -199,7 +200,7 @@ export function ShiaDuas() {
                       e.stopPropagation();
                       handleOfflineDuaToggle(dua);
                     }}
-                    className="p-1.5 px-3 rounded-full text-xs font-bold text-[#10b981] bg-[#10b981]/10 flex items-center gap-1 hover:bg-red-500/10 hover:text-red-400 transition"
+                    className="p-1.5 px-3 rounded-full text-xs font-bold text-[#10b981] bg-[#10b981]/10 flex items-center gap-1"
                   >
                     <Check size={14} className="stroke-[3px]" />
                     <span className="hidden sm:inline">أوفلاين</span>
@@ -226,12 +227,15 @@ export function ShiaDuas() {
       </div>
 
       {currentDua && (
-        <div className="absolute bottom-0 left-0 right-0 bg-[#064e3b] px-6 py-5 border-t border-[#059669]/50 shadow-2xl z-10 flex justify-between items-center">
+        <div className="absolute bottom-0 left-0 right-0 bg-[#064e3b] px-6 py-4 border-t border-[#059669]/50 shadow-2xl z-10 flex justify-between items-center flex-wrap gap-2">
           <div>
             <h4 className="font-bold text-[#fbbf24] text-lg">{currentDua.name}</h4>
             <p className="text-sm text-[#059669]">
               {isLoading ? 'جاري التحميل...' : isPlaying ? 'جاري التشغيل...' : 'متوقف'}
             </p>
+            {audioError && (
+              <p className="text-[11px] text-red-400 mt-0.5 font-sans">{audioError}</p>
+            )}
           </div>
           <button
             onClick={() => handlePlayToggle(currentDua.id)}
@@ -242,18 +246,25 @@ export function ShiaDuas() {
         </div>
       )}
 
-      {/* ربط حالة التشغيل بأحداث المشغل الذاتية لضمان استجابة الأندرويد */}
+      {/* مشغل الصوت مبرمج بأحداثه الأصلية المتزامنة بالكامل */}
       <audio 
         ref={audioRef}
-        onPlay={() => setIsPlaying(true)}
+        onPlay={() => { setIsPlaying(true); setAudioError(null); }}
         onPause={() => setIsPlaying(false)}
         onEnded={() => setIsPlaying(false)}
         onCanPlay={() => setIsLoading(false)}
         onWaiting={() => setIsLoading(true)}
-        onError={(e) => {
-            console.error("Audio playback error:", e);
+        onPlaying={() => setIsLoading(false)}
+        onError={() => {
             setIsLoading(false);
             setIsPlaying(false);
+            const err = audioRef.current?.error;
+            if (err) {
+              if (err.code === 2) setAudioError("خطأ في الشبكة: يرجى التحقق من اتصال الإنترنت.");
+              else if (err.code === 3) setAudioError("خطأ في فك التشفير: الملف الصوتي غير مدعوم.");
+              else if (err.code === 4) setAudioError("النظام يمنع تشغيل هذا الرابط المباشر.");
+              else setAudioError(`فشل التشغيل المباشر (كود: ${err.code})`);
+            }
         }}
         preload="auto"
       />
