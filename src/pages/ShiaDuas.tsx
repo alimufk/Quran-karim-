@@ -346,9 +346,10 @@ export function ShiaDuas() {
               </button>
             </div>
           </div> 
-                     <audio 
+                     
+          <audio 
             ref={audioRef}
-            src={currentDua ? (cachedDuaSources[currentDua.id] || `https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(currentDua.file)}`) : ''}
+            src={currentDua ? (cachedDuaSources[currentDua.id] || `${archiveBaseUrl}/${encodeURIComponent(currentDua.file)}`) : ''}
             onEnded={handleAudioEnded}
             onCanPlay={() => setIsLoading(false)}
             onWaiting={() => setIsLoading(true)}
@@ -365,8 +366,3 @@ export function ShiaDuas() {
     </div>
   );
 }
-
-
-
-
-          
