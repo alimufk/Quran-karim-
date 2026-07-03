@@ -297,56 +297,57 @@ export function ShiaDuas() {
         )}
       </div>
 
-      {currentDuaId && currentDua && (
-        <div className="absolute bottom-0 left-0 right-0 bg-[#064e3b] px-6 py-5 border-t border-[#059669]/50 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] rounded-t-[32px] z-50">
+            {currentDuaId && currentDua && (
+        <div className="absolute bottom-0 left-0 right-0 bg-[#064e3b] px-6 py-5 border-t border-[#059669]/50 shadow-2xl z-10 flex flex-col gap-4">
           <div className="flex justify-between items-center">
             <div>
               <h4 className="font-bold text-[#fbbf24] text-lg">{currentDua.name}</h4>
               <p className="text-sm text-[#059669]">
-                {isLoading ? 'جاري التحميل...' : (isPlaying ? 'جارٍ التشغيل...' : 'متوقف')}
+                {isLoading ? 'جاري التحميل...' : isPlaying ? 'جاري التشغيل...' : 'متوقف'}
               </p>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <button
-                 onClick={() => handleOfflineDuaToggle(currentDua)}
-                 disabled={downloadingDuaId !== null}
-                 className={`p-3 rounded-full flex items-center justify-center relative ${
-                   downloadingDuaId === currentDua.id
-                     ? 'text-[#fbbf24] bg-[#059669]/30'
-                     : cachedDuaSources[currentDua.id]
-                       ? 'text-[#10b981] bg-[#10b981]/10 hover:bg-red-500/10 hover:text-red-400'
-                       : 'text-[#059669] hover:text-[#fbbf24] hover:bg-[#059669]/30'
-                 } transition-colors`}
-                 title={
-                   downloadingDuaId === currentDua.id
-                     ? `جاري التحميل أوفلاين: ${duaDownloadProgress}%`
-                     : cachedDuaSources[currentDua.id]
-                       ? 'محفوظ أوفلاين (اضغط لحذفه)'
-                       : 'حفظ للاستماع بدون إنترنت (أوفلاين)'
-                 }
+                onClick={() => handleOfflineDuaToggle(currentDua)}
+                disabled={downloadingDuaId !== null}
+                className={`p-3 rounded-full flex items-center justify-center relative ${
+                  downloadingDuaId === currentDua.id
+                    ? 'text-[#fbbf24] bg-[#059669]/30'
+                    : cachedDuaSources[currentDua.id]
+                    ? 'text-[#10b981] bg-[#10b981]/10 hover:bg-red-500/10 hover:text-red-400'
+                    : 'text-[#059669] hover:text-[#fbbf24] hover:bg-[#059669]/30'
+                } transition-colors`}
+                title={
+                  downloadingDuaId === currentDua.id
+                    ? `جاري التحميل أوفلاين: ${duaDownloadProgress}%`
+                    : cachedDuaSources[currentDua.id]
+                    ? 'محفوظ أوفلاين (اضغط لحذفه)'
+                    : 'حفظ للاستماع بدون إنترنت (أوفلاين)'
+                }
               >
-                 {downloadingDuaId === currentDua.id ? (
-                   <div className="relative flex items-center justify-center w-5 h-5">
-                     <RefreshCw className="animate-spin text-[#fbbf24]" size={16} />
-                     <span className="text-[7.5px] font-bold font-mono text-[#fbbf24] absolute">{duaDownloadProgress}</span>
-                   </div>
-                 ) : cachedDuaSources[currentDua.id] ? (
-                   <Check size={20} className="stroke-[3px]" />
-                 ) : (
-                   <Download size={20} />
-                 )}
+                {downloadingDuaId === currentDua.id ? (
+                  <div className="relative flex items-center justify-center w-5 h-5">
+                    <RefreshCw className="animate-spin text-[#fbbf24]" size={16} />
+                    <span className="text-[7.5px] font-bold font-mono text-[#fbbf24] absolute">{duaDownloadProgress}</span>
+                  </div>
+                ) : cachedDuaSources[currentDua.id] ? (
+                  <Check size={20} className="stroke-[3px]" />
+                ) : (
+                  <Download size={20} />
+                )}
               </button>
-              <button 
-                 onClick={() => handlePlayToggle(currentDua.id)}
-                 className="p-5 bg-[#fbbf24] text-[#022c22] rounded-full shadow-lg shadow-[#fbbf24]/20 hover:bg-[#fcd34d] hover:scale-105 active:scale-95 transition-all"
-                 disabled={isLoading && !isPlaying}
+
+              <button
+                onClick={() => handlePlayToggle(currentDua.id)}
+                className="p-5 bg-[#fbbf24] text-[#022c22] rounded-full shadow-lg shadow-[#fbbf24]/20 hover:bg-[#fcd34d] disabled:opacity-50"
+                disabled={isLoading && !isPlaying}
               >
-                 {isPlaying ? <Pause fill="currentColor" size={28} /> : <Play fill="currentColor" size={28} className="ml-1" />}
+                {isPlaying ? <Pause fill="currentColor" size={28} /> : <Play fill="currentColor" size={28} />}
               </button>
             </div>
-          </div> 
-                     
+          </div>
+
           <audio 
             ref={audioRef}
             src={currentDua ? (cachedDuaSources[currentDua.id] || `${archiveBaseUrl}/${encodeURIComponent(currentDua.file)}`) : ''}
