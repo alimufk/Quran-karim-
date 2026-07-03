@@ -372,13 +372,10 @@ export function ShiaDuas() {
                  console.error("Audio error:", e);
                  setIsLoading(false);
                  setIsPlaying(false);
-                 if(audioRef.current) audioRef.current.load();
-             }}
-          />
-             }}
-          />
-        </div>
-      )}
-    </div>
-  );
+                 if(audioRef.current) audioRef.current.load();    }}
+  />
+</div>
+    )}
+  </div>
+);
 }
