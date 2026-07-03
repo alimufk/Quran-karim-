@@ -359,21 +359,17 @@ export function ShiaDuas() {
               </button>
             </div>
           </div>   
-                    <          <audio 
-             ref={audioRef}
-             onEnded={handleAudioEnded}
-             onCanPlay={() => setIsLoading(false)}
-             onWaiting={() => setIsLoading(true)}
-             onPlaying={() => setIsLoading(false)}
-             onError={(e) => {
-                 console.error("Audio error:", e);
-                 setIsLoading(false);
-                 setIsPlaying(false);
-                 if(audioRef.current) audioRef.current.load();
-             }}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
+<audio 
+  ref={audioRef}
+  onEnded={handleAudioEnded}
+  onCanPlay={() => setIsLoading(false)}
+  onWaiting={() => setIsLoading(true)}
+  onPlaying={() => setIsLoading(false)}
+  onError={(e) => {
+    console.error("Audio error:", e);
+    setIsLoading(false);
+    setIsPlaying(false);
+    if(audioRef.current) audioRef.current.load();
+  }}
+/>
+
