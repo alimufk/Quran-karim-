@@ -80,7 +80,9 @@ export function ShiaDuas() {
       if (isPlaying) {
         setIsLoading(true);
         const cachedUrl = cachedDuaSources[currentDua.id];
-        const rawSrc = getAudioUrl(`${archiveBaseUrl}/${encodeURIComponent(currentDua.file)}`);
+        // استخدم الرابط المباشر من الأرشيف مباشرة دون المرور عبر دالة getAudioUrl إذا كانت تسبب تعليقاً
+        const rawSrc = `${archiveBaseUrl}/${encodeURIComponent(currentDua.file)}`;
+
         const targetSrc = cachedUrl || rawSrc;
         
         const currentSrcDecoded = audioRef.current.src ? decodeURI(audioRef.current.src) : '';
