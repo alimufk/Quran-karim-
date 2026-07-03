@@ -36,8 +36,9 @@ export function ShiaDuas() {
   const filteredDuas = duasList.filter(d => 
   d.name.includes(search) || d.englishName.toLowerCase().includes(search.toLowerCase())
 );
-  
+
   const currentDua = duasList.find(d => d.id === currentDuaId);
+
 
   // فحص الملفات المحفوظة مسبقاً في الذاكرة المؤقتة
   useEffect(() => {
