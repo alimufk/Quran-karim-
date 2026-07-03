@@ -1,3 +1,22 @@
+  const handlePlayToggle = async (duaId: string) => {
+    if (currentDuaId === duaId) {
+      if (isPlaying) {
+        audioRef.current?.pause();
+        setIsPlaying(false);
+      } else {
+        await audioRef.current?.play().catch(console.error);
+        setIsPlaying(true);
+      }
+    } else {
+      setCurrentDuaId(duaId);
+      setIsPlaying(true);
+      setIsLoading(true);
+      // إجبار المتصفح على تحميل الصوت فوراً عند التغيير
+      setTimeout(() => {
+        audioRef.current?.play().catch(console.error);
+      }, 500);
+    }
+  };
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play, Pause, Volume2, Search, Download, Check, RefreshCw } from 'lucide-react';
@@ -166,15 +185,25 @@ export function ShiaDuas() {
     }
   };
 
-  const handlePlayToggle = (duaId: string) => {
+    const handlePlayToggle = async (duaId: string) => {
     if (currentDuaId === duaId) {
-      setIsPlaying(!isPlaying);
+      if (isPlaying) {
+        audioRef.current?.pause();
+        setIsPlaying(false);
+      } else {
+        await audioRef.current?.play().catch(console.error);
+        setIsPlaying(true);
+      }
     } else {
       setCurrentDuaId(duaId);
       setIsPlaying(true);
       setIsLoading(true);
+      setTimeout(() => {
+        audioRef.current?.play().catch(console.error);
+      }, 500);
     }
   };
+
 
   const handleAudioEnded = () => {
     setIsPlaying(false);
