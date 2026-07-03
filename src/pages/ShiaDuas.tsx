@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+٧import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play, Pause, Volume2, Search, Download, Check, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -63,16 +63,31 @@ export function ShiaDuas() {
           </div>
         ))}
       </div>
-
+ 
       {currentDua && (
         <div className="absolute bottom-0 left-0 right-0 bg-[#064e3b] px-6 py-5 border-t border-[#059669]/50 shadow-2xl z-10 flex justify-between items-center">
-          <h4 className="font-bold text-[#fbbf24]">{currentDua.name}</h4>
-          <button onClick={() => handlePlayToggle(currentDua.id)} className="p-5 bg-[#fbbf24] rounded-full">
-            {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+          <h4 className="font-bold text-[#fbbf24] truncate max-w-[60%]">{currentDua.name}</h4>
+          <button 
+            onClick={() => {
+                if (audioRef.current) {
+                    if (isPlaying) {
+                        audioRef.current.pause();
+                        setIsPlaying(false);
+                    } else {
+                        audioRef.current.play().catch(e => console.error("Play error:", e));
+                        setIsPlaying(true);
+                    }
+                }
+            }} 
+            className="p-5 bg-[#fbbf24] rounded-full shadow-lg"
+          >
+            {isPlaying ? <Pause size={24} className="text-[#022c22]" /> : <Play size={24} className="text-[#022c22]" />}
           </button>
-          <audio ref={audioRef} src={cachedDuaSources[currentDua.id] || `${archiveBaseUrl}/${encodeURIComponent(currentDua.file)}`} onEnded={() => setIsPlaying(false)} />
+          <audio 
+            ref={audioRef}
+            src={cachedDuaSources[currentDua.id] || `${archiveBaseUrl}/${encodeURIComponent(currentDua.file)}`}
+            onEnded={() => setIsPlaying(false)}
+            preload="metadata"
+          />
         </div>
       )}
-    </div>
-  );
-}
