@@ -33,14 +33,10 @@ export function ShiaDuas() {
   const [downloadingDuaId, setDownloadingDuaId] = useState<string | null>(null);
   const [duaDownloadProgress, setDuaDownloadProgress] = useState<number>(0);
 
-  
   const filteredDuas = duasList.filter(d => 
-    d.name.includes(search) || d.englishName.toLowerCase().includes(search.toLowerCase())
-   
-  const rawUrl = `https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(dua.file)}`;
-                         
-  );
-
+  d.name.includes(search) || d.englishName.toLowerCase().includes(search.toLowerCase())
+);
+  
   const currentDua = duasList.find(d => d.id === currentDuaId);
 
   // فحص الملفات المحفوظة مسبقاً في الذاكرة المؤقتة
@@ -70,7 +66,7 @@ export function ShiaDuas() {
     return () => { active = false; };
   }, []);
 
-const getAudioUrlsList = (dua: typeof duasList[0]) => {
+  const getAudioUrlsList = (dua: typeof duasList[0]) => {
   // الرابط المباشر
   const rawUrl = `https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(dua.file)}`;
   
@@ -81,7 +77,6 @@ const getAudioUrlsList = (dua: typeof duasList[0]) => {
 
   return urls;
 };
-
 
   // معالجة خطأ التشغيل والتحول الذكي للمسار البديل
   const handleAudioError = () => {
