@@ -37,7 +37,6 @@ export function ShiaDuas() {
 
   const currentDua = duasList.find(d => d.id === currentDuaId);
 
-  // فحص الخلفية مع الحماية التامة من أخطاء الـ Fetch في الأندرويد
   useEffect(() => {
     let active = true;
     const checkCaches = async () => {
@@ -45,7 +44,6 @@ export function ShiaDuas() {
         const sources: Record<string, string> = {};
         for (const d of duasList) {
           const url = `${archiveBaseUrl}/${encodeURIComponent(d.file)}`;
-          // حماية النطاق لمنع خطأ Failed to fetch من كسر التطبيق
           const isCached = await isAudioCached(url).catch(() => false);
           if (isCached) {
             const cachedUrl = await getCachedAudioUrl(url).catch(() => null);
@@ -65,7 +63,7 @@ export function ShiaDuas() {
     return () => { active = false; };
   }, []);
 
-  // التحكم بالتشغيل الفوري والمباشر داخل حدث النقر المتوافق مع حماية الموبايل
+  // دالة التشغيل الذكية: تعتمد على فحص حالة الأندرويد مباشرة بدون إعادة تهيئة (No load collision)
   const handlePlayToggle = async (duaId: string) => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -74,35 +72,29 @@ export function ShiaDuas() {
     if (!targetDua) return;
 
     if (currentDuaId === duaId) {
-      if (isPlaying) {
-        audio.pause();
-        setIsPlaying(false);
+      if (audio.paused) {
+        audio.play().catch(e => console.error("Play error:", e));
       } else {
-        try {
-          await audio.play();
-          setIsPlaying(true);
-        } catch (error) {
-          console.error("Playback failed:", error);
-        }
+        audio.pause();
       }
     } else {
       setCurrentDuaId(duaId);
       setIsLoading(true);
-      setIsPlaying(true);
 
       const cachedUrl = cachedDuaSources[duaId];
       const rawSrc = `${archiveBaseUrl}/${encodeURIComponent(targetDua.file)}`;
-      
-      // حقن المسار والتشغيل المتزامن الفوري لمنع النظام من حجب الصوت
-      audio.src = cachedUrl || rawSrc;
-      audio.load();
-      try {
-        await audio.play();
-      } catch (error) {
-        console.error("Playback error on switch:", error);
-        setIsPlaying(false);
-        setIsLoading(false);
+      const targetSrc = cachedUrl || rawSrc;
+
+      // تغيير مسار الصوت فقط دون استدعاء audio.load() لمنع تصادم الأندرويد
+      if (audio.src !== targetSrc) {
+        audio.src = targetSrc;
       }
+      
+      audio.play().catch(error => {
+        console.error("Playback error on switch:", error);
+        setIsLoading(false);
+        setIsPlaying(false);
+      });
     }
   };
 
@@ -250,14 +242,16 @@ export function ShiaDuas() {
         </div>
       )}
 
-      {/* مشغل صوتي دائم الوجود لضمان تفعيل ميزة الأمان في الأندرويد */}
+      {/* ربط حالة التشغيل بأحداث المشغل الذاتية لضمان استجابة الأندرويد */}
       <audio 
         ref={audioRef}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
         onEnded={() => setIsPlaying(false)}
         onCanPlay={() => setIsLoading(false)}
         onWaiting={() => setIsLoading(true)}
-        onPlaying={() => setIsLoading(false)}
-        onError={() => {
+        onError={(e) => {
+            console.error("Audio playback error:", e);
             setIsLoading(false);
             setIsPlaying(false);
         }}
