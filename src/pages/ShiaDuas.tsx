@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Play, Pause, Volume2, Search, Download, Check, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { isAudioCached, getCachedAudioUrl, cacheAudio, deleteCachedAudio } from '../utils/audioCache';
+import { getAudioUrl } from '../utils/audioUrl';
 
 const duasList = [
   { id: 'kumail', name: 'دعاء كميل', englishName: 'Dua Kumayl', file: 'Dua_e_Kumail.mp3' },
@@ -24,7 +25,9 @@ export function ShiaDuas() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
+  
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const activeUrlIndexRef = useRef<number>(0);
 
   const [cachedDuaSources, setCachedDuaSources] = useState<Record<string, string>>({});
   const [downloadingDuaId, setDownloadingDuaId] = useState<string | null>(null);
@@ -38,7 +41,7 @@ export function ShiaDuas() {
 
   const currentDua = duasList.find(d => d.id === currentDuaId);
 
-  // فحص الكاش بشكل صامت تماماً دون التأثير على الواجهة
+  // فحص الملفات المحفوظة أوفلاين بصمت
   useEffect(() => {
     let active = true;
     const checkCaches = async () => {
@@ -58,45 +61,101 @@ export function ShiaDuas() {
           setCachedDuaSources(sources);
         }
       } catch (e) {
-        console.get("Cache check bypassed safely");
+        console.log("Cache check bypassed");
       }
     };
     checkCaches();
     return () => { active = false; };
   }, []);
 
-  // دالة التشغيل المتزامنة فائقة السرعة المتوافقة مع WebView
+  // بناء قائمة المسارات الآمنة لتجاوز حظر الأندرويد
+  const getAudioUrlsList = (dua: typeof duasList[0]) => {
+    const rawUrl = `${archiveBaseUrl}/${encodeURIComponent(dua.file)}`;
+    const urls: string[] = [];
+    
+    // 1. الأولوية القصوى للملف المحفوظ أوفلاين إن وجد
+    if (cachedDuaSources[dua.id]) {
+      urls.push(cachedDuaSources[dua.id]);
+    }
+    
+    // 2. الرابط المباشر الأساسي
+    urls.push(rawUrl);
+    
+    // 3. الرابط المعالج عبر دالة مشروعك (لتجاوز الحجب)
+    try {
+      const customUrl = getAudioUrl(rawUrl);
+      if (customUrl && customUrl !== rawUrl) {
+        urls.push(customUrl);
+      }
+    } catch (e) {}
+    
+    // 4. نفق العبور المشفر (SSL Proxy) لكسر حماية Cleartext Traffic في الأندرويد بنسبة 100%
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(rawUrl)}`;
+    urls.push(proxyUrl);
+
+    return urls;
+  };
+
+  // معالج الخطأ والتبديل التلقائي الفوري للمسار البديل المشفر
+  const handleAudioError = () => {
+    const audio = audioRef.current;
+    if (!audio || !currentDuaId) return;
+
+    const currentDuaObj = duasList.find(d => d.id === currentDuaId);
+    if (!currentDuaObj) return;
+
+    const urls = getAudioUrlsList(currentDuaObj);
+    const nextIndex = activeUrlIndexRef.current + 1;
+
+    // إذا فشل مسار، انتقل فوراً للمسار المشفر التالي
+    if (nextIndex < urls.length) {
+      console.log(`Switching to backup SSL url [${nextIndex}]:`, urls[nextIndex]);
+      activeUrlIndexRef.current = nextIndex;
+      setAudioError(`جاري التبديل للمسار المشفر الآمن (${nextIndex})...`);
+      
+      audio.src = urls[nextIndex];
+      audio.play().catch(() => {});
+    } else {
+      setIsLoading(false);
+      setIsPlaying(false);
+      const err = audio.error;
+      if (err?.code === 4) {
+        setAudioError("تم منع الاتصال غير المشفر. جرب تشغيل الإنترنت أو حفظ الملف أوفلاين.");
+      } else {
+        setAudioError("تعذر تشغيل الملف الصوتي من جميع المسارات.");
+      }
+    }
+  };
+
+  // التحكم بالتشغيل المتزامن
   const handlePlayToggle = (duaId: string) => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    setAudioError(null); // تصفير الأخطاء السابقة
+    setAudioError(null);
     const targetDua = duasList.find(d => d.id === duaId);
     if (!targetDua) return;
 
+    const urls = getAudioUrlsList(targetDua);
+
     if (currentDuaId === duaId) {
       if (audio.paused) {
-        audio.play().catch(e => console.error("Play error:", e));
+        // إذا كان متوقفاً بسبب خطأ سابق، نعيد المحاولة من المسار الآمن
+        if (audio.error || !audio.src) {
+          activeUrlIndexRef.current = 0;
+          audio.src = urls[0];
+        }
+        audio.play().catch(() => {});
       } else {
         audio.pause();
       }
     } else {
       setCurrentDuaId(duaId);
       setIsLoading(true);
+      activeUrlIndexRef.current = 0;
 
-      const cachedUrl = cachedDuaSources[duaId];
-      const rawSrc = `${archiveBaseUrl}/${encodeURIComponent(targetDua.file)}`;
-      
-      // حقن الرابط وتشغيله فوراً في نفس مسار التنفيذ المتزامن
-      audio.src = cachedUrl || rawSrc;
-      audio.play().catch(error => {
-        console.error("Direct play blocked, trying standard fallback:", error);
-        // محاولة بديلة في حال تطلب النظام تهيئة مسبقة
-        try {
-          audio.load();
-          audio.play().catch(() => {});
-        } catch(e) {}
-      });
+      audio.src = urls[0];
+      audio.play().catch(() => {});
     }
   };
 
@@ -129,7 +188,7 @@ export function ShiaDuas() {
       }
     } catch (error: any) {
       setDownloadingDuaId(null);
-      alert("يمكنك الاستماع للدعاء مباشرة عبر الإنترنت الآن بالضغط على زر التشغيل.");
+      alert("تنبيه: لا يمكن حفظ الملف أوفلاين حالياً بسبب قيود النظام، ولكن يمكنك الاستماع إليه مباشرة عبر الإنترنت الآن بالضغط على زر التشغيل.");
     }
   };
 
@@ -234,7 +293,7 @@ export function ShiaDuas() {
               {isLoading ? 'جاري التحميل...' : isPlaying ? 'جاري التشغيل...' : 'متوقف'}
             </p>
             {audioError && (
-              <p className="text-[11px] text-red-400 mt-0.5 font-sans">{audioError}</p>
+              <p className="text-[11px] text-[#fbbf24] mt-0.5 font-sans animate-pulse">{audioError}</p>
             )}
           </div>
           <button
@@ -246,7 +305,7 @@ export function ShiaDuas() {
         </div>
       )}
 
-      {/* مشغل الصوت مبرمج بأحداثه الأصلية المتزامنة بالكامل */}
+      {/* مشغل صوت مدعم بنظام العبور التلقائي الآمن عند أخطاء الأندرويد */}
       <audio 
         ref={audioRef}
         onPlay={() => { setIsPlaying(true); setAudioError(null); }}
@@ -255,17 +314,7 @@ export function ShiaDuas() {
         onCanPlay={() => setIsLoading(false)}
         onWaiting={() => setIsLoading(true)}
         onPlaying={() => setIsLoading(false)}
-        onError={() => {
-            setIsLoading(false);
-            setIsPlaying(false);
-            const err = audioRef.current?.error;
-            if (err) {
-              if (err.code === 2) setAudioError("خطأ في الشبكة: يرجى التحقق من اتصال الإنترنت.");
-              else if (err.code === 3) setAudioError("خطأ في فك التشفير: الملف الصوتي غير مدعوم.");
-              else if (err.code === 4) setAudioError("النظام يمنع تشغيل هذا الرابط المباشر.");
-              else setAudioError(`فشل التشغيل المباشر (كود: ${err.code})`);
-            }
-        }}
+        onError={handleAudioError}
         preload="auto"
       />
     </div>
