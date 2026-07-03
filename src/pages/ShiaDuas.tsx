@@ -358,93 +358,18 @@ export function ShiaDuas() {
                  {isPlaying ? <Pause fill="currentColor" size={28} /> : <Play fill="currentColor" size={28} className="ml-1" />}
               </button>
             </div>
-          </div>
-          
-          <audio 
+          </div>   
+                    <          <audio 
              ref={audioRef}
              onEnded={handleAudioEnded}
              onCanPlay={() => setIsLoading(false)}
-             onSeeking={() => setIsLoading(true)}
-             onSeeked={() => setIsLoading(false)}
              onWaiting={() => setIsLoading(true)}
              onPlaying={() => setIsLoading(false)}
-             onError={async (e) => {
-                 const error = e.currentTarget.error;
-                 const currentSrc = audioRef.current?.src;
-                 if (!currentSrc || currentSrc === window.location.href || currentSrc.includes('/shia-duas')) {
-                     return;
-                 }
-                 console.error("Dua Audio error:", error?.message, "src:", currentSrc);
-                 
-                 // Self-healing check: automatically fetch as blob in the background and play it
-                 if (currentDua && audioRef.current && audioRef.current.src && audioRef.current.src.startsWith('blob:')) {
-                    const recoveryKey = currentDua.id + '_blob_fallback';
-                    if (!hasAttemptedFetchRecovery.current[recoveryKey]) {
-                      hasAttemptedFetchRecovery.current[recoveryKey] = true;
-                      setIsLoading(true);
-                      const rawSrc = getAudioUrl(`${archiveBaseUrl}/${encodeURIComponent(currentDua.file)}`);
-                      const fallbackSrc = rawSrc;
-                      setTimeout(() => {
-                        if (audioRef.current) {
-                          audioRef.current.pause();
-                          audioRef.current.src = fallbackSrc;
-                          audioRef.current.load();
-                          audioRef.current.play().then(() => {
-                            setIsPlaying(true);
-                            setIsLoading(false);
-                          }).catch(() => {
-                            setIsPlaying(false);
-                            setIsLoading(false);
-                          });
-                        }
-                      }, 100);
-                      return;
-                    }
-                  }
-
-                  if (currentDua && audioRef.current && audioRef.current.src && !audioRef.current.src.startsWith('blob:') && !hasAttemptedFetchRecovery.current[currentDua.id]) {
-                   hasAttemptedFetchRecovery.current[currentDua.id] = true;
-                   setIsLoading(true);
-                   
-                   const url = `${archiveBaseUrl}/${encodeURIComponent(currentDua.file)}`;
-                   try {
-                     setDownloadingDuaId(currentDua.id);
-                     setDuaDownloadProgress(1);
-                     
-                     const cachedUrl = await cacheAudio(url, (percent) => {
-                       setDuaDownloadProgress(percent);
-                     });
-                     
-                     setCachedDuaSources(prev => ({
-                       ...prev,
-                       [currentDua.id]: cachedUrl
-                     }));
-                     setDownloadingDuaId(null);
-                     
-                     setTimeout(() => {
-                       if (audioRef.current) {
-                         audioRef.current.pause();
-                         audioRef.current.src = cachedUrl;
-                         audioRef.current.load();
-                         audioRef.current.play().then(() => {
-                           setIsPlaying(true);
-                           setIsLoading(false);
-                         }).catch(err => {
-                           console.error("Self-healing play failed for Dua:", err);
-                           setIsPlaying(false);
-                           setIsLoading(false);
-                         });
-                       }
-                     }, 100);
-                     return;
-                   } catch (fetchErr) {
-                     console.error("Self-healing fetch failed for Dua:", fetchErr);
-                     setDownloadingDuaId(null);
-                   }
-                 }
-
-                 setIsPlaying(false);
+             onError={(e) => {
+                 console.error("Audio error:", e);
                  setIsLoading(false);
+                 setIsPlaying(false);
+                 if(audioRef.current) audioRef.current.load();
              }}
           />
         </div>
