@@ -37,30 +37,35 @@ export function ShiaDuas() {
 
   const currentDua = duasList.find(d => d.id === currentDuaId);
 
-  // فحص الملفات المحملة أوفلاين عند فتح الصفحة
+  // فحص الخلفية مع الحماية التامة من أخطاء الـ Fetch في الأندرويد
   useEffect(() => {
     let active = true;
     const checkCaches = async () => {
-      const sources: Record<string, string> = {};
-      for (const d of duasList) {
-        const url = `${archiveBaseUrl}/${encodeURIComponent(d.file)}`;
-        const isCached = await isAudioCached(url).catch(() => false);
-        if (isCached) {
-          const cachedUrl = await getCachedAudioUrl(url).catch(() => null);
-          if (cachedUrl) {
-            sources[d.id] = cachedUrl;
+      try {
+        const sources: Record<string, string> = {};
+        for (const d of duasList) {
+          const url = `${archiveBaseUrl}/${encodeURIComponent(d.file)}`;
+          // حماية النطاق لمنع خطأ Failed to fetch من كسر التطبيق
+          const isCached = await isAudioCached(url).catch(() => false);
+          if (isCached) {
+            const cachedUrl = await getCachedAudioUrl(url).catch(() => null);
+            if (cachedUrl) {
+              sources[d.id] = cachedUrl;
+            }
           }
         }
-      }
-      if (active) {
-        setCachedDuaSources(sources);
+        if (active) {
+          setCachedDuaSources(sources);
+        }
+      } catch (e) {
+        console.error("Silent cache bypass:", e);
       }
     };
     checkCaches();
     return () => { active = false; };
   }, []);
 
-  // تشغيل متزامن فوري متوافق 100% مع حماية الأندرويد والأجهزة الذكية
+  // التحكم بالتشغيل الفوري والمباشر داخل حدث النقر المتوافق مع حماية الموبايل
   const handlePlayToggle = async (duaId: string) => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -77,7 +82,7 @@ export function ShiaDuas() {
           await audio.play();
           setIsPlaying(true);
         } catch (error) {
-          console.error("Playback error:", error);
+          console.error("Playback failed:", error);
         }
       }
     } else {
@@ -87,16 +92,14 @@ export function ShiaDuas() {
 
       const cachedUrl = cachedDuaSources[duaId];
       const rawSrc = `${archiveBaseUrl}/${encodeURIComponent(targetDua.file)}`;
-      const targetSrc = cachedUrl || rawSrc;
-
-      // إجبار المتصفح/الأندرويد على التشغيل الفوري المتزامن داخل حَدَث النقر المباشر
-      audio.src = targetSrc;
+      
+      // حقن المسار والتشغيل المتزامن الفوري لمنع النظام من حجب الصوت
+      audio.src = cachedUrl || rawSrc;
       audio.load();
       try {
         await audio.play();
-        setIsLoading(false);
       } catch (error) {
-        console.error("Audio playback error on switch:", error);
+        console.error("Playback error on switch:", error);
         setIsPlaying(false);
         setIsLoading(false);
       }
@@ -117,38 +120,23 @@ export function ShiaDuas() {
             delete copy[dua.id];
             return copy;
           });
-          if (currentDuaId === dua.id && audioRef.current) {
-             audioRef.current.pause();
-             setIsPlaying(false);
-             const rawSrc = `${archiveBaseUrl}/${encodeURIComponent(dua.file)}`;
-             audioRef.current.src = rawSrc;
-             audioRef.current.load();
-          }
         }
       } else {
         setDownloadingDuaId(dua.id);
         setDuaDownloadProgress(1);
         const cachedUrl = await cacheAudio(url, (percent) => {
           setDuaDownloadProgress(percent);
+        }).catch(() => {
+          throw new Error("CORS_LIMIT");
         });
-        setCachedDuaSources(prev => ({
-          ...prev,
-          [dua.id]: cachedUrl
-        }));
+        
+        setCachedDuaSources(prev => ({ ...prev, [dua.id]: cachedUrl }));
         setDownloadingDuaId(null);
-        if (currentDuaId === dua.id && audioRef.current) {
-           audioRef.current.pause();
-           audioRef.current.src = cachedUrl;
-           audioRef.current.load();
-           if (isPlaying) {
-             audioRef.current.play().catch(() => {});
-           }
-        }
       }
     } catch (error: any) {
       console.error("Dua caching failed:", error);
-      alert(error?.message || "فشل تحميل وحفظ ملف صوت الدعاء. يرجى التحقق من الشبكة.");
       setDownloadingDuaId(null);
+      alert("تنبيه: لا يمكن حفظ الملف أوفلاين حالياً بسبب قيود النظام، ولكن يمكنك الاستماع إليه مباشرة بالضغط على زر التشغيل.");
     }
   };
 
@@ -220,7 +208,6 @@ export function ShiaDuas() {
                       handleOfflineDuaToggle(dua);
                     }}
                     className="p-1.5 px-3 rounded-full text-xs font-bold text-[#10b981] bg-[#10b981]/10 flex items-center gap-1 hover:bg-red-500/10 hover:text-red-400 transition"
-                    title="محفوظ أوفلاين (اضغط لحذفه)"
                   >
                     <Check size={14} className="stroke-[3px]" />
                     <span className="hidden sm:inline">أوفلاين</span>
@@ -232,7 +219,6 @@ export function ShiaDuas() {
                       handleOfflineDuaToggle(dua);
                     }}
                     className="p-2 text-[#059669] hover:text-[#fbbf24] hover:bg-[#059669]/20 rounded-full transition"
-                    title="حفظ أوفلاين للتشغيل بدون إنترنت"
                   >
                     <Download size={18} />
                   </button>
@@ -245,11 +231,6 @@ export function ShiaDuas() {
             </div>
           </motion.div>
         ))}
-        {filteredDuas.length === 0 && (
-          <div className="text-center text-[#059669] p-8">
-            لم يتم العثور على الدعاء المطابق لبحثك
-          </div>
-        )}
       </div>
 
       {currentDua && (
@@ -262,27 +243,26 @@ export function ShiaDuas() {
           </div>
           <button
             onClick={() => handlePlayToggle(currentDua.id)}
-            className="p-5 bg-[#fbbf24] text-[#022c22] rounded-full shadow-lg shadow-[#fbbf24]/20 hover:bg-[#fcd34d] disabled:opacity-50"
-            disabled={isLoading && !isPlaying}
+            className="p-5 bg-[#fbbf24] text-[#022c22] rounded-full shadow-lg"
           >
             {isPlaying ? <Pause fill="currentColor" size={28} /> : <Play fill="currentColor" size={28} />}
           </button>
-
-          <audio 
-            ref={audioRef}
-            onEnded={() => setIsPlaying(false)}
-            onCanPlay={() => setIsLoading(false)}
-            onWaiting={() => setIsLoading(true)}
-            onPlaying={() => setIsLoading(false)}
-            onError={(e) => {
-                console.error("Audio error:", e);
-                setIsLoading(false);
-                setIsPlaying(false);
-            }}
-            preload="auto"
-          />
         </div>
       )}
+
+      {/* مشغل صوتي دائم الوجود لضمان تفعيل ميزة الأمان في الأندرويد */}
+      <audio 
+        ref={audioRef}
+        onEnded={() => setIsPlaying(false)}
+        onCanPlay={() => setIsLoading(false)}
+        onWaiting={() => setIsLoading(true)}
+        onPlaying={() => setIsLoading(false)}
+        onError={() => {
+            setIsLoading(false);
+            setIsPlaying(false);
+        }}
+        preload="auto"
+      />
     </div>
   );
 }
