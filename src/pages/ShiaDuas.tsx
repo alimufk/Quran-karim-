@@ -69,7 +69,7 @@ export function ShiaDuas() {
 
   const getAudioUrlsList = (dua: typeof duasList[0]) => {
   // الرابط المباشر
-  const rawUrl = `https://raw.githubusercontent.com/alimufk/Quran-karim-/audio-files/${dua.file}`;
+  const rawUrl = `https://raw.githubusercontent.com/alimufk/Quran-karim-/audio-files/audio/${dua.file}`;
 
   
   const urls: string[] = [];
