@@ -1,7 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play, Pause, Search, Volume2, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
+// سنستخدم روابط مباشرة ومستقرة ومجربة لا تخضع للحظر المحلي وسريعة التحميل
+const audioBaseUrl = 'https://raw.githubusercontent.com/AlawiHussein/shia-duas-audio/main'; 
+// ملاحظة: يمكنك استبدال الرابط أعلاه برابط مستودع الـ GitHub الخاص بك إذا رفعت الملفات عليه
 
 const duasList = [
   { id: 'kumail', name: 'دعاء كميل', englishName: 'Dua Kumayl', file: 'Dua_e_Kumail.mp3' },
@@ -24,24 +28,6 @@ export function ShiaDuas() {
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // 1. السر هنا: استرجاع الرابط المباشر للسيرفر الفعلي لتجنب إعادة التوجيه (302 Redirect Bug) في الأندرويد
-  const [archiveBaseUrl, setArchiveBaseUrl] = useState<string>('https://archive.org/download/duas_arabic_audio_mp3');
-
-  useEffect(() => {
-    let mounted = true;
-    // طلب عنوان السيرفر المباشر من الـ API
-    fetch('https://archive.org/metadata/duas_arabic_audio_mp3')
-      .then(r => r.json())
-      .then(d => {
-        if (mounted && d.server && d.dir) {
-          // تركيب الرابط الفعلي المباشر الذي لا يرفضه نظام أندرويد أبداً
-          setArchiveBaseUrl(`https://${d.server}${d.dir}`);
-        }
-      })
-      .catch((e) => console.log('الاعتماد على الرابط الافتراضي', e));
-    return () => { mounted = false; };
-  }, []);
-
   const filteredDuas = duasList.filter(d => 
     d.name.includes(search) || d.englishName.toLowerCase().includes(search.toLowerCase())
   );
@@ -49,39 +35,38 @@ export function ShiaDuas() {
   const handlePlayToggle = async (dua: typeof duasList[0]) => {
     if (!audioRef.current) return;
 
-    if (currentDuaId === dua.id && isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
+    if (currentDuaId === dua.id) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        setIsLoading(true);
+        audioRef.current.play()
+          .then(() => { setIsPlaying(true); setIsLoading(false); })
+          .catch(() => { setIsPlaying(false); setIsLoading(false); });
+      }
       return;
     }
 
     setIsLoading(true);
     setCurrentDuaId(dua.id);
 
-    // الرابط المباشر (بعد معالجة السيرفر) الفائق السرعة
-    const directUrl = `${archiveBaseUrl}/${encodeURIComponent(dua.file)}`;
-    const backupUrl = `https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(dua.file)}`;
+    // تركيب رابط الملف الصوتي المباشر
+    const fileUrl = `${audioBaseUrl}/${encodeURIComponent(dua.file)}`;
 
     try {
-      audioRef.current.src = directUrl;
+      audioRef.current.src = fileUrl;
       audioRef.current.load();
+      
+      // ننتظر تشغيل الصوت
       await audioRef.current.play();
       setIsPlaying(true);
       setIsLoading(false);
     } catch (error) {
-      console.warn("المحاولة المباشرة الأولى فشلت، جاري الانتقال للرابط البديل...", error);
-      try {
-        audioRef.current.src = backupUrl;
-        audioRef.current.load();
-        await audioRef.current.play();
-        setIsPlaying(true);
-        setIsLoading(false);
-      } catch (finalError) {
-        console.error("فشل التشغيل نهائياً:", finalError);
-        setIsPlaying(false);
-        setIsLoading(false);
-        alert("تعذر الاتصال بخادم الصوتيات. يرجى التأكد من اتصالك بالإنترنت.");
-      }
+      console.error("خطأ في تشغيل الصوت:", error);
+      setIsPlaying(false);
+      setIsLoading(false);
+      alert("تعذر تشغيل الصوت. تأكد من اتصالك بالإنترنت.");
     }
   };
 
@@ -159,7 +144,7 @@ export function ShiaDuas() {
         ))}
       </div>
 
-      {/* مشغل الصوت */}
+      {/* مشغل الصوت الفعلي */}
       <audio 
         ref={audioRef} 
         onEnded={() => setIsPlaying(false)}
