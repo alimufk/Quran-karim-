@@ -1,9 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play, Pause, Search, Volume2, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-const archiveBaseUrl = 'https://archive.org/download/duas_arabic_audio_mp3';
 
 const duasList = [
   { id: 'kumail', name: 'دعاء كميل', englishName: 'Dua Kumayl', file: 'Dua_e_Kumail.mp3' },
@@ -26,11 +24,28 @@ export function ShiaDuas() {
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // 1. السر هنا: استرجاع الرابط المباشر للسيرفر الفعلي لتجنب إعادة التوجيه (302 Redirect Bug) في الأندرويد
+  const [archiveBaseUrl, setArchiveBaseUrl] = useState<string>('https://archive.org/download/duas_arabic_audio_mp3');
+
+  useEffect(() => {
+    let mounted = true;
+    // طلب عنوان السيرفر المباشر من الـ API
+    fetch('https://archive.org/metadata/duas_arabic_audio_mp3')
+      .then(r => r.json())
+      .then(d => {
+        if (mounted && d.server && d.dir) {
+          // تركيب الرابط الفعلي المباشر الذي لا يرفضه نظام أندرويد أبداً
+          setArchiveBaseUrl(`https://${d.server}${d.dir}`);
+        }
+      })
+      .catch((e) => console.log('الاعتماد على الرابط الافتراضي', e));
+    return () => { mounted = false; };
+  }, []);
+
   const filteredDuas = duasList.filter(d => 
     d.name.includes(search) || d.englishName.toLowerCase().includes(search.toLowerCase())
   );
 
-  // نظام الحماية الثلاثي لتشغيل الصوت وتجاوز حظر الأندرويد (302 Redirect Bug)
   const handlePlayToggle = async (dua: typeof duasList[0]) => {
     if (!audioRef.current) return;
 
@@ -43,56 +58,30 @@ export function ShiaDuas() {
     setIsLoading(true);
     setCurrentDuaId(dua.id);
 
+    // الرابط المباشر (بعد معالجة السيرفر) الفائق السرعة
     const directUrl = `${archiveBaseUrl}/${encodeURIComponent(dua.file)}`;
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
+    const backupUrl = `https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(dua.file)}`;
 
-    // 1. المحاولة الأولى: البث المباشر
     try {
       audioRef.current.src = directUrl;
       audioRef.current.load();
       await audioRef.current.play();
       setIsPlaying(true);
       setIsLoading(false);
-      return;
-    } catch (directError) {
-      console.warn("فشل البث المباشر بسبب حظر 302 في الأندرويد، الانتقال للرابط الوسيط...", directError);
-    }
-
-    // 2. المحاولة الثانية: استخدام رابط وسيط (Proxy) لتخطي حظر إعادة التوجيه في الأندرويد
-    try {
-      audioRef.current.src = proxyUrl;
-      audioRef.current.load();
-      await audioRef.current.play();
-      setIsPlaying(true);
-      setIsLoading(false);
-      return;
-    } catch (proxyError) {
-      console.warn("فشل الرابط الوسيط، الانتقال للتحميل المحلي في الذاكرة (Blob)...", proxyError);
-    }
-
-    // 3. المحاولة الثالثة (المضمونة 100%): جلب الملف كـ Blob في الذاكرة ثم تشغيله كملف محلي
-    try {
-      let response = await fetch(directUrl).catch(() => null);
-      if (!response || !response.ok) {
-        response = await fetch(proxyUrl);
+    } catch (error) {
+      console.warn("المحاولة المباشرة الأولى فشلت، جاري الانتقال للرابط البديل...", error);
+      try {
+        audioRef.current.src = backupUrl;
+        audioRef.current.load();
+        await audioRef.current.play();
+        setIsPlaying(true);
+        setIsLoading(false);
+      } catch (finalError) {
+        console.error("فشل التشغيل نهائياً:", finalError);
+        setIsPlaying(false);
+        setIsLoading(false);
+        alert("تعذر الاتصال بخادم الصوتيات. يرجى التأكد من اتصالك بالإنترنت.");
       }
-      if (!response || !response.ok) {
-        throw new Error("فشل الاتصال بالخادم");
-      }
-
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-
-      audioRef.current.src = blobUrl;
-      audioRef.current.load();
-      await audioRef.current.play();
-      setIsPlaying(true);
-      setIsLoading(false);
-    } catch (finalError) {
-      console.error("فشل تشغيل الصوت نهائياً:", finalError);
-      setIsPlaying(false);
-      setIsLoading(false);
-      alert("تعذر تشغيل الصوت. يرجى التأكد من اتصالك بالإنترنت وأن شبكتك تسمح بتحميل الملفات.");
     }
   };
 
@@ -170,7 +159,7 @@ export function ShiaDuas() {
         ))}
       </div>
 
-      {/* مشغل الصوت الفعلي المخفي ومتابعة الحالات */}
+      {/* مشغل الصوت */}
       <audio 
         ref={audioRef} 
         onEnded={() => setIsPlaying(false)}
