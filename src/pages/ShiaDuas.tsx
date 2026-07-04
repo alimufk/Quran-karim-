@@ -69,7 +69,8 @@ export function ShiaDuas() {
 
   const getAudioUrlsList = (dua: typeof duasList[0]) => {
   // الرابط المباشر
-  const rawUrl = `https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(dua.file)}`;
+  const rawUrl = `https://corsproxy.io/?https://archive.org/download/duas_arabic_audio_mp3/${encodeURIComponent(dua.file)}`;
+
   
   const urls: string[] = [];
   
