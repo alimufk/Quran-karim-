@@ -1,10 +1,11 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play, Pause, Volume2, Search, Download, Check, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { isAudioCached, getCachedAudioUrl, cacheAudio, deleteCachedAudio } from '../utils/audioCache';
 import { getAudioUrl } from '../utils/audioUrl';
-
+const archiveBaseUrl = 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/Audio';
 const duasList = [
   { id: 'abu_hamza', name: 'دعاء ابو حمزة الثمالي', englishName: 'abu_hamza', file: 'altammar_duaa_abuhamza.mp3' },
   { id: 'nudba', name: 'دعاء الندبة', englishName: 'Dua Nudba', file: 'Dua_e_Nudbah.mp3' },
@@ -68,17 +69,11 @@ export function ShiaDuas() {
   }, []);
 
   const getAudioUrlsList = (dua: typeof duasList[0]) => {
-  // الرابط المباشر
-  const rawUrl = `https://raw.githubusercontent.com/alimufk/Quran-karim-/audio-files/audio/${dua.file}`;
-
-  
-  const urls: string[] = [];
-  
-  // إضافة الرابط للأرشيف
-  urls.push(rawUrl);
-
-  return urls;
+  // الرابط الآن يعتمد على المجلد الثابت والرابط الأساسي
+  const rawUrl = `${archiveBaseUrl}/${dua.file}`;
+  return [rawUrl];
 };
+
 
   // معالجة خطأ التشغيل والتحول الذكي للمسار البديل
   const handleAudioError = () => {
