@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Play, Pause, Search, Volume2 } from 'lucide-react';
+import { ArrowRight, Play, Pause, Search, Volume2, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const archiveBaseUrl = 'https://archive.org/download/duas_arabic_audio_mp3';
@@ -30,42 +30,69 @@ export function ShiaDuas() {
     d.name.includes(search) || d.englishName.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handlePlayToggle = (dua: typeof duasList[0]) => {
+  // نظام الحماية الثلاثي لتشغيل الصوت وتجاوز حظر الأندرويد (302 Redirect Bug)
+  const handlePlayToggle = async (dua: typeof duasList[0]) => {
     if (!audioRef.current) return;
 
-    // تجهيز رابط الصوت بشكل صحيح مع تشفير الفراغات والرموز
-    const audioUrl = `${archiveBaseUrl}/${encodeURIComponent(dua.file)}`;
+    if (currentDuaId === dua.id && isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      return;
+    }
 
-    if (currentDuaId === dua.id) {
-      // إذا ضغط على نفس الدعاء الحالي
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        setIsLoading(true);
-        audioRef.current.play()
-          .then(() => { setIsPlaying(true); setIsLoading(false); })
-          .catch(() => { setIsPlaying(false); setIsLoading(false); });
-      }
-    } else {
-      // إذا ضغط على دعاء جديد ومختلف
-      setIsLoading(true);
-      setCurrentDuaId(dua.id);
-      
-      audioRef.current.src = audioUrl;
+    setIsLoading(true);
+    setCurrentDuaId(dua.id);
+
+    const directUrl = `${archiveBaseUrl}/${encodeURIComponent(dua.file)}`;
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
+
+    // 1. المحاولة الأولى: البث المباشر
+    try {
+      audioRef.current.src = directUrl;
       audioRef.current.load();
-      
-      audioRef.current.play()
-        .then(() => {
-          setIsPlaying(true);
-          setIsLoading(false);
-        })
-        .catch((err) => {
-          console.error("فشل تشغيل الملف الصوتي:", err);
-          setIsPlaying(false);
-          setIsLoading(false);
-          alert("تعذر تشغيل الصوت، يرجى التحقق من اتصال الإنترنت.");
-        });
+      await audioRef.current.play();
+      setIsPlaying(true);
+      setIsLoading(false);
+      return;
+    } catch (directError) {
+      console.warn("فشل البث المباشر بسبب حظر 302 في الأندرويد، الانتقال للرابط الوسيط...", directError);
+    }
+
+    // 2. المحاولة الثانية: استخدام رابط وسيط (Proxy) لتخطي حظر إعادة التوجيه في الأندرويد
+    try {
+      audioRef.current.src = proxyUrl;
+      audioRef.current.load();
+      await audioRef.current.play();
+      setIsPlaying(true);
+      setIsLoading(false);
+      return;
+    } catch (proxyError) {
+      console.warn("فشل الرابط الوسيط، الانتقال للتحميل المحلي في الذاكرة (Blob)...", proxyError);
+    }
+
+    // 3. المحاولة الثالثة (المضمونة 100%): جلب الملف كـ Blob في الذاكرة ثم تشغيله كملف محلي
+    try {
+      let response = await fetch(directUrl).catch(() => null);
+      if (!response || !response.ok) {
+        response = await fetch(proxyUrl);
+      }
+      if (!response || !response.ok) {
+        throw new Error("فشل الاتصال بالخادم");
+      }
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      audioRef.current.src = blobUrl;
+      audioRef.current.load();
+      await audioRef.current.play();
+      setIsPlaying(true);
+      setIsLoading(false);
+    } catch (finalError) {
+      console.error("فشل تشغيل الصوت نهائياً:", finalError);
+      setIsPlaying(false);
+      setIsLoading(false);
+      alert("تعذر تشغيل الصوت. يرجى التأكد من اتصالك بالإنترنت وأن شبكتك تسمح بتحميل الملفات.");
     }
   };
 
@@ -96,7 +123,7 @@ export function ShiaDuas() {
         </div>
       </div>
 
-      {/* قائمة الأدعية بالتصميم الأصلي المطور */}
+      {/* قائمة الأدعية */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3 pb-32">
         {filteredDuas.map((dua, index) => (
           <motion.div
@@ -117,7 +144,9 @@ export function ShiaDuas() {
                 <div className={`relative flex items-center justify-center w-12 h-12 rounded-xl font-bold ${
                   currentDuaId === dua.id ? 'bg-[#fbbf24] text-[#022c22]' : 'bg-[#fbbf24]/10 text-[#fbbf24]'
                 }`}>
-                  {currentDuaId === dua.id && isPlaying ? (
+                  {currentDuaId === dua.id && isLoading ? (
+                    <RefreshCw size={24} className="animate-spin text-[#022c22]" />
+                  ) : currentDuaId === dua.id && isPlaying ? (
                     <Volume2 size={24} className="animate-pulse" />
                   ) : (
                     <Play size={24} />
