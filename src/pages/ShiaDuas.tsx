@@ -6,7 +6,7 @@ import { isAudioCached, getCachedAudioUrl, cacheAudio, deleteCachedAudio } from 
 import { getAudioUrl } from '../utils/audioUrl';
 
 const duasList = [
-  { id: 'abu_hamza', name: 'دعاء ابو حمزة الثمالي', englishName: 'abu_hamza', file: 'Altammar_duaa_abuhamza.mp3' },
+  { id: 'abu_hamza', name: 'دعاء ابو حمزة الثمالي', englishName: 'abu_hamza', file: 'altammar_duaa_abuhamza.mp3' },
   { id: 'nudba', name: 'دعاء الندبة', englishName: 'Dua Nudba', file: 'Dua_e_Nudbah.mp3' },
   { id: 'tawassul', name: 'دعاء التوسل', englishName: 'Dua Tawassul', file: 'Dua_e_Tawassul.mp3' },
   { id: 'ahad', name: 'دعاء العهد', englishName: 'Dua Ahad', file: 'Dua_e_Ahad.mp3' },
