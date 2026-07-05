@@ -5,19 +5,63 @@ import { useNavigate } from 'react-router-dom';
 import { isAudioCached, getCachedAudioUrl, cacheAudio, deleteCachedAudio } from '../utils/audioCache'; 
 import { getAudioUrl } from '../utils/audioUrl'; 
 
-// ملاحظة مهمة: استبدل الروابط أدناه بروابطك المباشرة الحقيقية التي رفعتها على Google Drive (بعد تحويلها لروابط مباشرة) أو GitHub
-const duasList = [ 
-  { id: 'kumail', name: 'دعاء كميل', englishName: 'Dua Kumayl', url: 'https://drive.google.com/uc?export=download&id=1hbeis95aRPNGwUqu1oNRSv6LSIFhnrB8&confirm=t' }, 
-  { id: 'nudba', name: 'دعاء الندبة', englishName: 'Dua Nudba', url: 'https://drive.google.com/uc?export=download&id=1vvO5VRacXHRUfQvP_hi5wQX56FkUmWKC&confirm=t' }, 
-  { id: 'tawassul', name: 'دعاء التوسل', englishName: 'Dua Tawassul', url: 'https://drive.google.com/uc?export=download&id=1-P5NVcLcJEXFnz-dx-m1NNKfNJI8oNSU&confirm=t' }, 
-  { id: 'ahad', name: 'دعاء العهد', englishName: 'Dua Ahad', url: 'https://drive.google.com/uc?export=download&id=1G8o5vnK0bGxd_twmSK0kGsa4cFr5JIPy&confirm=t' }, 
-  { id: 'sabah', name: 'دعاء الصباح', englishName: 'Dua Sabah', url: 'https://drive.google.com/uc?export=download&id=12a8qLpTtUelTDeY3FbIp6xHi_WXdsXFO&confirm=t' }, 
-  { id: 'faraj', name: 'دعاء الفرج', englishName: 'Dua Faraj', url: 'https://drive.google.com/uc?export=download&id=1A6mCnxFmKbdo65IMcYOpSq5lo3hu2fmp&confirm=t' }, 
-  { id: 'iftitah', name: 'دعاء الافتتاح', englishName: 'Dua Iftitah', url: 'https://drive.google.com/uc?export=download&id=1TE4PAePRBP9USJkILgBwo2cOGV8ustzr&confirm=t' }, 
-  { id: 'jawshan', name: 'دعاء الجوش الكبير', englishName: 'Dua Jawshan Kabeer', url: 'https://drive.google.com/uc?export=download&id=1X1nro7QPUY-4efvbu_oqdWuBrsUsjtsb&confirm=t' }, 
-  { id: 'mashlool', name: 'دعاء المشلول', englishName: 'Dua Mashlool', url: 'https://drive.google.com/uc?export=download&id=1xi0xsvvxecNh9yjP8W_2DoJAwZLVRSYc&confirm=t' }, 
-  { id: 'mujeer', name: 'دعاء المجير', englishName: 'Dua Mujeer', url: 'https://drive.google.com/uc?export=download&id=102nWYTcTLC4HrdH3PaUb2tWCGjwnieLL&confirm=t' }, 
+// قم بنسخ هذا الكود بالكامل واستبدله في ملف src/pages/ShiaDuas.tsx
+
+const duasList = [
+  { 
+    id: 'kumail', 
+    name: 'دعاء كميل', 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_kumayl_farahmand_fani.mp3' 
+  },
+  { 
+    id: 'nudba', 
+    name: 'دعاء الندبة', 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_nudbah_farahmand.mp3' 
+  },
+  { 
+    id: 'tawassul', 
+    name: 'دعاء التوسل', 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/YOUR_FILE_NAME.mp3' 
+  },
+  { 
+    id: 'ahad', 
+    name: 'دعاء العهد', 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_ahad_farahmand.mp3' 
+  },
+  { 
+    id: 'sabah', 
+    name: 'دعاء الصباح', 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_sabah_farahmand.mp3' 
+  },
+  { 
+    id: 'faraj', 
+    name: 'دعاء الفرج', 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/YOUR_FILE_NAME.mp3' 
+  },
+  { 
+    id: 'iftitah', 
+    name: 'دعاء الافتتاح', 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/' 
+  },
+  { 
+    id: 'jawshan', 
+    name: 'دعاء الجوشن الكبير', 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/jawshan_sagheer_amer.mp3' 
+  },
+  { 
+    id: 'mashlool', 
+    name: 'دعاء المشلول', 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_mashlool_farahmand.mp3' 
+  },
+  { 
+    id: 'mujeer', 
+    name: 'دعاء المجير', 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/mujeer_farahmand.mp3' 
+  }
 ];
+
+// تأكد من أن بقية ملفك يحتوي على الدالة التالية في ملف audioUrl.ts:
+// export function getAudioUrl(url: string): string { return url; }
 
 
 export function ShiaDuas() { 
