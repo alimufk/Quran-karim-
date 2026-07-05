@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'; 
 import { motion, AnimatePresence } from 'framer-motion'; 
-import { ArrowRight, Play, Pause, Volume2, Search, Download, Check, RefreshCw, AlertCircle } from 'lucide-react'; 
+import { ArrowRight, Play, Pause, Volume2, Search, Download, Check, RefreshCw, AlertCircle, CloudLightning } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom'; 
 import { isAudioCached, getCachedAudioUrl, cacheAudio, deleteCachedAudio } from '../utils/audioCache'; 
 import { getAudioUrl } from '../utils/audioUrl'; 
@@ -76,14 +76,13 @@ export function ShiaDuas() {
     cachedDuaSourcesRef.current = cachedDuaSources; 
   }, [cachedDuaSources]); 
 
-  // تم إصلاح دالة البحث هنا لمنع الانهيار في حال عدم توفر الاسم الإنجليزي
   const filteredDuas = duasList.filter(d => 
     d.name.includes(search) || (d as any).englishName?.toLowerCase().includes(search.toLowerCase()) 
   ); 
 
   const currentDua = duasList.find(d => d.id === currentDuaId); 
 
-  // التحقق من الأدعية المحفوظة مسبقاً في الذاكرة التخزينية
+  // التحقق من الأدعية المحفوظة مسبقاً في الذاكرة التخزينية للتطبيق
   useEffect(() => { 
     let active = true; 
     const checkCaches = async () => { 
@@ -170,6 +169,28 @@ export function ShiaDuas() {
     }; 
   }, [isPlaying, currentDuaId, currentDua]); 
 
+  // دالة مخصصة لتحميل ملف الـ MP3 مباشرة إلى جهاز المستخدم (مجلد Downloads)
+  const handleDeviceDownload = async (e: any, url: string, name: string) => {
+    e.stopPropagation(); // منع استدعاء تشغيل الصوت عند الضغط على الزر
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error();
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `${name}.mp3`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      // الدعم الاحتياطي (Fallback): إذا منع نظام الهاتف تحميل الـ Blob، نفتح الرابط في صفحة مستقلة ليتم تحميله تلقائياً
+      window.open(url, '_blank');
+    }
+  };
+
   const handleOfflineDuaToggle = async (dua: typeof duasList[0]) => { 
     const url = dua.url; 
     const isCached = !!cachedDuaSources[dua.id]; 
@@ -205,24 +226,6 @@ export function ShiaDuas() {
         }); 
         setCachedDuaSources(prev => ({ ...prev, [dua.id]: cachedUrl })); 
         setDownloadingDuaId(null); 
-
-        // 🔥 تحديث مميز: هنا يتم إجبار المتصفح على تحميل الملف وحفظه بذاكرة الهاتف (Downloads) فوراً
-        try {
-          const response = await fetch(url);
-          if (response.ok) {
-            const blob = await response.blob();
-            const blobUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = `${dua.name}.mp3`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(blobUrl);
-          }
-        } catch (downloadErr) {
-          console.error("فشل التحميل المباشر للمجلد ولكن تم الحفظ أوفلاين للتطبيق:", downloadErr);
-        }
 
         if (currentDuaId === dua.id && audioRef.current) { 
           const wasPlaying = isPlaying; 
@@ -303,21 +306,33 @@ export function ShiaDuas() {
                 </div> 
               </div> 
               <div className="flex items-center gap-2"> 
+                
+                {/* 1. زر التحميل المباشر للجهاز - يظهر دائماً للمستخدم باللون الأصفر المميز */}
+                <button 
+                  onClick={(e) => handleDeviceDownload(e, dua.url, dua.name)} 
+                  className="p-2 text-[#fbbf24] hover:bg-[#fbbf24]/10 rounded-full transition" 
+                  title="تحميل الملف الصوتي للجهاز مباشرة" 
+                > 
+                  <Download size={20} /> 
+                </button>
+
+                {/* 2. مؤشر ميزة الأوفلاين الخاصة بالتطبيق لتوفير مساحة */}
                 {downloadingDuaId === dua.id ? ( 
                   <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-[#059669]/20" onClick={(e) => e.stopPropagation()}> 
                     <RefreshCw size={14} className="animate-spin text-[#fbbf24]" /> 
                     <span className="text-[7.5px] font-mono text-[#fbbf24] absolute">{duaDownloadProgress}</span> 
                   </div> 
                 ) : cachedDuaSources[dua.id] ? ( 
-                  <button onClick={(e) => { e.stopPropagation(); handleOfflineDuaToggle(dua); }} className="p-1.5 px-3 rounded-full text-xs font-bold text-[#10b981] bg-[#10b981]/10 flex items-center gap-1 hover:bg-red-500/10 hover:text-red-400 transition" title="محفوظ أوفلاين (اضغط لحذفه)" > 
-                    <Check size={14} className="stroke-[3px]" /> 
-                    <span className="hidden sm:inline">أوفلاين</span> 
+                  <button onClick={(e) => { e.stopPropagation(); handleOfflineDuaToggle(dua); }} className="p-1.5 px-2 rounded-xl text-[11px] font-bold text-[#10b981] bg-[#10b981]/10 flex items-center gap-0.5 hover:bg-red-500/10 hover:text-red-400 transition" title="محفوظ أوفلاين بالتطبيق (اضغط لحذفه وتوفير مساحة)" > 
+                    <Check size={12} className="stroke-[3px]" /> 
+                    <span>مخزن</span> 
                   </button> 
                 ) : ( 
-                  <button onClick={(e) => { e.stopPropagation(); handleOfflineDuaToggle(dua); }} className="p-2 text-[#059669] hover:text-[#fbbf24] hover:bg-[#059669]/20 rounded-full transition" title="تحميل وتشغيل أوفلاين" > 
-                    <Download size={18} /> 
+                  <button onClick={(e) => { e.stopPropagation(); handleOfflineDuaToggle(dua); }} className="p-2 text-[#059669] hover:text-[#fbbf24] hover:bg-[#059669]/20 rounded-full transition" title="تخزين احتياطي لتشغيل سريع بدون إنترنت" > 
+                    <CloudLightning size={18} /> 
                   </button> 
                 )} 
+
                 <div className={currentDuaId === dua.id ? 'text-[#fbbf24]' : 'text-[#059669]'}> 
                   {currentDuaId === dua.id && isPlaying ? <Pause fill="currentColor" size={24} /> : <Play size={24} />} 
                 </div> 
@@ -340,7 +355,17 @@ export function ShiaDuas() {
               </p> 
             </div> 
             <div className="flex items-center gap-4"> 
-              <button onClick={() => handleOfflineDuaToggle(currentDua)} disabled={downloadingDuaId !== null} className={`p-3 rounded-full flex items-center justify-center relative ${ downloadingDuaId === currentDua.id ? 'text-[#fbbf24] bg-[#059669]/30' : cachedDuaSources[currentDua.id] ? 'text-[#10b981] bg-[#10b981]/10 hover:bg-red-500/10 hover:text-red-400' : 'text-[#059669] hover:text-[#fbbf24] hover:bg-[#059669]/30' } transition-colors`} title={ downloadingDuaId === currentDua.id ? `جاري التحميل: ${duaDownloadProgress}%` : cachedDuaSources[currentDua.id] ? 'محفوظ أوفلاين (اضغط لحذفه)' : 'تحميل وتشغيل أوفلاين' } > 
+              
+              {/* زر التحميل المباشر للجهاز من الشريط السفلي المغلّف */}
+              <button 
+                onClick={(e) => handleDeviceDownload(e, currentDua.url, currentDua.name)} 
+                className="p-3 text-[#fbbf24] hover:bg-[#fbbf24]/10 rounded-full transition-colors" 
+                title="تحميل الملف للجهاز"
+              >
+                <Download size={22} />
+              </button>
+
+              <button onClick={() => handleOfflineDuaToggle(currentDua)} disabled={downloadingDuaId !== null} className={`p-3 rounded-full flex items-center justify-center relative ${ downloadingDuaId === currentDua.id ? 'text-[#fbbf24] bg-[#059669]/30' : cachedDuaSources[currentDua.id] ? 'text-[#10b981] bg-[#10b981]/10 hover:bg-red-500/10 hover:text-red-400' : 'text-[#059669] hover:text-[#fbbf24] hover:bg-[#059669]/30' } transition-colors`} title={ downloadingDuaId === currentDua.id ? `جاري التخزين: ${duaDownloadProgress}%` : cachedDuaSources[currentDua.id] ? 'محفوظ بالتطبيق (اضغط لحذفه)' : 'حفظ احتياطي بالتطبيق أوفلاين' } > 
                 {downloadingDuaId === currentDua.id ? ( 
                   <div className="relative flex items-center justify-center w-5 h-5"> 
                     <RefreshCw className="animate-spin text-[#fbbf24]" size={16} /> 
@@ -349,7 +374,7 @@ export function ShiaDuas() {
                 ) : cachedDuaSources[currentDua.id] ? ( 
                   <Check size={20} className="stroke-[3px]" /> 
                 ) : ( 
-                  <Download size={20} /> 
+                  <CloudLightning size={20} /> 
                 )} 
               </button> 
               <button onClick={() => handlePlayToggle(currentDua.id)} className="p-5 bg-[#fbbf24] text-[#022c22] rounded-full shadow-lg shadow-[#fbbf24]/20 hover:bg-[#fcd34d] hover:scale-105 active:scale-95 transition-all" disabled={isLoading && !isPlaying} > 
