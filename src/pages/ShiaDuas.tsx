@@ -8,15 +8,15 @@ import { getAudioUrl } from '../utils/audioUrl';
 // ملاحظة مهمة: استبدل الروابط أدناه بروابطك المباشرة الحقيقية التي رفعتها على Google Drive (بعد تحويلها لروابط مباشرة) أو GitHub
 const duasList = [ 
   { id: 'kumail', name: 'دعاء كميل', englishName: 'Dua Kumayl', url: 'https://docs.google.com/uc?export=download&id=1hbeis95aRPNGwUqu1oNRSv6LSIFhnrB8' }, 
-  { id: 'nudba', name: 'دعاء الندبة', englishName: 'Dua Nudba', url: 'https://example.com/audio/Dua_e_Nudbah.mp3' }, 
-  { id: 'tawassul', name: 'دعاء التوسل', englishName: 'Dua Tawassul', url: 'https://example.com/audio/Dua_e_Tawassul.mp3' }, 
-  { id: 'ahad', name: 'دعاء العهد', englishName: 'Dua Ahad', url: 'https://example.com/audio/Dua_e_Ahad.mp3' }, 
-  { id: 'sabah', name: 'دعاء الصباح', englishName: 'Dua Sabah', url: 'https://example.com/audio/Dua_e_Sabah.mp3' }, 
-  { id: 'faraj', name: 'دعاء الفرج', englishName: 'Dua Faraj', url: 'https://example.com/audio/Dua_e_Faraj.mp3' }, 
-  { id: 'iftitah', name: 'دعاء الافتتاح', englishName: 'Dua Iftitah', url: 'https://example.com/audio/Dua_e_Iftitah.mp3' }, 
-  { id: 'jawshan', name: 'دعاء الجوش الكبير', englishName: 'Dua Jawshan Kabeer', url: 'https://example.com/audio/Dua_e_Jawshan_Kabeer.mp3' }, 
-  { id: 'mashlool', name: 'دعاء المشلول', englishName: 'Dua Mashlool', url: 'https://example.com/audio/Dua_e_Mashlool.mp3' }, 
-  { id: 'mujeer', name: 'دعاء المجير', englishName: 'Dua Mujeer', url: 'https://example.com/audio/Dua_e_Mujeer.mp3' }, 
+  { id: 'nudba', name: 'دعاء الندبة', englishName: 'Dua Nudba', url: 'https://docs.google.com/uc?export=download&id=1vvO5VRacXHRUfQvP_hi5wQX56FkUmWKC' }, 
+  { id: 'tawassul', name: 'دعاء التوسل', englishName: 'Dua Tawassul', url: 'https://docs.google.com/uc?export=download&id=1-P5NVcLcJEXFnz-dx-m1NNKfNJI8oNSU' }, 
+  { id: 'ahad', name: 'دعاء العهد', englishName: 'Dua Ahad', url: 'https://docs.google.com/uc?export=download&id=1G8o5vnK0bGxd_twmSK0kGsa4cFr5JIPy' }, 
+  { id: 'sabah', name: 'دعاء الصباح', englishName: 'Dua Sabah', url: 'https://docs.google.com/uc?export=download&id=12a8qLpTtUelTDeY3FbIp6xHi_WXdsXFO' }, 
+  { id: 'faraj', name: 'دعاء الفرج', englishName: 'Dua Faraj', url: 'https://docs.google.com/uc?export=download&id=1A6mCnxFmKbdo65IMcYOpSq5lo3hu2fmp' }, 
+  { id: 'iftitah', name: 'دعاء الافتتاح', englishName: 'Dua Iftitah', url: 'https://docs.google.com/uc?export=download&id=1TE4PAePRBP9USJkILgBwo2cOGV8ustzr' }, 
+  { id: 'jawshan', name: 'دعاء الجوش الكبير', englishName: 'Dua Jawshan Kabeer', url: 'https://docs.google.com/uc?export=download&id=1X1nro7QPUY-4efvbu_oqdWuBrsUsjtsb' }, 
+  { id: 'mashlool', name: 'دعاء المشلول', englishName: 'Dua Mashlool', url: 'https://docs.google.com/uc?export=download&id=1xi0xsvvxecNh9yjP8W_2DoJAwZLVRSYc' }, 
+  { id: 'mujeer', name: 'دعاء المجير', englishName: 'Dua Mujeer', url: 'https://docs.google.com/uc?export=download&id=102nWYTcTLC4HrdH3PaUb2tWCGjwnieLL' }, 
 ]; 
 
 export function ShiaDuas() { 
