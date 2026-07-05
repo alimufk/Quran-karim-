@@ -40,12 +40,12 @@ const duasList = [
   { 
     id: 'iftitah', 
     name: 'دعاء الافتتاح', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Dua al-Iftitah - Mohsen Farahmand Azad.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Duaa-Iftitah - Mohsen Farahmand Azad.mp3' 
   },
   { 
     id: 'jawshan', 
     name: 'دعاء الجوشن الكبير', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Jawshan Al-Kabir - Fadhil Al-Maliki.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_Jawshan Al-Kabir - Fadhil Al-Maliki.mp3' 
   },
   { 
     id: 'mashlool', 
@@ -55,7 +55,7 @@ const duasList = [
   { 
     id: 'mujeer', 
     name: 'دعاء المجير', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/mujeer_farahmand.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_mujeer_farahmand.mp3' 
   }
 ];
 
