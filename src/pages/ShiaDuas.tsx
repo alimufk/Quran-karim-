@@ -35,7 +35,7 @@ const duasList = [
   { 
     id: 'Faraj', 
     name: 'دعاء الفرج', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Duaa-Faraj-Farahmand Azad.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Duaa_Faraj_Farahmand Azad.mp3' 
   },
   { 
     id: 'Iftitah', 
