@@ -45,7 +45,7 @@ const duasList = [
   { 
     id: 'jawshan', 
     name: 'دعاء الجوشن الكبير', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_Jawshan Al-Kabir - Fadhil Al-Maliki.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_Jawshan Al-Kabir-Fadhil Al-Maliki.mp3' 
   },
   { 
     id: 'mashlool', 
