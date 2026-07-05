@@ -40,12 +40,12 @@ const duasList = [
   { 
     id: 'iftitah', 
     name: 'دعاء الافتتاح', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Dua al-Iftitah - Mohsen Farahmand Azad.mp3' 
   },
   { 
     id: 'jawshan', 
     name: 'دعاء الجوشن الكبير', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/jawshan_sagheer_amer.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Jawshan Al-Kabir - Fadhil Al-Maliki.mp3' 
   },
   { 
     id: 'mashlool', 
@@ -322,7 +322,7 @@ export function ShiaDuas() {
                   ) : ( 
                     <Play size={24} /> 
                   )} 
-                </div> 
+                </div> ؟ 
                 <div> 
                   <h3 className={`font-bold text-lg leading-none mb-1 ${currentDuaId === dua.id ? 'text-[#fbbf24]' : 'text-[#f0f9ff]'}`}> {dua.name} </h3> 
                   <p className="text-xs text-[#059669] font-mono" dir="ltr"> {(dua as any).englishName || ''} </p> 
