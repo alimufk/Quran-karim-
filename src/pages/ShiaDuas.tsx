@@ -14,7 +14,7 @@ const duasList = [
   { 
     id: 'nudbah', 
     name: 'دعاء الندبة', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_nudbah_farahmand.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa-nudbah-farahmand.mp3' 
   },
   { 
     id: 'tawassul', 
@@ -35,12 +35,12 @@ const duasList = [
   { 
     id: 'Faraj', 
     name: 'دعاء الفرج', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Duaa_Faraj_Farahmand Azad.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Duaa-Faraj-Farahmand Azad.mp3' 
   },
   { 
     id: 'Iftitah', 
     name: 'دعاء الافتتاح', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Duaa-Iftitah - Mohsen Farahmand Azad.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Duaa-Iftitah-Mohsen-Farahmand Azad.mp3' 
   },
   { 
     id: 'jawshan', 
@@ -53,9 +53,9 @@ const duasList = [
     url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_mashlool_farahmand.mp3' 
   },
   { 
-    id: 'mujir', 
+    id: 'Mujir', 
     name: 'دعاء المجير', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_mujir_farahmand.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa-Mujir-farahmand.mp3' 
   }
 ];
 
