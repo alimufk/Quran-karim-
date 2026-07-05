@@ -5,8 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { isAudioCached, getCachedAudioUrl, cacheAudio, deleteCachedAudio } from '../utils/audioCache'; 
 import { getAudioUrl } from '../utils/audioUrl'; 
 
-// قم بنسخ هذا الكود بالكامل واستبدله في ملف src/pages/ShiaDuas.tsx
-
 const duasList = [
   { 
     id: 'kumail', 
@@ -60,10 +58,6 @@ const duasList = [
   }
 ];
 
-// تأكد من أن بقية ملفك يحتوي على الدالة التالية في ملف audioUrl.ts:
-// export function getAudioUrl(url: string): string { return url; }
-
-
 export function ShiaDuas() { 
   const navigate = useNavigate(); 
   const [search, setSearch] = useState(''); 
@@ -82,8 +76,9 @@ export function ShiaDuas() {
     cachedDuaSourcesRef.current = cachedDuaSources; 
   }, [cachedDuaSources]); 
 
+  // تم إصلاح دالة البحث هنا لمنع الانهيار في حال عدم توفر الاسم الإنجليزي
   const filteredDuas = duasList.filter(d => 
-    d.name.includes(search) || d.englishName.toLowerCase().includes(search.toLowerCase()) 
+    d.name.includes(search) || (d as any).englishName?.toLowerCase().includes(search.toLowerCase()) 
   ); 
 
   const currentDua = duasList.find(d => d.id === currentDuaId); 
@@ -210,6 +205,25 @@ export function ShiaDuas() {
         }); 
         setCachedDuaSources(prev => ({ ...prev, [dua.id]: cachedUrl })); 
         setDownloadingDuaId(null); 
+
+        // 🔥 تحديث مميز: هنا يتم إجبار المتصفح على تحميل الملف وحفظه بذاكرة الهاتف (Downloads) فوراً
+        try {
+          const response = await fetch(url);
+          if (response.ok) {
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${dua.name}.mp3`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+          }
+        } catch (downloadErr) {
+          console.error("فشل التحميل المباشر للمجلد ولكن تم الحفظ أوفلاين للتطبيق:", downloadErr);
+        }
+
         if (currentDuaId === dua.id && audioRef.current) { 
           const wasPlaying = isPlaying; 
           audioRef.current.pause(); 
@@ -285,7 +299,7 @@ export function ShiaDuas() {
                 </div> 
                 <div> 
                   <h3 className={`font-bold text-lg leading-none mb-1 ${currentDuaId === dua.id ? 'text-[#fbbf24]' : 'text-[#f0f9ff]'}`}> {dua.name} </h3> 
-                  <p className="text-xs text-[#059669] font-mono" dir="ltr"> {dua.englishName} </p> 
+                  <p className="text-xs text-[#059669] font-mono" dir="ltr"> {(dua as any).englishName || ''} </p> 
                 </div> 
               </div> 
               <div className="flex items-center gap-2"> 
@@ -300,7 +314,7 @@ export function ShiaDuas() {
                     <span className="hidden sm:inline">أوفلاين</span> 
                   </button> 
                 ) : ( 
-                  <button onClick={(e) => { e.stopPropagation(); handleOfflineDuaToggle(dua); }} className="p-2 text-[#059669] hover:text-[#fbbf24] hover:bg-[#059669]/20 rounded-full transition" title="حفظ أوفلاين للتشغيل بدون إنترنت" > 
+                  <button onClick={(e) => { e.stopPropagation(); handleOfflineDuaToggle(dua); }} className="p-2 text-[#059669] hover:text-[#fbbf24] hover:bg-[#059669]/20 rounded-full transition" title="تحميل وتشغيل أوفلاين" > 
                     <Download size={18} /> 
                   </button> 
                 )} 
@@ -326,7 +340,7 @@ export function ShiaDuas() {
               </p> 
             </div> 
             <div className="flex items-center gap-4"> 
-              <button onClick={() => handleOfflineDuaToggle(currentDua)} disabled={downloadingDuaId !== null} className={`p-3 rounded-full flex items-center justify-center relative ${ downloadingDuaId === currentDua.id ? 'text-[#fbbf24] bg-[#059669]/30' : cachedDuaSources[currentDua.id] ? 'text-[#10b981] bg-[#10b981]/10 hover:bg-red-500/10 hover:text-red-400' : 'text-[#059669] hover:text-[#fbbf24] hover:bg-[#059669]/30' } transition-colors`} title={ downloadingDuaId === currentDua.id ? `جاري التحميل أوفلاين: ${duaDownloadProgress}%` : cachedDuaSources[currentDua.id] ? 'محفوظ أوفلاين (اضغط لحذفه)' : 'حفظ للاستماع بدون إنترنت (أوفلاين)' } > 
+              <button onClick={() => handleOfflineDuaToggle(currentDua)} disabled={downloadingDuaId !== null} className={`p-3 rounded-full flex items-center justify-center relative ${ downloadingDuaId === currentDua.id ? 'text-[#fbbf24] bg-[#059669]/30' : cachedDuaSources[currentDua.id] ? 'text-[#10b981] bg-[#10b981]/10 hover:bg-red-500/10 hover:text-red-400' : 'text-[#059669] hover:text-[#fbbf24] hover:bg-[#059669]/30' } transition-colors`} title={ downloadingDuaId === currentDua.id ? `جاري التحميل: ${duaDownloadProgress}%` : cachedDuaSources[currentDua.id] ? 'محفوظ أوفلاين (اضغط لحذفه)' : 'تحميل وتشغيل أوفلاين' } > 
                 {downloadingDuaId === currentDua.id ? ( 
                   <div className="relative flex items-center justify-center w-5 h-5"> 
                     <RefreshCw className="animate-spin text-[#fbbf24]" size={16} /> 
@@ -360,7 +374,6 @@ export function ShiaDuas() {
               } 
               console.error("Dua Audio error:", error?.message, "src:", currentSrc); 
               
-              // تم الإصلاح الجذري هنا: استخدام currentDua.url والاعتماد على السيرفر الجديد مباشرة بدون أخطاء
               if (currentDua && audioRef.current && audioRef.current.src && audioRef.current.src.startsWith('blob:')) { 
                 const recoveryKey = currentDua.id + '_blob_fallback'; 
                 if (!hasAttemptedFetchRecovery.current[recoveryKey]) { 
@@ -420,7 +433,7 @@ export function ShiaDuas() {
               } 
               setIsPlaying(false); 
               setIsLoading(false); 
-              setErrorMessage('تعذر الاتصال بخادم الصوتيات. يرجى التحقق من اتصال الإنترنت وصلاحية الروابط.');
+              setErrorMessage('تعذر الاتصال بخادم الصوتيات. يرجى التحقق من اتصال الإنترنت وصلاحية الروابط.'); 
             }} 
           /> 
         </div> 
