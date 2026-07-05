@@ -12,7 +12,7 @@ const duasList = [
     url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_kumayl_farahmand_fani.mp3' 
   },
   { 
-    id: 'nudba', 
+    id: 'nudbah', 
     name: 'دعاء الندبة', 
     url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_nudbah_farahmand.mp3' 
   },
@@ -33,12 +33,12 @@ const duasList = [
     url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_sabah_farahmand.mp3' 
   },
   { 
-    id: 'faraj', 
+    id: 'Faraj', 
     name: 'دعاء الفرج', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/YOUR_FILE_NAME.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Duaa_Faraj_Farahmand Azad.mp3' 
   },
   { 
-    id: 'iftitah', 
+    id: 'Iftitah', 
     name: 'دعاء الافتتاح', 
     url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Duaa-Iftitah - Mohsen Farahmand Azad.mp3' 
   },
@@ -53,9 +53,9 @@ const duasList = [
     url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_mashlool_farahmand.mp3' 
   },
   { 
-    id: 'mujeer', 
+    id: 'mujir', 
     name: 'دعاء المجير', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_mujeer_farahmand.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_mujir_farahmand.mp3' 
   }
 ];
 
