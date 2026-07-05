@@ -55,7 +55,7 @@ const duasList = [
   { 
     id: 'Mujir', 
     name: 'دعاء المجير', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa-Mujir-farahmand.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa-Mujir-Mahdi Sahwan.mp3' 
   }
 ];
 
