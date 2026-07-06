@@ -4,7 +4,7 @@ import { getAudioUrl } from '../utils/audioUrl';
 import { 
   ArrowRight, Play, Pause, Volume2, Download, 
   Sparkles, Plus, Minus, Info, RefreshCw, VolumeX,
-  ChevronRight, ChevronLeft, Check, Trash2
+  ChevronRight, ChevronLeft, Check, Trash2, CloudLightning, AlertCircle
 } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ziyaratsData } from './data/ziyaratsText';
@@ -37,8 +37,19 @@ export function ZiyaratDetail() {
   const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
   const [resolvedAudioUrl, setResolvedAudioUrl] = useState<string>('');
 
+  // حالات جديدة ومميزة لإدارة إشعارات التحميل الخلفي الصامت في جهاز المستخدم
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const hasAttemptedFetchRecovery = useRef<Record<string, boolean>>({});
+
+  // إخفاء الإشعار المؤقت تلقائياً بعد 4 ثوانٍ من ظهوره
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
 
   // Reset player and handle caching when Ziyarat changes
   useEffect(() => {
@@ -112,13 +123,10 @@ export function ZiyaratDetail() {
     const error = audioRef.current?.error;
     console.error("Ziyarat Audio error:", error?.message || error, "resolvedAudioUrl:", resolvedAudioUrl);
 
-    // Self-healing check:
-    // If we have a direct web URL (not blob:) and haven't tried self-healing download yet, let's do it automatically
     if (ziyarat && id && resolvedAudioUrl && resolvedAudioUrl.startsWith('blob:')) {
       const recoveryKey = id + '_blob_fallback';
       if (!hasAttemptedFetchRecovery.current[recoveryKey]) {
         hasAttemptedFetchRecovery.current[recoveryKey] = true;
-        console.warn("Cached Ziyarat blob failed, playing via direct secure proxy stream...");
         setAudioError("جاري التبديل للمشغل السحابي بعد تعذر تشغيل النسخة المخزنة...");
         setIsLoading(true);
         const fallbackProxyUrl = getAudioUrl(ziyarat.audioUrl.trim());
@@ -149,7 +157,6 @@ export function ZiyaratDetail() {
       setAudioError("جاري تجهيز تشغيل بديل للاستماع المباشر دون قيود...");
       setIsLoading(true);
       try {
-        console.log("Starting automatic backup download for Ziyarat:", id);
         const cachedUrl = await cacheAudio(ziyarat.audioUrl, (percent) => {
           setDownloadProgress(percent);
         });
@@ -194,7 +201,7 @@ export function ZiyaratDetail() {
           errorMessage = "فشل تشغيل الصوت: تعذر فك تشفير هذا الملف الصوتي.";
           break;
         case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-          errorMessage = "صيغة الملف الصوتي غير مدعومة في متصفحك أو تم حظر الرابط من الخادم الأصلي. يرجى محاولة الضغط على أيقونة التحميل أوفلاين كحل بديل.";
+          errorMessage = "الملف الصوتي غير موجود على السيرفر أو الرابط معطل. يرجى التحقق من اسم الملف في جيت هاب.";
           break;
       }
     }
@@ -205,7 +212,7 @@ export function ZiyaratDetail() {
 
   const handlePlayToggle = () => {
     if (!audioRef.current) return;
-    setAudioError(null); // Clear errors on fresh attempt
+    setAudioError(null); 
     if (isPlaying) {
       audioRef.current.pause();
     } else {
@@ -243,15 +250,60 @@ export function ZiyaratDetail() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleDownload = () => {
-    if (!ziyarat) return;
-    const a = document.createElement('a');
-    a.href = resolvedAudioUrl || ziyarat.audioUrl;
-    a.download = `${ziyarat.title}.mp3`;
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  // 🔥 دالة التحميل المحدثة والذكية بالكامل لتعمل صامتة بالخلفية وحفظ الملف بالجهاز
+  const handleDeviceDownload = (e: any) => {
+    e.stopPropagation(); 
+    setAudioError(null);
+
+    if (!ziyarat || !ziyarat.audioUrl) return;
+    const url = ziyarat.audioUrl.trim();
+
+    if (url.includes('YOUR_FILE_NAME') || url.endsWith('/audio/')) {
+      setAudioError(`رابط (${ziyarat.title}) غير جاهز برمجياً بعد! يرجى وضع الرابط الصحيح في ملف البيانات.`);
+      return;
+    }
+
+    // إطلاق إشعار عائم فوري لإعلام المستخدم ببدء المهمة في الخلفية بأمان
+    setToastMessage(`جاري تحميل ملف (${ziyarat.title}) في الخلفية... يمكنك متابعة القراءة`);
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          if (response.status === 404) {
+            setAudioError(`الملف الصوتي لـ (${ziyarat.title}) غير موجود على السيرفر (404). تأكد من كتابة الاسم ومطابقته لـ GitHub.`);
+            setToastMessage(null);
+            return null;
+          }
+          throw new Error();
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        if (!blob) return;
+        
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `${ziyarat.title}.mp3`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+
+        // إرسال إشعار النجاح النهائي عند اكتمال الكتابة للقرص المحلي
+        setToastMessage(`✅ تم اكتمال تحميل (${ziyarat.title}) وحفظه في جهازك.`);
+      })
+      .catch(() => {
+        // خط دفاع احتياطي متطور لتلافي القيود الأمنية الصارمة ببعض المتصفحات
+        try {
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${ziyarat.title}.mp3`;
+          link.click();
+        } catch(err) {
+          setAudioError(`فشل تحميل ملف (${ziyarat.title})، يرجى التحقق من جودة اتصال الشبكة.`);
+        }
+      });
   };
 
   const handleOfflineDownloadToggle = async () => {
@@ -459,10 +511,13 @@ export function ZiyaratDetail() {
               className="overflow-hidden"
             >
               <div className="bg-red-950/70 border border-red-500/30 text-red-200 text-xs px-3 py-2.5 rounded-xl flex items-center justify-between gap-2.5 mb-1" dir="rtl">
-                <span className="flex-1 leading-relaxed text-right">{audioError}</span>
+                <span className="flex-1 leading-relaxed text-right flex items-center gap-2">
+                  <AlertCircle size={14} className="text-red-400 shrink-0" />
+                  {audioError}
+                </span>
                 <button 
                   onClick={() => setAudioError(null)}
-                  className="text-red-300 hover:text-red-100 font-bold px-1.5 text-sm transition shrink-0 animate-pulse"
+                  className="text-red-300 hover:text-red-100 font-bold px-1.5 text-sm transition shrink-0"
                 >
                   ×
                 </button>
@@ -474,18 +529,18 @@ export function ZiyaratDetail() {
         {/* Track info and controls */}
         <div className="flex justify-between items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className={`p-3.5 rounded-full ${isPlaying ? 'bg-[#fbbf24] text-[#022c22] animate-pulse' : 'bg-[#fbbf24]/10 text-[#fbbf24]'}`}>
-              <Volume2 size={20} />
+            <div className={`p-3.5 rounded-full ${isPlaying ? 'bg-[#fbbf24] text-[#022c22]' : 'bg-[#fbbf24]/10 text-[#fbbf24]'}`}>
+              <Volume2 size={20} className={isPlaying ? 'animate-pulse' : ''} />
             </div>
             <div>
-              <h4 className="font-bold text-[#fbbf24] text-sm md:text-base">{ziyarat.title}</h4>
-              <p className="text-[10px] md:text-xs text-[#059669]">
+              <h4 className="font-bold text-[#fbbf24] text-sm md:text-base leading-tight">{ziyarat.title}</h4>
+              <p className="text-[10px] md:text-xs text-[#059669] mt-0.5">
                 {isLoading ? 'جاري التحميل...' : (isPlaying ? 'جارٍ الاستماع بالصوت...' : 'متوقف')}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {/* Mute button */}
             <button 
               onClick={handleMuteToggle}
@@ -495,7 +550,16 @@ export function ZiyaratDetail() {
               {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
             </button>
 
-            {/* Offline Cache Button */}
+            {/* 🔥 زر التحميل الفعلي المباشر للجهاز في الخلفية - بلون أصفر مميز وثابت */}
+            <button 
+              onClick={handleDeviceDownload} 
+              className="p-2.5 text-[#fbbf24] hover:bg-[#fbbf24]/10 rounded-full transition active:scale-90" 
+              title="تحميل الملف الصوتي للجهاز مباشرة (MP3)" 
+            > 
+              <Download size={20} /> 
+            </button>
+
+            {/* زر التخزين المؤقت أوفلاين للتطبيق - شكل الصاعقة المتناسق */}
             <button
                onClick={handleOfflineDownloadToggle}
                disabled={downloadProgress !== null}
@@ -510,8 +574,8 @@ export function ZiyaratDetail() {
                  downloadProgress !== null
                    ? `جاري تخزين الصوت أوفلاين: ${downloadProgress}%`
                    : isOfflineCached
-                     ? 'محفوظ أوفلاين (اضغط لحذفه)'
-                     : 'حفظ للاستماع بدون إنترنت (أوفلاين)'
+                     ? 'محفوظ بالتطبيق (اضغط لحذفه وتوفير مساحة)'
+                     : 'حفظ احتياطي بالتطبيق للاستماع بدون إنترنت'
                }
             >
                {downloadProgress !== null ? (
@@ -522,7 +586,7 @@ export function ZiyaratDetail() {
                ) : isOfflineCached ? (
                  <Check size={20} className="stroke-[3px]" />
                ) : (
-                 <Download size={20} />
+                 <CloudLightning size={20} />
                )}
             </button>
 
@@ -556,8 +620,22 @@ export function ZiyaratDetail() {
         </div>
       </div>
 
-    </motion.div>
+      {/* واجهة إشعار عائم Toast احترافي يظهر فوق لوحة التحكم عند بدء التحميل الخلفي */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-28 left-6 right-6 md:left-auto md:right-6 md:w-96 bg-[#fbbf24] text-[#022c22] px-4 py-3 rounded-2xl shadow-xl font-medium flex items-center gap-3 z-50 border border-[#022c22]/10"
+          >
+            <RefreshCw size={18} className={`shrink-0 ${toastMessage.includes('✅') ? '' : 'animate-spin'}`} />
+            <span className="text-sm leading-tight text-right w-full">{toastMessage}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      </motion.div>
    </>
   );
 }
-
