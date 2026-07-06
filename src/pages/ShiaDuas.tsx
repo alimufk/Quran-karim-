@@ -491,8 +491,6 @@ export function ShiaDuas() {
     </div> 
   ); 
 }
-
-    }; 
   
   useEffect(() => { 
     let abortController = new AbortController(); 
