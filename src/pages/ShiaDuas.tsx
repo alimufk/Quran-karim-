@@ -14,7 +14,7 @@ const duasList = [
   { 
     id: 'nudbah', 
     name: 'دعاء الندبة', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa-nudbah-farahmand.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa-nudbah-farahmand.Mp3' 
   },
   { 
     id: 'tawassul', 
@@ -40,7 +40,7 @@ const duasList = [
   { 
     id: 'Iftitah', 
     name: 'دعاء الافتتاح', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Duaa-Iftitah-Mohsen-Farahmand Azad.mp3' 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Duaa-Iftitah-Mohsen-Farahmand Azad.Mp3' 
   },
   { 
     id: 'jawshan', 
