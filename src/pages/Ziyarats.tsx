@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Calendar, ArrowRight, ChevronLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
+// الـ IDs هنا مطابقة تماماً للمفاتيح المتوقعة في صفحة التفاصيل ومشغل الصوتيات
 const generalZiyarats = [
   { id: 'ashura', name: 'زيارة عاشوراء' },
   { id: 'warith', name: 'زيارة وارث' },
@@ -31,13 +32,14 @@ export function Ziyarats() {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-6 space-y-6 min-h-screen pb-24"
+      // 🎨 تم تثبيت الخلفية الزمردية العميقة ولون النصوص لتتطابق تماماً مع صفحة المشغل
+      className="p-6 space-y-6 min-h-screen pb-24 bg-[#022c22] text-[#f0f9ff]"
     >
       {/* Header */}
       <header className="flex justify-between items-center z-10 w-full mb-6">
         <button 
           onClick={() => navigate(-1)}
-          className="p-3 bg-[#064e3b] text-[#fbbf24] rounded-full border border-[#059669]/30 hover:bg-[#059669]/40 transition"
+          className="p-3 bg-[#064e3b] text-[#fbbf24] rounded-full border border-[#059669]/30 hover:bg-[#059669]/40 transition active:scale-95"
         >
           <ArrowRight size={20} />
         </button>
@@ -84,7 +86,7 @@ export function Ziyarats() {
               <Link
                 to={`/ziyarat/${ziyarat.id}`}
                 key={ziyarat.id}
-                className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl flex items-center justify-between hover:bg-[#059669]/30 transition-all group"
+                className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl flex items-center justify-between hover:bg-[#059669]/30 transition-all group active:scale-[0.99]"
               >
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-[#fbbf24]/10 rounded-full text-[#fbbf24] group-hover:bg-[#fbbf24] group-hover:text-[#022c22] transition-colors">
@@ -110,7 +112,7 @@ export function Ziyarats() {
               <Link
                 to={`/ziyarat/${ziyarat.id}`}
                 key={ziyarat.id}
-                className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl flex items-center justify-between hover:bg-[#059669]/30 transition-all group relative overflow-hidden"
+                className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl flex items-center justify-between hover:bg-[#059669]/30 transition-all group relative overflow-hidden active:scale-[0.99]"
               >
                 <div className={`absolute top-0 right-0 w-2 h-full bg-gradient-to-b ${ziyarat.color}`} />
                 <div className="flex items-center gap-4 pr-3">
