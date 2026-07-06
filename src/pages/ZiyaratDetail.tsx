@@ -17,26 +17,15 @@ export function ZiyaratDetail() {
   const [audioError, setAudioError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // دالة تصحيح الرابط تلقائياً من جيت هاب
-  const getCorrectAudioUrl = (url: string) => {
-    if (!url) return "";
-    if (url.includes("github.com") && !url.includes("raw.githubusercontent.com")) {
-      return url
-        .replace("github.com", "raw.githubusercontent.com")
-        .replace("/tree/main/", "/main/")
-        .replace("/blob/main/", "/main/");
-    }
-    return url;
-  };
-
   useEffect(() => {
     if (item?.audioUrl) {
-      const finalUrl = getCorrectAudioUrl(item.audioUrl);
       if (audioRef.current) {
         audioRef.current.pause();
       }
-      audioRef.current = new Audio(finalUrl);
-      audioRef.current.muted = isMuted; // الحفاظ على حالة كتم الصوت عند تغيير الزيارة
+      
+      // نقوم بتمرير الرابط مباشرة بدون فلاتر قد تسبب أخطاء
+      audioRef.current = new Audio(item.audioUrl);
+      audioRef.current.muted = isMuted;
       setAudioError(false);
       setIsPlaying(false);
 
@@ -71,7 +60,6 @@ export function ZiyaratDetail() {
     setIsPlaying(!isPlaying);
   };
 
-  // دالة تفعيل وإلغاء كتم الصوت
   const toggleMute = () => {
     if (!audioRef.current) return;
     audioRef.current.muted = !isMuted;
@@ -117,24 +105,24 @@ export function ZiyaratDetail() {
         <div className="w-[46px]" />
       </header>
 
-      {/* نص فضل الزيارة إن وُجد */}
+      {/* نص فضل الزيارة */}
       {item.benefits && (
         <div className="bg-[#064e3b]/30 border border-[#059669]/20 p-3 rounded-2xl w-full text-center text-xs text-[#fbbf24]/90 mb-4 leading-relaxed">
           {item.benefits}
         </div>
       )}
 
-      {/* الحاوية الرئيسية لنص الزيارة الشريفة */}
+      {/* الحاوية الرئيسية لنص الزيارة */}
       <div className="flex-1 w-full bg-[#064e3b]/10 border border-[#059669]/10 rounded-3xl p-5 overflow-y-auto mb-4 shadow-inner">
         <p className="text-2xl text-center leading-[2.6] font-semibold text-[#f0f9ff] text-justify whitespace-pre-line" style={{ direction: 'rtl' }}>
           {item.arabicText}
         </p>
       </div>
 
-      {/* لوحة التحكم السفلية المرفوعة بدقة لتفادي حافة شريط الموبايل السفلاني */}
+      {/* لوحة التحكم السفلية المرفوعة بدقة */}
       <div className="fixed bottom-20 left-4 right-4 max-w-md mx-auto z-50 flex flex-col gap-3">
         
-        {/* أزرار التنقل العلوي (السابق والتالي) */}
+        {/* أزرار التنقل (السابق والتالي) */}
         <div className="bg-[#064e3b] border border-[#059669]/30 rounded-2xl p-2 flex justify-between items-center text-sm font-bold text-[#fbbf24] px-4 shadow-md">
           <button 
             onClick={handlePrev} 
@@ -196,7 +184,7 @@ export function ZiyaratDetail() {
             {/* الأزرار الوسطى: التحميل والتكرار */}
             <div className="flex items-center gap-4">
               <a 
-                href={getCorrectAudioUrl(item.audioUrl)} 
+                href={item.audioUrl} 
                 download={`${item.id}.mp3`}
                 target="_blank"
                 rel="noreferrer"
