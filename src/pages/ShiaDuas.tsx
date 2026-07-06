@@ -493,8 +493,7 @@ export function ShiaDuas() {
 }
 
     }; 
-  }, []); 
-
+  
   useEffect(() => { 
     let abortController = new AbortController(); 
     if (audioRef.current && currentDuaId && currentDua) { 
