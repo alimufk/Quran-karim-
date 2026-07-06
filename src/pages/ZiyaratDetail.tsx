@@ -1,641 +1,151 @@
-import { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { getAudioUrl } from '../utils/audioUrl';
-import { 
-  ArrowRight, Play, Pause, Volume2, Download, 
-  Sparkles, Plus, Minus, Info, RefreshCw, VolumeX,
-  ChevronRight, ChevronLeft, Check, Trash2, CloudLightning, AlertCircle
-} from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ziyaratsData } from './data/ziyaratsText';
-import { isAudioCached, getCachedAudioUrl, cacheAudio, deleteCachedAudio } from '../utils/audioCache';
+import { motion } from 'framer-motion';
+import { ArrowRight, Play, Pause, RotateCcw, Volume2, Download, AlertTriangle } from 'lucide-react';
+import { ziyaratsData } from './Ziyarats';
 
 export function ZiyaratDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const ziyarat = id ? ziyaratsData[id] : null;
-
-  // Find the previous and next Ziyarats dynamically
-  const keys = Object.keys(ziyaratsData);
-  const currentIndex = keys.indexOf(id || '');
-  const prevId = currentIndex > 0 ? keys[currentIndex - 1] : null;
-  const nextId = currentIndex < keys.length - 1 ? keys[currentIndex + 1] : null;
-
-  const prevZiyarat = prevId ? ziyaratsData[prevId] : null;
-  const nextZiyarat = nextId ? ziyaratsData[nextId] : null;
+  const item = ziyaratsData[id as keyof typeof ziyaratsData];
 
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [fontSize, setFontSize] = useState(20); // default font size in pixels
-  const [showVirtue, setShowVirtue] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [audioError, setAudioError] = useState<string | null>(null);
-
-  const [isOfflineCached, setIsOfflineCached] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
-  const [resolvedAudioUrl, setResolvedAudioUrl] = useState<string>('');
-
-  // حالات جديدة ومميزة لإدارة إشعارات التحميل الخلفي الصامت في جهاز المستخدم
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
+  const [audioError, setAudioError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const hasAttemptedFetchRecovery = useRef<Record<string, boolean>>({});
 
-  // إخفاء الإشعار المؤقت تلقائياً بعد 4 ثوانٍ من ظهوره
-  useEffect(() => {
-    if (toastMessage) {
-      const timer = setTimeout(() => setToastMessage(null), 4000);
-      return () => clearTimeout(timer);
+  // تصحيح الرابط تلقائياً والتأكد من صيغته الصحيحة لـ GitHub Raw
+  const getCorrectAudioUrl = (url: string) => {
+    if (!url) return "";
+    // إذا كان الرابط يحتوي على كلمة github.com العادية، نحولها إلى raw لكي يشتغل الصوت مباشرة
+    if (url.includes("github.com") && !url.includes("raw.githubusercontent.com")) {
+      return url
+        .replace("github.com", "raw.githubusercontent.com")
+        .replace("/tree/main/", "/main/")
+        .replace("/blob/main/", "/main/");
     }
-  }, [toastMessage]);
+    return url;
+  };
 
-  // Reset player and handle caching when Ziyarat changes
   useEffect(() => {
-    let active = true;
-    setIsPlaying(false);
-    setCurrentTime(0);
-    setAudioError(null);
-    setIsLoading(false);
-    setDownloadProgress(null);
-    setResolvedAudioUrl('');
-    
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.load();
-    }
+    if (item?.audioUrl) {
+      const finalUrl = getCorrectAudioUrl(item.audioUrl);
+      audioRef.current = new Audio(finalUrl);
+      setAudioError(false);
 
-    if (ziyarat && ziyarat.audioUrl) {
-      const cleanUrl = ziyarat.audioUrl.trim();
-      const proxiedUrl = getAudioUrl(cleanUrl);
-      isAudioCached(ziyarat.audioUrl).then(cached => {
-        if (!active) return;
-        setIsOfflineCached(cached);
-        if (cached) {
-          getCachedAudioUrl(ziyarat.audioUrl).then(cachedUrl => {
-            if (!active) return;
-            if (cachedUrl) {
-              setResolvedAudioUrl(cachedUrl);
-            } else {
-              setResolvedAudioUrl(proxiedUrl);
-            }
-          });
-        } else {
-          setResolvedAudioUrl(proxiedUrl);
-        }
+      audioRef.current.addEventListener('error', () => {
+        setAudioError(true);
+        setIsPlaying(false);
+      });
+
+      audioRef.current.addEventListener('ended', () => {
+        setIsPlaying(false);
       });
     }
 
     return () => {
-      active = false;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     };
-  }, [id, ziyarat]);
+  }, [item]);
 
-  const onPlay = () => setIsPlaying(true);
-  const onPause = () => setIsPlaying(false);
-  const onWaiting = () => setIsLoading(true);
-  const onPlaying = () => setIsLoading(false);
-  const onLoadedMetadata = () => {
-    if (audioRef.current) {
-      setDuration(audioRef.current.duration || 0);
-    }
-  };
-  const onDurationChange = () => {
-    if (audioRef.current) {
-      setDuration(audioRef.current.duration || 0);
-    }
-  };
-  const onTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-    }
-  };
-  const onEnded = () => {
-    setIsPlaying(false);
-    setCurrentTime(0);
-  };
-  const onError = async () => {
-    const currentSrc = audioRef.current?.src;
-    if (!currentSrc || currentSrc === window.location.href || currentSrc.includes('/ziyarat/')) {
-      return;
-    }
-    const error = audioRef.current?.error;
-    console.error("Ziyarat Audio error:", error?.message || error, "resolvedAudioUrl:", resolvedAudioUrl);
+  const togglePlay = () => {
+    if (!audioRef.current || audioError) return;
 
-    if (ziyarat && id && resolvedAudioUrl && resolvedAudioUrl.startsWith('blob:')) {
-      const recoveryKey = id + '_blob_fallback';
-      if (!hasAttemptedFetchRecovery.current[recoveryKey]) {
-        hasAttemptedFetchRecovery.current[recoveryKey] = true;
-        setAudioError("جاري التبديل للمشغل السحابي بعد تعذر تشغيل النسخة المخزنة...");
-        setIsLoading(true);
-        const fallbackProxyUrl = getAudioUrl(ziyarat.audioUrl.trim());
-        setResolvedAudioUrl(fallbackProxyUrl);
-        setTimeout(() => {
-          if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.src = fallbackProxyUrl;
-            audioRef.current.load();
-            audioRef.current.play().then(() => {
-              setIsPlaying(true);
-              setIsLoading(false);
-              setAudioError(null);
-            }).catch(e => {
-              console.error("Ziyarat blob fallback to proxy failed:", e);
-              setIsPlaying(false);
-              setIsLoading(false);
-              setAudioError("عذراً، فشل تشغيل الصوت السحابي والنسخة المخزنة المؤقتة.");
-            });
-          }
-        }, 100);
-        return;
-      }
-    }
-
-    if (ziyarat && id && (!resolvedAudioUrl || !resolvedAudioUrl.startsWith('blob:')) && !hasAttemptedFetchRecovery.current[id]) {
-      hasAttemptedFetchRecovery.current[id] = true;
-      setAudioError("جاري تجهيز تشغيل بديل للاستماع المباشر دون قيود...");
-      setIsLoading(true);
-      try {
-        const cachedUrl = await cacheAudio(ziyarat.audioUrl, (percent) => {
-          setDownloadProgress(percent);
-        });
-        setIsOfflineCached(true);
-        setResolvedAudioUrl(cachedUrl);
-        setDownloadProgress(null);
-        setAudioError(null);
-
-        setTimeout(() => {
-          if (audioRef.current) {
-            audioRef.current.pause();
-            audioRef.current.src = cachedUrl;
-            audioRef.current.load();
-            audioRef.current.play().then(() => {
-              setIsPlaying(true);
-              setIsLoading(false);
-            }).catch(e => {
-              console.error("Self-healing play failed:", e);
-              setIsPlaying(false);
-              setIsLoading(false);
-              setAudioError("تم تجهيز الصوت. يرجى الضغط على زر التشغيل للبدء.");
-            });
-          }
-        }, 100);
-        return;
-      } catch (e: any) {
-        console.error("Self-healing download failed:", e);
-        setDownloadProgress(null);
-      }
-    }
-
-    let errorMessage = "تعذر تحميل أو تشغيل الملف الصوتي. يرجى التحقق من اتصال الإنترنت.";
-    if (error) {
-      switch (error.code) {
-        case error.MEDIA_ERR_ABORTED:
-          errorMessage = "تم إلغاء تحميل الملف الصوتي من قبل المتصفح.";
-          break;
-        case error.MEDIA_ERR_NETWORK:
-          errorMessage = "فشل في الشبكة: تعذر الاتصال بالخادم لتحميل الملف الصوتي.";
-          break;
-        case error.MEDIA_ERR_DECODE:
-          errorMessage = "فشل تشغيل الصوت: تعذر فك تشفير هذا الملف الصوتي.";
-          break;
-        case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-          errorMessage = "الملف الصوتي غير موجود على السيرفر أو الرابط معطل. يرجى التحقق من اسم الملف في جيت هاب.";
-          break;
-      }
-    }
-    setAudioError(errorMessage);
-    setIsPlaying(false);
-    setIsLoading(false);
-  };
-
-  const handlePlayToggle = () => {
-    if (!audioRef.current) return;
-    setAudioError(null); 
     if (isPlaying) {
       audioRef.current.pause();
     } else {
-      setIsLoading(true);
-      audioRef.current.play().catch(err => {
-        console.error("Audio playback error:", err);
-        let msg = "تعذر تشغيل الصوت. يرجى المحاولة مرة أخرى.";
-        if (err && (err.name === 'NotAllowedError' || err.name === 'SecurityError')) {
-          msg = "تم حظر التشغيل التلقائي من المتصفح. يرجى الضغط مرة أخرى لبدء الاستماع.";
-        }
-        setAudioError(msg);
-        setIsPlaying(false);
-        setIsLoading(false);
+      audioRef.current.play().catch(() => {
+        setAudioError(true);
       });
     }
+    setIsPlaying(!isPlaying);
   };
 
-  const handleSeek = (value: number) => {
-    if (!audioRef.current) return;
-    audioRef.current.currentTime = value;
-    setCurrentTime(value);
-  };
-
-  const handleMuteToggle = () => {
-    if (!audioRef.current) return;
-    const nextMuted = !isMuted;
-    audioRef.current.muted = nextMuted;
-    setIsMuted(nextMuted);
-  };
-
-  const formatTime = (time: number) => {
-    if (isNaN(time)) return '00:00';
-    const mins = Math.floor(time / 60);
-    const secs = Math.floor(time % 60);
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  // 🔥 دالة التحميل المحدثة والذكية بالكامل لتعمل صامتة بالخلفية وحفظ الملف بالجهاز
-  const handleDeviceDownload = (e: any) => {
-    e.stopPropagation(); 
-    setAudioError(null);
-
-    if (!ziyarat || !ziyarat.audioUrl) return;
-    const url = ziyarat.audioUrl.trim();
-
-    if (url.includes('YOUR_FILE_NAME') || url.endsWith('/audio/')) {
-      setAudioError(`رابط (${ziyarat.title}) غير جاهز برمجياً بعد! يرجى وضع الرابط الصحيح في ملف البيانات.`);
-      return;
-    }
-
-    // إطلاق إشعار عائم فوري لإعلام المستخدم ببدء المهمة في الخلفية بأمان
-    setToastMessage(`جاري تحميل ملف (${ziyarat.title}) في الخلفية... يمكنك متابعة القراءة`);
-
-    fetch(url)
-      .then(response => {
-        if (!response.ok) {
-          if (response.status === 404) {
-            setAudioError(`الملف الصوتي لـ (${ziyarat.title}) غير موجود على السيرفر (404). تأكد من كتابة الاسم ومطابقته لـ GitHub.`);
-            setToastMessage(null);
-            return null;
-          }
-          throw new Error();
-        }
-        return response.blob();
-      })
-      .then(blob => {
-        if (!blob) return;
-        
-        const blobUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = `${ziyarat.title}.mp3`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(blobUrl);
-
-        // إرسال إشعار النجاح النهائي عند اكتمال الكتابة للقرص المحلي
-        setToastMessage(`✅ تم اكتمال تحميل (${ziyarat.title}) وحفظه في جهازك.`);
-      })
-      .catch(() => {
-        // خط دفاع احتياطي متطور لتلافي القيود الأمنية الصارمة ببعض المتصفحات
-        try {
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `${ziyarat.title}.mp3`;
-          link.click();
-        } catch(err) {
-          setAudioError(`فشل تحميل ملف (${ziyarat.title})، يرجى التحقق من جودة اتصال الشبكة.`);
-        }
-      });
-  };
-
-  const handleOfflineDownloadToggle = async () => {
-    if (!ziyarat) return;
-    const proxiedUrl = getAudioUrl(ziyarat.audioUrl.trim());
-    try {
-      if (isOfflineCached) {
-        const confirmDelete = window.confirm('هل تريد حذف الملف الصوتي من ذاكرة الهاتف لتوفير مساحة؟');
-        if (confirmDelete) {
-          await deleteCachedAudio(ziyarat.audioUrl);
-          setIsOfflineCached(false);
-          setResolvedAudioUrl(proxiedUrl);
-          if (audioRef.current) {
-            const wasPlaying = isPlaying;
-            audioRef.current.pause();
-            audioRef.current.src = proxiedUrl;
-            audioRef.current.load();
-            if (wasPlaying) {
-              audioRef.current.play().catch(() => {});
-            }
-          }
-        }
-      } else {
-        setDownloadProgress(1);
-        const cachedUrl = await cacheAudio(ziyarat.audioUrl, (percent) => {
-          setDownloadProgress(percent);
-        });
-        setIsOfflineCached(true);
-        setResolvedAudioUrl(cachedUrl);
-        setDownloadProgress(null);
-        if (audioRef.current) {
-          const wasPlaying = isPlaying;
-          audioRef.current.pause();
-          audioRef.current.src = cachedUrl;
-          audioRef.current.load();
-          if (wasPlaying) {
-            audioRef.current.play().catch(() => {});
-          }
-        }
-      }
-    } catch (e: any) {
-      console.error('Download cache failed:', e);
-      setAudioError(e?.message || 'فشل تحميل الملف الصوتي للحفظ أوفلاين. يرجى التحقق من الشبكة.');
-      setDownloadProgress(null);
-    }
-  };
-
-  if (!ziyarat) {
+  if (!item) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-6 text-center bg-[#022c22] min-h-screen">
-        <p className="text-[#fbbf24] text-xl font-bold mb-4">الزيارة غير موجودة</p>
-        <button 
-          onClick={() => navigate(-1)}
-          className="bg-[#059669] text-white px-6 py-2 rounded-full font-medium"
-        >
-          العودة
-        </button>
+      <div className="min-h-screen bg-[#022c22] text-white flex items-center justify-center p-6 text-center">
+        <div>
+          <AlertTriangle className="text-amber-500 mx-auto mb-4" size={48} />
+          <p className="text-xl font-bold">الزيارة غير موجودة</p>
+          <button onClick={() => navigate(-1)} className="mt-4 px-6 py-2 bg-[#064e3b] rounded-xl text-[#fbbf24]">العودة</button>
+        </div>
       </div>
     );
   }
 
   return (
-    <>
-      {ziyarat && ziyarat.audioUrl && (
-        <audio
-          ref={audioRef}
-          src={resolvedAudioUrl || ziyarat.audioUrl}
-          preload="auto"
-          onPlay={onPlay}
-          onPause={onPause}
-          onWaiting={onWaiting}
-          onPlaying={onPlaying}
-          onLoadedMetadata={onLoadedMetadata}
-          onDurationChange={onDurationChange}
-          onTimeUpdate={onTimeUpdate}
-          onEnded={onEnded}
-          onError={onError}
-        />
-      )}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="p-6 space-y-6 min-h-screen pb-56 flex flex-col bg-[#022c22] text-[#f0f9ff]"
-      >
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="p-6 min-h-screen pb-32 bg-[#022c22] text-[#f0f9ff] flex flex-col items-center"
+    >
       {/* Header */}
-      <header className="flex justify-between items-center z-10 w-full mb-2 shrink-0">
-        <button 
-          onClick={() => navigate(-1)}
-          className="p-3 bg-[#064e3b] text-[#fbbf24] rounded-full border border-[#059669]/30 hover:bg-[#059669]/40 transition"
-        >
+      <header className="flex justify-between items-center w-full mb-6">
+        <button onClick={() => navigate(-1)} className="p-3 bg-[#064e3b] text-[#fbbf24] rounded-full border border-[#059669]/30">
           <ArrowRight size={20} />
         </button>
-        <div className="text-center">
-           <h1 className="text-2xl font-bold text-[#fbbf24] tracking-tight">{ziyarat.title}</h1>
-           {ziyarat.subtitle && <p className="text-xs text-[#059669] font-medium mt-0.5">{ziyarat.subtitle}</p>}
-        </div>
-        <button 
-          onClick={() => setShowVirtue(!showVirtue)}
-          className={`p-3 rounded-full border transition ${showVirtue ? 'bg-[#fbbf24] text-[#022c22] border-[#fbbf24]' : 'bg-[#064e3b] text-[#fbbf24] border-[#059669]/30 hover:bg-[#059669]/40'}`}
-          title="فضل الزيارة"
-        >
-          <Info size={20} />
-        </button>
+        <h1 className="text-xl font-bold text-[#fbbf24]">{item.title}</h1>
+        <div className="w-[46px]" />
       </header>
 
-      {/* Virtue Card */}
-      <AnimatePresence>
-        {showVirtue && ziyarat.benefits && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="bg-[#064e3b]/60 border border-[#fbbf24]/30 rounded-2xl p-4 text-sm leading-relaxed mb-1">
-              <span className="flex items-center gap-2 text-[#fbbf24] font-bold mb-1.5">
-                <Sparkles size={16} />
-                فضل وأثر المبارك لهذه الزيارة:
-              </span>
-              <p className="text-[#f0f9ff]/90">{ziyarat.benefits}</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Layout Control Options (Font Sizing) */}
-      <div className="flex justify-between items-center bg-[#064e3b]/40 border border-[#059669]/20 p-3 rounded-2xl shrink-0">
-        <span className="text-xs text-[#059669] font-bold">تخصيص حجم الخط لسهولة القراءة:</span>
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={() => setFontSize(prev => Math.max(16, prev - 2))}
-            className="p-1.5 bg-[#064e3b]/80 border border-[#059669]/30 rounded-lg hover:bg-[#059669]/40 transition text-[#fbbf24]"
-            title="تصغير الخط"
-          >
-            <Minus size={16} />
-          </button>
-          <span className="text-sm font-bold w-12 text-center text-[#fbbf24] font-mono">{fontSize}px</span>
-          <button 
-            onClick={() => setFontSize(prev => Math.min(36, prev + 2))}
-            className="p-1.5 bg-[#064e3b]/80 border border-[#059669]/30 rounded-lg hover:bg-[#059669]/40 transition text-[#fbbf24]"
-            title="تكبير الخط"
-          >
-            <Plus size={16} />
-          </button>
+      {/* Benefits */}
+      {item.benefits && (
+        <div className="bg-[#064e3b]/30 border border-[#059669]/20 p-4 rounded-2xl w-full text-center text-sm text-[#fbbf24]/90 mb-6 leading-relaxed">
+          {item.benefits}
         </div>
-      </div>
+      )}
 
-      {/* Scrollable Holy Text Container */}
-      <div className="flex-1 bg-[#064e3b]/20 border border-[#059669]/20 rounded-3xl p-6 md:p-8 overflow-y-auto shadow-inner relative select-text">
-        <p 
-          className="leading-loose text-center text-[#f0f9ff] font-serif transition-all duration-300 select-text whitespace-pre-line"
-          style={{ 
-            fontSize: `${fontSize}px`, 
-            lineHeight: 2.1,
-            fontFamily: '"Amiri", serif, system-ui'
-          }}
-          dir="rtl"
-        >
-          {ziyarat.arabicText}
+      {/* Main Arabic Text */}
+      <div className="flex-1 w-full bg-[#064e3b]/10 border border-[#059669]/10 rounded-3xl p-6 overflow-y-auto mb-6 shadow-inner">
+        <p className="text-2xl text-center leading-[2.5] font-semibold text-[#f0f9ff] select-none text-justify" style={{ direction: 'rtl' }}>
+          {item.arabicText}
         </p>
       </div>
 
-      {/* Gorgeous Styled Audio Controller Deck (Floating Sticky bottom) */}
-      <div className="fixed bottom-6 left-6 right-6 md:max-w-2xl md:mx-auto bg-[#064e3b] px-6 py-4 rounded-[28px] border border-[#059669]/50 shadow-[0_15px_50px_rgba(0,0,0,0.6)] z-50 flex flex-col gap-3">
-        {/* Navigation row */}
-        <div className="flex items-center justify-between border-b border-[#059669]/20 pb-2 mb-1 text-xs" dir="rtl">
-          {prevId ? (
-            <button
-              onClick={() => navigate(`/ziyarat/${prevId}`)}
-              className="flex items-center gap-1 text-[#fbbf24] hover:text-[#fbbf24]/80 transition-all font-bold py-1 px-2.5 rounded-lg hover:bg-[#059669]/20 active:scale-95 cursor-pointer"
-              title={`الزيارة السابقة: ${prevZiyarat?.title}`}
-            >
-              <ChevronRight size={16} />
-              <span>السابق</span>
-            </button>
-          ) : (
-            <span className="text-[#059669]/40 py-1 px-2.5 font-medium select-none">البداية</span>
-          )}
-
-          <div className="text-[10px] md:text-xs text-[#059669] font-bold bg-[#fbbf24]/5 px-3 py-1 rounded-full border border-[#059669]/10 select-none">
-            {currentIndex + 1} / {keys.length}
-          </div>
-
-          {nextId ? (
-            <button
-              onClick={() => navigate(`/ziyarat/${nextId}`)}
-              className="flex items-center gap-1 text-[#fbbf24] hover:text-[#fbbf24]/80 transition-all font-bold py-1 px-2.5 rounded-lg hover:bg-[#059669]/20 active:scale-95 cursor-pointer"
-              title={`الزيارة التالية: ${nextZiyarat?.title}`}
-            >
-              <span>التالي</span>
-              <ChevronLeft size={16} />
-            </button>
-          ) : (
-            <span className="text-[#059669]/40 py-1 px-2.5 font-medium select-none">النهاية</span>
-          )}
-        </div>
-
-        {/* Error message if any */}
-        <AnimatePresence>
-          {audioError && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="bg-red-950/70 border border-red-500/30 text-red-200 text-xs px-3 py-2.5 rounded-xl flex items-center justify-between gap-2.5 mb-1" dir="rtl">
-                <span className="flex-1 leading-relaxed text-right flex items-center gap-2">
-                  <AlertCircle size={14} className="text-red-400 shrink-0" />
-                  {audioError}
-                </span>
-                <button 
-                  onClick={() => setAudioError(null)}
-                  className="text-red-300 hover:text-red-100 font-bold px-1.5 text-sm transition shrink-0"
-                >
-                  ×
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Track info and controls */}
-        <div className="flex justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className={`p-3.5 rounded-full ${isPlaying ? 'bg-[#fbbf24] text-[#022c22]' : 'bg-[#fbbf24]/10 text-[#fbbf24]'}`}>
-              <Volume2 size={20} className={isPlaying ? 'animate-pulse' : ''} />
-            </div>
-            <div>
-              <h4 className="font-bold text-[#fbbf24] text-sm md:text-base leading-tight">{ziyarat.title}</h4>
-              <p className="text-[10px] md:text-xs text-[#059669] mt-0.5">
-                {isLoading ? 'جاري التحميل...' : (isPlaying ? 'جارٍ الاستماع بالصوت...' : 'متوقف')}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {/* Mute button */}
-            <button 
-              onClick={handleMuteToggle}
-              className="p-2 text-[#059669] hover:text-[#fbbf24] rounded-full hover:bg-[#059669]/20 transition-colors"
-              title={isMuted ? 'إلغاء كتم الصوت' : 'كتم الصوت'}
-            >
-              {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-            </button>
-
-            {/* 🔥 زر التحميل الفعلي المباشر للجهاز في الخلفية - بلون أصفر مميز وثابت */}
-            <button 
-              onClick={handleDeviceDownload} 
-              className="p-2.5 text-[#fbbf24] hover:bg-[#fbbf24]/10 rounded-full transition active:scale-90" 
-              title="تحميل الملف الصوتي للجهاز مباشرة (MP3)" 
-            > 
-              <Download size={20} /> 
-            </button>
-
-            {/* زر التخزين المؤقت أوفلاين للتطبيق - شكل الصاعقة المتناسق */}
-            <button
-               onClick={handleOfflineDownloadToggle}
-               disabled={downloadProgress !== null}
-               className={`p-2.5 rounded-full transition-all flex items-center justify-center relative ${
-                 downloadProgress !== null
-                   ? 'text-[#fbbf24] bg-[#059669]/30'
-                   : isOfflineCached
-                     ? 'text-[#10b981] bg-[#10b981]/10 hover:bg-red-500/10 hover:text-red-400'
-                     : 'text-[#059669] hover:text-[#fbbf24] hover:bg-[#059669]/20'
-               }`}
-               title={
-                 downloadProgress !== null
-                   ? `جاري تخزين الصوت أوفلاين: ${downloadProgress}%`
-                   : isOfflineCached
-                     ? 'محفوظ بالتطبيق (اضغط لحذفه وتوفير مساحة)'
-                     : 'حفظ احتياطي بالتطبيق للاستماع بدون إنترنت'
-               }
-            >
-               {downloadProgress !== null ? (
-                 <div className="relative flex items-center justify-center w-5 h-5">
-                   <RefreshCw className="animate-spin text-[#fbbf24]" size={16} />
-                   <span className="text-[7.5px] font-bold font-mono text-[#fbbf24] absolute">{downloadProgress}</span>
-                 </div>
-               ) : isOfflineCached ? (
-                 <Check size={20} className="stroke-[3px]" />
-               ) : (
-                 <CloudLightning size={20} />
-               )}
-            </button>
-
-            {/* Main Play/Pause Button */}
-            <button 
-               onClick={handlePlayToggle}
-               className="p-4 bg-[#fbbf24] text-[#022c22] rounded-full shadow-lg hover:bg-[#fcd34d] hover:scale-105 active:scale-95 transition-all outline-none"
-               disabled={isLoading && !isPlaying}
-            >
-               {isLoading && !isPlaying ? (
-                 <RefreshCw size={22} className="animate-spin" />
-               ) : (
-                 isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" className="mr-0.5" />
-               )}
-            </button>
-          </div>
-        </div>
-
-        {/* Progress Slider Bar */}
-        <div className="flex items-center gap-3">
-          <span className="text-[10px] md:text-xs text-[#059669] font-mono w-10 text-right">{formatTime(currentTime)}</span>
-          <input 
-            type="range"
-            min="0"
-            max={duration || 100}
-            value={currentTime}
-            onChange={(e) => handleSeek(parseFloat(e.target.value))}
-            className="flex-1 accent-[#fbbf24] bg-[#022c22] h-1.5 rounded-lg appearance-none cursor-pointer"
-          />
-          <span className="text-[10px] md:text-xs text-[#059669] font-mono w-10 text-left">{formatTime(duration)}</span>
-        </div>
-      </div>
-
-      {/* واجهة إشعار عائم Toast احترافي يظهر فوق لوحة التحكم عند بدء التحميل الخلفي */}
-      <AnimatePresence>
-        {toastMessage && (
+      {/* Fixed Bottom Player Controller */}
+      <div className="fixed bottom-6 left-6 right-6 bg-[#064e3b] border border-[#059669]/40 rounded-3xl p-5 shadow-2xl flex flex-col items-center gap-4 max-w-md mx-auto z-50">
+        
+        {/* Error Notification Banner */}
+        {audioError && (
           <motion.div 
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-28 left-6 right-6 md:left-auto md:right-6 md:w-96 bg-[#fbbf24] text-[#022c22] px-4 py-3 rounded-2xl shadow-xl font-medium flex items-center gap-3 z-50 border border-[#022c22]/10"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-red-950/80 border border-red-500/30 rounded-2xl p-3 flex items-center gap-3 text-red-200 text-xs w-full justify-center"
           >
-            <RefreshCw size={18} className={`shrink-0 ${toastMessage.includes('✅') ? '' : 'animate-spin'}`} />
-            <span className="text-sm leading-tight text-right w-full">{toastMessage}</span>
+            <AlertTriangle size={16} className="text-red-400 flex-shrink-0" />
+            <span>الملف الصوتي غير موجود على السيرفر أو الرابط معطل. يرجى التحقق من جيت هاب.</span>
           </motion.div>
         )}
-      </AnimatePresence>
 
-      </motion.div>
-   </>
+        {/* Title and Controls */}
+        <div className="flex items-center justify-between w-full">
+          <button className="p-2 text-[#059669] hover:text-[#fbbf24] transition"><Volume2 size={22} /></button>
+          
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={togglePlay}
+              disabled={audioError}
+              className={`p-4 rounded-full shadow-lg transition transform active:scale-95 ${audioError ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-[#fbbf24] text-[#022c22] hover:bg-[#f59e0b]'}`}
+            >
+              {isPlaying ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
+            </button>
+          </div>
+
+          <a 
+            href={getCorrectAudioUrl(item.audioUrl)} 
+            download={`${item.id}.mp3`}
+            target="_blank"
+            rel="noreferrer"
+            className="p-2 text-[#059669] hover:text-[#fbbf24] transition"
+          >
+            <Download size={22} />
+          </a>
+        </div>
+
+        <div className="text-xs text-[#059669] font-bold">{item.title}</div>
+      </div>
+    </motion.div>
   );
 }
