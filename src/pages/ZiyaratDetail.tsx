@@ -1,19 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Play, Pause, RotateCcw, Volume2, Download, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Play, Pause, RotateCcw, Volume2, VolumeX, Download, AlertTriangle } from 'lucide-react';
 import { ziyaratsData } from './Ziyarats';
 
 export function ZiyaratDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
-  // تحويل البيانات لمصفوفة لسهولة التنقل بالسابق والتالي
   const keys = Object.keys(ziyaratsData);
   const currentIndex = keys.indexOf(id || '');
   const item = ziyaratsData[id as keyof typeof ziyaratsData];
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const [audioError, setAudioError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -36,6 +36,7 @@ export function ZiyaratDetail() {
         audioRef.current.pause();
       }
       audioRef.current = new Audio(finalUrl);
+      audioRef.current.muted = isMuted; // الحفاظ على حالة كتم الصوت عند تغيير الزيارة
       setAudioError(false);
       setIsPlaying(false);
 
@@ -70,14 +71,19 @@ export function ZiyaratDetail() {
     setIsPlaying(!isPlaying);
   };
 
-  // التنقل للزيارة التالية
+  // دالة تفعيل وإلغاء كتم الصوت
+  const toggleMute = () => {
+    if (!audioRef.current) return;
+    audioRef.current.muted = !isMuted;
+    setIsMuted(!isMuted);
+  };
+
   const handleNext = () => {
     if (currentIndex < keys.length - 1) {
       navigate(`/ziyarat/${keys[currentIndex + 1]}`);
     }
   };
 
-  // التنقل للزيارة السابقة
   const handlePrev = () => {
     if (currentIndex > 0) {
       navigate(`/ziyarat/${keys[currentIndex - 1]}`);
@@ -100,7 +106,7 @@ export function ZiyaratDetail() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="p-4 min-h-screen pb-48 bg-[#022c22] text-[#f0f9ff] flex flex-col items-center select-none"
+      className="p-4 min-h-screen pb-64 bg-[#022c22] text-[#f0f9ff] flex flex-col items-center select-none"
     >
       {/* العلوية الـ Header */}
       <header className="flex justify-between items-center w-full mb-4">
@@ -125,8 +131,8 @@ export function ZiyaratDetail() {
         </p>
       </div>
 
-      {/* لوحة التحكم السفلية المتطابقة مع التصميم الأصلي */}
-      <div className="fixed bottom-6 left-4 right-4 max-w-md mx-auto z-50 flex flex-col gap-3">
+      {/* لوحة التحكم السفلية المرفوعة بدقة لتفادي حافة شريط الموبايل السفلاني */}
+      <div className="fixed bottom-20 left-4 right-4 max-w-md mx-auto z-50 flex flex-col gap-3">
         
         {/* أزرار التنقل العلوي (السابق والتالي) */}
         <div className="bg-[#064e3b] border border-[#059669]/30 rounded-2xl p-2 flex justify-between items-center text-sm font-bold text-[#fbbf24] px-4 shadow-md">
@@ -154,7 +160,7 @@ export function ZiyaratDetail() {
         {/* صندوق مشغل الصوت والتحذير */}
         <div className="relative w-full">
           
-          {/* لوحة الخطأ الحمراء الأنيقة المتطابقة مع الصورة */}
+          {/* لوحة الخطأ الحمراء */}
           {audioError && (
             <motion.div 
               initial={{ opacity: 0, y: 5 }}
@@ -170,13 +176,16 @@ export function ZiyaratDetail() {
             </motion.div>
           )}
 
-          {/* البار الرئيسي للمشغل (الصندوق الأخضر الداكن) */}
+          {/* البار الرئيسي للمشغل (الصندوق الأخضر المرفوع) */}
           <div className="bg-[#053e2f] border border-[#059669]/20 rounded-3xl p-4 flex items-center justify-between shadow-2xl h-24 pl-20 relative">
             
-            {/* جهة اليمين: زر الصوت واسم الزيارة وحالتها */}
+            {/* جهة اليمين: زر الصوت المفعّل واسم الزيارة وحالتها */}
             <div className="flex items-center gap-3" style={{ direction: 'rtl' }}>
-              <button className="w-10 h-10 rounded-full bg-[#064e3b] flex items-center justify-center text-[#fbbf24] shadow-inner">
-                <Volume2 size={18} />
+              <button 
+                onClick={toggleMute}
+                className={`w-10 h-10 rounded-full flex items-center justify-center shadow-inner transition ${isMuted ? 'bg-red-900 text-red-400' : 'bg-[#064e3b] text-[#fbbf24]'}`}
+              >
+                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
               </button>
               <div className="flex flex-col text-right">
                 <span className="text-sm font-bold text-[#fbbf24]">{item.title}</span>
