@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Play, Pause, RotateCcw, Volume2, Download, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Play, Pause, RotateCcw, Volume2, Download, AlertTriangle, SkipForward, SkipBack } from 'lucide-react';
 import { ziyaratsData } from './Ziyarats';
 
 export function ZiyaratDetail() {
@@ -11,12 +11,13 @@ export function ZiyaratDetail() {
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioError, setAudioError] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // تصحيح الرابط تلقائياً والتأكد من صيغته الصحيحة لـ GitHub Raw
+  // دالة تصحيح الرابط تلقائياً
   const getCorrectAudioUrl = (url: string) => {
     if (!url) return "";
-    // إذا كان الرابط يحتوي على كلمة github.com العادية، نحولها إلى raw لكي يشتغل الصوت مباشرة
     if (url.includes("github.com") && !url.includes("raw.githubusercontent.com")) {
       return url
         .replace("github.com", "raw.githubusercontent.com")
@@ -31,6 +32,16 @@ export function ZiyaratDetail() {
       const finalUrl = getCorrectAudioUrl(item.audioUrl);
       audioRef.current = new Audio(finalUrl);
       setAudioError(false);
+      setCurrentTime(0);
+
+      // تحديث الوقت والمدة
+      audioRef.current.addEventListener('timeupdate', () => {
+        if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
+      });
+
+      audioRef.current.addEventListener('loadedmetadata', () => {
+        if (audioRef.current) setDuration(audioRef.current.duration);
+      });
 
       audioRef.current.addEventListener('error', () => {
         setAudioError(true);
@@ -39,6 +50,7 @@ export function ZiyaratDetail() {
 
       audioRef.current.addEventListener('ended', () => {
         setIsPlaying(false);
+        setCurrentTime(0);
       });
     }
 
@@ -63,6 +75,36 @@ export function ZiyaratDetail() {
     setIsPlaying(!isPlaying);
   };
 
+  // دالة التقديم للأمام 10 ثوانٍ
+  const seekForward = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = Math.min(audioRef.current.currentTime + 10, duration);
+    }
+  };
+
+  // دالة الترجيع للخلف 10 ثوانٍ
+  const seekBackward = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0);
+    }
+  };
+
+  // دالة التحكم اليدوي بالشريط (التقديم والترجيع بالسحب)
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTime = parseFloat(e.target.value);
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+  };
+
+  // تنسيق الوقت المار (مثل 02:15)
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+
   if (!item) {
     return (
       <div className="min-h-screen bg-[#022c22] text-white flex items-center justify-center p-6 text-center">
@@ -79,7 +121,7 @@ export function ZiyaratDetail() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="p-6 min-h-screen pb-32 bg-[#022c22] text-[#f0f9ff] flex flex-col items-center"
+      className="p-6 min-h-screen pb-44 bg-[#022c22] text-[#f0f9ff] flex flex-col items-center"
     >
       {/* Header */}
       <header className="flex justify-between items-center w-full mb-6">
@@ -104,10 +146,10 @@ export function ZiyaratDetail() {
         </p>
       </div>
 
-      {/* Fixed Bottom Player Controller */}
+      {/* شريط المشغل الأصلي الكامل المتطور (Fixed Bottom) */}
       <div className="fixed bottom-6 left-6 right-6 bg-[#064e3b] border border-[#059669]/40 rounded-3xl p-5 shadow-2xl flex flex-col items-center gap-4 max-w-md mx-auto z-50">
         
-        {/* Error Notification Banner */}
+        {/* لوحة التحذير عند وجود خطأ بالرابط */}
         {audioError && (
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }}
@@ -119,20 +161,26 @@ export function ZiyaratDetail() {
           </motion.div>
         )}
 
-        {/* Title and Controls */}
-        <div className="flex items-center justify-between w-full">
-          <button className="p-2 text-[#059669] hover:text-[#fbbf24] transition"><Volume2 size={22} /></button>
-          
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={togglePlay}
-              disabled={audioError}
-              className={`p-4 rounded-full shadow-lg transition transform active:scale-95 ${audioError ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-[#fbbf24] text-[#022c22] hover:bg-[#f59e0b]'}`}
-            >
-              {isPlaying ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
-            </button>
+        {/* 1️⃣ شريط التقدم الأصلي (Timeline Slider) مع أرقام الوقت */}
+        <div className="w-full flex flex-col gap-1">
+          <input 
+            type="range" 
+            min="0" 
+            max={duration || 100} 
+            value={currentTime} 
+            onChange={handleSliderChange}
+            className="w-full h-1.5 bg-[#022c22] rounded-lg appearance-none cursor-pointer accent-[#fbbf24]"
+          />
+          <div className="flex justify-between text-[10px] text-[#059669] font-bold px-1">
+            <span>{formatTime(duration)}</span>
+            <span>{formatTime(currentTime)}</span>
           </div>
+        </div>
 
+        {/* 2️⃣ أزرار التحكم الكاملة (تقديم، ترجيع، تشغيل، تحميل) */}
+        <div className="flex items-center justify-between w-full px-2">
+          
+          {/* زر تحميل الملف */}
           <a 
             href={getCorrectAudioUrl(item.audioUrl)} 
             download={`${item.id}.mp3`}
@@ -142,9 +190,37 @@ export function ZiyaratDetail() {
           >
             <Download size={22} />
           </a>
+
+          {/* أزرار التشغيل والتقديم والترجيع */}
+          <div className="flex items-center gap-5">
+            {/* زر ترجيع 10 ثوانٍ */}
+            <button onClick={seekBackward} className="p-2 text-[#059669] hover:text-[#fbbf24] transition active:scale-90">
+              <SkipBack size={22} />
+            </button>
+
+            {/* زر التشغيل والإيقاف الرئيسي */}
+            <button 
+              onClick={togglePlay}
+              disabled={audioError}
+              className={`p-4 rounded-full shadow-lg transition transform active:scale-95 ${audioError ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-[#fbbf24] text-[#022c22] hover:bg-[#f59e0b]'}`}
+            >
+              {isPlaying ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
+            </button>
+
+            {/* زر تقديم 10 ثوانٍ */}
+            <button onClick={seekForward} className="p-2 text-[#059669] hover:text-[#fbbf24] transition active:scale-90">
+              <SkipForward size={22} />
+            </button>
+          </div>
+
+          {/* زر كتم/تشغيل الصوت وعرض العنوان */}
+          <button className="p-2 text-[#059669] hover:text-[#fbbf24] transition">
+            <Volume2 size={22} />
+          </button>
+
         </div>
 
-        <div className="text-xs text-[#059669] font-bold">{item.title}</div>
+        <div className="text-[11px] text-[#fbbf24] font-medium tracking-wide">{item.title}</div>
       </div>
     </motion.div>
   );
