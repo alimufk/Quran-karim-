@@ -52,8 +52,7 @@ export function NotificationsSettings() {
     saveSettings(updated);
   };
 
-  // Ask for Web Notification permission
-    const requestPermission = async () => {
+  // Ask for Web Notification permission  const requestPermission = async () => {
     if ('Notification' in window) {
       try {
         const result = await Notification.requestPermission();
@@ -79,13 +78,6 @@ export function NotificationsSettings() {
     }, 3000);
   };
 
-  // Send test notification in 3 seconds
-    setTestMode(true);
-    setTimeout(() => {
-      triggerNotificationNow(
-        '✨ تذكير مبارك (تجربة)',
-        '«سُبْحَانَ اللَّهِ وَبِحَمْدِهِ عَدَدَ خَلْقِهِ وَرِضَا نَفْسِهِ وَزِنَةَ عَرْشِهِ وَمِدَادَ كَلِمَاتِهِ»'
-      );
       setTestMode(false);
     }, 1500);
   };
