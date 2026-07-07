@@ -34,18 +34,18 @@ export function NotificationsSettings() {
   }, []);
 
   const handleToggle = (key: any) => {
-    if (!settings) return;
+    const currentSettings = settings || {};
     const updated = {
-      ...settings,
-      [key]: !settings[key]
+      ...currentSettings,
+      [key]: !currentSettings[key]
     };
     saveSettings(updated);
   };
 
   const handleTimeChange = (key: any, val: string) => {
-    if (!settings) return;
+    const currentSettings = settings || {};
     const updated = {
-      ...settings,
+      ...currentSettings,
       [key]: val
     };
     saveSettings(updated);
@@ -77,14 +77,6 @@ export function NotificationsSettings() {
       setTestMode(false);
     }, 3000);
   };
-
-  if (!settings) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-[#022c22] text-[#f0f9ff]' : 'bg-[#f0fdf4] text-[#0f172a]'}`}>
-        <p className="font-['Cairo'] text-sm opacity-70">جاري تحميل الإعدادات...</p>
-      </div>
-    );
-  }
 
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#022c22] text-[#f0f9ff]' : 'bg-[#f0fdf4] text-[#0f172a]'} pb-24 transition-colors duration-300`}>
