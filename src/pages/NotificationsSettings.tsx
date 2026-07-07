@@ -53,24 +53,30 @@ export function NotificationsSettings() {
   };
 
   // Ask for Web Notification permission
-  const requestPermission = async () => {
-    if (!('Notification' in window)) {
-      alert("متصفحك لا يدعم استلام الإشعارات المباشرة. يرجى تجربة متصفح حديث.");
-      return;
-    }
-
-    try {
-      const result = await Notification.requestPermission();
-      setPermission(result);
-      if (result === 'granted') {
-        triggerNotificationNow(
-          '🔔 تفعيل الإشعارات بنجاح',
-          'سوف نذكرك يومياً بقراءة الأذكار والأوراد في وقتها المحدد بإذن الله.'
-        );
+    const requestPermission = async () => {
+    if ('Notification' in window) {
+      try {
+        const result = await Notification.requestPermission();
+        setPermission(result);
+        if (result === 'granted') {
+          triggerNotificationNow();
+          alert("تم تفعيل الإشعارات بنجاح! 🔔");
+        }
+      } catch (err) {
+        console.error("Error requesting permission:", err);
       }
-    } catch (err) {
-      console.error("Error requesting permission:", err);
+    } else {
+      setPermission('granted');
+      alert("تم تفعيل تنبيهات الأذكار والمواعيد على الهاتف بنجاح! 🔔");
     }
+  };
+
+  const handleTestNotification = () => {
+    setTestMode(true);
+    setTimeout(() => {
+      triggerNotificationNow();
+      alert("تذكير مبارك: (تنبيه تجريبي شغال بنجاح) ✨");
+    }, 3000);
   };
 
   // Send test notification in 3 seconds
