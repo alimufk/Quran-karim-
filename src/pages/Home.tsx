@@ -244,17 +244,17 @@ export function Home() {
               <circle cx="12" cy="12" r="10"></circle>
               <circle cx="12" cy="12" r="3"></circle>
             </svg>
-          </div>
-          <span className="font-medium text-sm text-[#f0f9ff]">المسبحة</span>
-        </Link>
-        <Link to="/names-of-allah" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex flex-col items-center justify-center gap-3 hover:bg-[#059669]/30 transition-all group">
-          <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
+          </div><span className="font-medium text-sm text-[#f0f9ff]">المسبحة</span>
+         </Link>
+            <Link to="/names-of-allah" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl flex flex-col items-center justify-center gap-3 group hover:bg-[#064e3b]/60 transition-all duration-300">
+            <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform duration-300">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
             </svg>
-          </div>
-          <span className="font-medium text-sm text-[#f0f9ff]">أسماء الله</span>
-        </Link>
+            </div>
+            <span className="font-medium text-sm text-[#f0f9ff]">أسماء الله</span>
+            </Link>
         <Link to="/ramadan" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex flex-col items-center justify-center gap-3 hover:bg-[#059669]/30 transition-all group">
           <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
             <Moon size={28} />
