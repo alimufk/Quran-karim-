@@ -53,6 +53,7 @@ export function NotificationsSettings() {
   };
 
   // Ask for Web Notification permission  const requestPermission = async () => {
+      const requestPermission = async () => {
     if ('Notification' in window) {
       try {
         const result = await Notification.requestPermission();
@@ -68,6 +69,14 @@ export function NotificationsSettings() {
       setPermission('granted');
       alert("تم تفعيل تنبيهات الأذكار والمواعيد على الهاتف بنجاح! 🔔");
     }
+  };
+
+  const handleTestNotification = () => {
+    setTestMode(true);
+    setTimeout(() => {
+      triggerNotificationNow();
+      alert("تذكير مبارك: (تنبيه تجريبي شغال بنجاح) ✨");
+    }, 3000);
   };
 
   const handleTestNotification = () => {
