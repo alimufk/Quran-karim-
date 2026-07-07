@@ -33,7 +33,8 @@ export function NotificationsSettings() {
     }
   }, []);
 
-  const handleToggle = (key: keyof Pick<typeof settings, 'morningEnabled' | 'eveningEnabled' | 'nightEnabled' | 'fridayEnabled' | 'dhikrEnabled' | 'soundEnabled' | 'vibrationEnabled'>) => {
+  const handleToggle = (key: any) => {
+    if (!settings) return;
     const updated = {
       ...settings,
       [key]: !settings[key]
@@ -41,7 +42,8 @@ export function NotificationsSettings() {
     saveSettings(updated);
   };
 
-  const handleTimeChange = (key: keyof Pick<typeof settings, 'morningTime' | 'eveningTime' | 'nightTime' | 'dhikrInterval'>, val: string) => {
+  const handleTimeChange = (key: any, val: string) => {
+    if (!settings) return;
     const updated = {
       ...settings,
       [key]: val
@@ -75,6 +77,14 @@ export function NotificationsSettings() {
       setTestMode(false);
     }, 3000);
   };
+
+  if (!settings) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-[#022c22] text-[#f0f9ff]' : 'bg-[#f0fdf4] text-[#0f172a]'}`}>
+        <p className="font-['Cairo'] text-sm opacity-70">جاري تحميل الإعدادات...</p>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#022c22] text-[#f0f9ff]' : 'bg-[#f0fdf4] text-[#0f172a]'} pb-24 transition-colors duration-300`}>
@@ -131,8 +141,8 @@ export function NotificationsSettings() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <input type="time" value={settings.morningTime} onChange={(e) => handleTimeChange('morningTime', e.target.value)} className="bg-transparent text-xs font-bold p-1 rounded border border-[#059669]/20" />
-                <input type="checkbox" checked={settings.morningEnabled} onChange={() => handleToggle('morningEnabled')} className="w-4 h-4 accent-[#059669]" />
+                <input type="time" value={settings?.morningTime || "07:00"} onChange={(e) => handleTimeChange('morningTime', e.target.value)} className="bg-transparent text-xs font-bold p-1 rounded border border-[#059669]/20 text-inherit" />
+                <input type="checkbox" checked={!!settings?.morningEnabled} onChange={() => handleToggle('morningEnabled')} className="w-4 h-4 accent-[#059669]" />
               </div>
             </div>
 
@@ -145,8 +155,8 @@ export function NotificationsSettings() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <input type="time" value={settings.eveningTime} onChange={(e) => handleTimeChange('eveningTime', e.target.value)} className="bg-transparent text-xs font-bold p-1 rounded border border-[#059669]/20" />
-                <input type="checkbox" checked={settings.eveningEnabled} onChange={() => handleToggle('eveningEnabled')} className="w-4 h-4 accent-[#059669]" />
+                <input type="time" value={settings?.eveningTime || "17:00"} onChange={(e) => handleTimeChange('eveningTime', e.target.value)} className="bg-transparent text-xs font-bold p-1 rounded border border-[#059669]/20 text-inherit" />
+                <input type="checkbox" checked={!!settings?.eveningEnabled} onChange={() => handleToggle('eveningEnabled')} className="w-4 h-4 accent-[#059669]" />
               </div>
             </div>
           </div>
