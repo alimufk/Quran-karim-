@@ -80,12 +80,6 @@ export function NotificationsSettings() {
   };
 
   // Send test notification in 3 seconds
-  const handleTestNotification = () => {
-    if (permission !== 'granted') {
-      alert("يرجى تفعيل صلاحية الإشعارات أولاً بالضغط على زر 'تفعيل الإشعارات'.");
-      return;
-    }
-
     setTestMode(true);
     setTimeout(() => {
       triggerNotificationNow(
