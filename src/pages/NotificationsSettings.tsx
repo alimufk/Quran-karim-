@@ -9,11 +9,7 @@ import {
   BellOff,
   Sun,
   Moon,
-  Trash2,
-  Sparkles,
-  HelpCircle,
-  Volume2,
-  Smartphone
+  HelpCircle
 } from 'lucide-react';
 
 export function NotificationsSettings() {
@@ -27,6 +23,18 @@ export function NotificationsSettings() {
   const [testMode, setTestMode] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
+  // حالات محلية لحفظ الأوقات المدخلة لمنع اختفائها أثناء التحميل
+  const [morningTime, setMorningTime] = useState("07:00");
+  const [eveningTime, setEveningTime] = useState("17:00");
+
+  // تحديث الحالات المحلية فور تحميل الإعدادات من الذاكرة
+  useEffect(() => {
+    if (settings) {
+      if (settings.morningTime) setMorningTime(settings.morningTime);
+      if (settings.eveningTime) setEveningTime(settings.eveningTime);
+    }
+  }, [settings]);
+
   useEffect(() => {
     if ('Notification' in window) {
       setPermission(Notification.permission);
@@ -34,7 +42,12 @@ export function NotificationsSettings() {
   }, []);
 
   const handleToggle = (key: any) => {
-    const currentSettings = settings || {};
+    const currentSettings = settings || {
+      morningEnabled: false,
+      eveningEnabled: false,
+      morningTime: "07:00",
+      eveningTime: "17:00"
+    };
     const updated = {
       ...currentSettings,
       [key]: !currentSettings[key]
@@ -42,8 +55,16 @@ export function NotificationsSettings() {
     saveSettings(updated);
   };
 
-  const handleTimeChange = (key: any, val: string) => {
-    const currentSettings = settings || {};
+  const handleTimeChange = (key: 'morningTime' | 'eveningTime', val: string) => {
+    if (key === 'morningTime') setMorningTime(val);
+    if (key === 'eveningTime') setEveningTime(val);
+
+    const currentSettings = settings || {
+      morningEnabled: false,
+      eveningEnabled: false,
+      morningTime: "07:00",
+      eveningTime: "17:00"
+    };
     const updated = {
       ...currentSettings,
       [key]: val
@@ -73,7 +94,7 @@ export function NotificationsSettings() {
     setTestMode(true);
     setTimeout(() => {
       triggerNotificationNow();
-      alert("تذكير مبارك: (تنبيه تجريبي شغال بنجاح) ✨");
+      alert("تذكير مبارك: (تنبيه بنجاح) ✨");
       setTestMode(false);
     }, 3000);
   };
@@ -133,7 +154,7 @@ export function NotificationsSettings() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <input type="time" value={settings?.morningTime || "07:00"} onChange={(e) => handleTimeChange('morningTime', e.target.value)} className="bg-transparent text-xs font-bold p-1 rounded border border-[#059669]/20 text-inherit" />
+                <input type="time" value={morningTime} onChange={(e) => handleTimeChange('morningTime', e.target.value)} className="bg-transparent text-xs font-bold p-1 rounded border border-[#059669]/20 text-inherit" />
                 <input type="checkbox" checked={!!settings?.morningEnabled} onChange={() => handleToggle('morningEnabled')} className="w-4 h-4 accent-[#059669]" />
               </div>
             </div>
@@ -147,7 +168,7 @@ export function NotificationsSettings() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <input type="time" value={settings?.eveningTime || "17:00"} onChange={(e) => handleTimeChange('eveningTime', e.target.value)} className="bg-transparent text-xs font-bold p-1 rounded border border-[#059669]/20 text-inherit" />
+                <input type="time" value={eveningTime} onChange={(e) => handleTimeChange('eveningTime', e.target.value)} className="bg-transparent text-xs font-bold p-1 rounded border border-[#059669]/20 text-inherit" />
                 <input type="checkbox" checked={!!settings?.eveningEnabled} onChange={() => handleToggle('eveningEnabled')} className="w-4 h-4 accent-[#059669]" />
               </div>
             </div>
