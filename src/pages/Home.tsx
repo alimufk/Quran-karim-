@@ -266,7 +266,9 @@ export function Home() {
           <div className="flex items-center gap-4 relative z-10">
              <div className="p-3 bg-[#fbbf24]/25 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
                <Calendar size={28} />
-             </div>          {/* 1. قسم البث المباشر للعتبات المقدسة (مستقل بالكامل في الأعلى) */}
+             </div>
+          </div>
+                                    {/* قسم البث المباشر للعتبات المقدسة (بطاقة كاملة وعريضة مستقلة) */}
           <div 
             onClick={() => navigate('/holy-shrines-live')} 
             className="w-full flex items-center justify-between p-4 rounded-2xl bg-[#064e3b]/40 border border-[#059669]/30 hover:border-[#fbbf24]/50 cursor-pointer transition-all duration-300 shadow-md mb-4"
@@ -287,25 +289,6 @@ export function Home() {
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><path d="m15 18-6-6 6-6"/></svg>
             </div>
           </div>
-          {/* 2. قسم صائمون الأصلي (يعود لشكله الكامل المستقل تحت البث مباشرة) */}
-          <div 
-            onClick={() => navigate('/fasting')} 
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-[#064e3b]/40 border border-[#059669]/30 hover:border-[#fbbf24]/50 cursor-pointer transition-all duration-300 shadow-md mb-4"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-[#059669]/20 text-[#fbbf24]">
-                <svg xmlns="http://www.w3.org/2000/xl" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-lg text-[#fbbf24]">قسم صائمون</span>
-                <span className="text-xs text-[#059669]">أوقات الصيام، عدادات القضاء، الأدعية، والأحكام</span>
-              </div>
-            </div>
-            <div className="text-[#fbbf24] opacity-70">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><path d="m15 18-6-6 6-6"/></svg>
-            </div>
-          </div>
-
              <div className="flex flex-col">
                <span className="font-bold text-lg text-[#fbbf24]">قسم صائمون</span>
                <span className="text-xs text-[#059669]">أوقات الصيام، عدادات القضاء، الأدعية، والأحكام</span>
