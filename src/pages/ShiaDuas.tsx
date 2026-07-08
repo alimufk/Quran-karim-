@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'; 
 import { motion, AnimatePresence } from 'framer-motion'; 
-import { ArrowRight, Play, Pause, Search, RefreshCw, AlertCircle, Headphones, BookOpen, User, Calendar, Youtube, Star } from 'lucide-react'; 
+import { ArrowRight, Play, Pause, Search, RefreshCw, Headphones, BookOpen, User, Calendar, Youtube, Star } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom'; 
 
 const duasList = [
@@ -22,25 +22,20 @@ export function ShiaDuas() {
   const [activeTab, setActiveTab] = useState<'duas' | 'latmiyat'>('duas');
   const [currentDuaId, setCurrentDuaId] = useState<string | null>(null); 
   const [isPlaying, setIsPlaying] = useState(false); 
-  const [isLoading, setIsLoading] = useState(false); 
   const [isSearchingOnline, setIsSearchingOnline] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); 
   const audioRef = useRef<HTMLAudioElement | null>(null); 
 
-  // مصفوفة جلب نتائج اليوتيوب الفعلية والدقيقة
   const [youtubeResults, setYoutubeResults] = useState<any[]>([]);
-  // تخزين معرف الفيديو النشط الذي يقوم المستخدم بمشاهدته الآن
+  // لتحديد أي فيديو يشتغل حالياً داخل الكرت الخاص به
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
 
   const filteredDuas = duasList.filter(d => d.name.includes(search)); 
 
-  // 🔍 دالة البحث الفائقة المرتبطة بسيرفر جلب بيانات اليوتيوب بدقة 100%
+  // 🔍 دالة جلب البيانات من يوتيوب
   const searchLatmiyatOnYoutube = async (query: string) => {
     if (!query.trim()) return;
     setIsSearchingOnline(true);
-    setErrorMessage(null);
     try {
-      // استخدام محرك بحث Piped/Invidious العام الموثوق والمفتوح لجلب نتائج يوتيوب الحقيقية
       const res = await fetch(`https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(query)}&filter=videos`);
       const data = await res.json();
       
@@ -55,25 +50,22 @@ export function ShiaDuas() {
         }));
         setYoutubeResults(results);
       } else {
-        fallbackYoutubeResults(query);
+        fallbackYoutubeResults();
       }
     } catch (err) {
-      fallbackYoutubeResults(query);
+      fallbackYoutubeResults();
     } finally {
       setIsSearchingOnline(false);
     }
   };
 
-  // نتائج يوتيوب حقيقية واحتياطية ثابتة للحاج باسم الكربلائي في حال انقطاع الشبكة
-  const fallbackYoutubeResults = (query: string) => {
+  const fallbackYoutubeResults = () => {
     setYoutubeResults([
       { id: 'lLWq2', name: 'الحاج باسم الكربلائي - قصيدة قارورة (الإصدار الرسمي)', englishName: 'باسم الكربلائي Basim Karbalaei', views: '95M مشاهدة', thumbnail: 'https://img.youtube.com/vi/lLWq2/mqdefault.jpg', duration: '8:45' },
-      { id: '2G8M_XGv_vA', name: 'باسم الكربلائي - يزوروني (المشاية) المشهد الفخم', englishName: 'العتبة العباسية المقدسة', views: '120M مشاهدة', thumbnail: 'https://img.youtube.com/vi/2G8M_XGv_vA/mqdefault.jpg', duration: '11:20' },
-      { id: 'E6O_XbS_Moo', name: 'باسم الكربلائي - ملايين مشينا / مشاية الأربعين', englishName: 'باسم الكربلائي Basim Karbalaei', views: '40M مشاهدة', thumbnail: 'https://img.youtube.com/vi/E6O_XbS_Moo/mqdefault.jpg', duration: '7:15' }
+      { id: '2G8M_XGv_vA', name: 'باسم الكربلائي - يزوروني (المشاية) المشهد الفخم', englishName: 'العتبة العباسية المقدسة', views: '120M مشاهدة', thumbnail: 'https://img.youtube.com/vi/2G8M_XGv_vA/mqdefault.jpg', duration: '11:20' }
     ]);
   };
 
-  // إطلاق البحث عند الضغط أو التوقف عن الكتابة لثانية واحدة
   useEffect(() => {
     if (activeTab === 'latmiyat' && search.trim().length > 1) {
       const delayDebounce = setTimeout(() => {
@@ -83,7 +75,6 @@ export function ShiaDuas() {
     }
   }, [search, activeTab]);
 
-  // التحكم بمشغل الأدعية الصوتية المحلية
   useEffect(() => { 
     if (audioRef.current && currentDuaId && activeTab === 'duas') { 
       if (isPlaying) { 
@@ -94,15 +85,10 @@ export function ShiaDuas() {
     } 
   }, [isPlaying, currentDuaId, activeTab]); 
 
-  const toggleVideoPlay = (videoId: string) => {
-    // إيقاف صوت الأدعية أولاً لو كان يشتغل
-    setIsPlaying(false);
-    
-    if (activeVideoId === videoId) {
-      setActiveVideoId(null); // إغلاق الفيديو عند الضغط مرة أخرى
-    } else {
-      setActiveVideoId(videoId); // تشغيل فيديو يوتيوب المختار
-    }
+  // تشغيل الفيديو داخلياً داخل الـ Iframe المُعدّل والمحمي ضد الحظر
+  const handlePlayVideoInline = (videoId: string) => {
+    setIsPlaying(false); // إيقاف صوت الأدعية
+    setActiveVideoId(videoId);
   };
 
   return ( 
@@ -113,7 +99,7 @@ export function ShiaDuas() {
         </button> 
         <div> 
           <h1 className="font-bold text-lg text-[#f0f9ff] tracking-tight">منصة اللطميات والأدعية الشاملة</h1> 
-          <p className="text-xs text-[#fbbf24]">مدمج مع محرك بحث يوتيوب الفوري 📺</p> 
+          <p className="text-xs text-[#fbbf24]">مشغل داخلي مدمج بدون مغادرة التطبيق 📱</p> 
         </div> 
       </header> 
 
@@ -121,7 +107,7 @@ export function ShiaDuas() {
         <div className="relative"> 
           <input 
             type="text" 
-            placeholder={activeTab === 'duas' ? "ابحث عن دعاء مبارك..." : "اكتب اسم اللطمية أو الرادود (يبحث في اليوتيوب مباشرة)..."} 
+            placeholder={activeTab === 'duas' ? "ابحث عن دعاء مبارك..." : "اكتب اسم اللطمية أو الرادود..."} 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
             className="w-full bg-[#064e3b]/60 border border-[#059669]/30 rounded-2xl py-3 pr-12 pl-12 text-[#f0f9ff] placeholder:text-[#059669]/70 focus:outline-none focus:ring-2 focus:ring-[#fbbf24] text-right" 
@@ -152,7 +138,6 @@ export function ShiaDuas() {
 
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5 pb-32"> 
         
-        {/* قسم الأدعية */}
         {activeTab === 'duas' && filteredDuas.map((dua) => ( 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={dua.id} > 
             <div onClick={() => { setCurrentDuaId(dua.id); setIsPlaying(!isPlaying); }} className={`flex items-center justify-between p-4 rounded-[24px] border cursor-pointer transition-all ${currentDuaId === dua.id ? 'bg-[#059669]/30 border-[#fbbf24]/50' : 'border-[#059669]/20 bg-[#064e3b]/40 hover:bg-[#059669]/30'}`} > 
@@ -169,69 +154,57 @@ export function ShiaDuas() {
           </motion.div> 
         ))} 
 
-        {/* 📺 تصميم يوتيوب الحقيقي والمبهر للمشاهدة والاستماع المباشر */}
+        {/* 📺 مشغل يوتيوب المدمج المحدث بالكامل لمنع الحظر وبدون مغادرة التطبيق */}
         {activeTab === 'latmiyat' && youtubeResults.map((video, index) => ( 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} key={video.id} className="w-full" > 
             <div className="flex flex-col rounded-[28px] border border-[#059669]/15 bg-[#064e3b]/20 overflow-hidden shadow-md">
               
-              {/* مشغل يوتيوب المدمج الذكي - يفتح فقط للفيديو الذي يضغط عليه المستخدم لضمان سرعة التطبيق */}
               {activeVideoId === video.id ? (
                 <div className="w-full aspect-video bg-black relative">
+                  {/* هنا التعديل السحري: تم تغيير النطاق إلى youtube-nocookie وإضافة ميزات تجاوز قيود WebView للهواتف */}
                   <iframe
                     className="w-full h-full"
-                    src={`https://www.youtube.com/embed/${video.id}?autoplay=1&rel=0&modestbranding=1`}
+                    src={`https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&origin=${window.location.origin}&playsinline=1&rel=0&modestbranding=1&enablejsapi=1`}
                     title={video.name}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                   />
                 </div>
               ) : (
-                /* الغلاف الماستر للفيديو (Thumbnail) مثل اليوتيوب تماماً */
-                <div onClick={() => toggleVideoPlay(video.id)} className="relative w-full aspect-video bg-neutral-900 flex items-center justify-center cursor-pointer group overflow-hidden">
+                <div onClick={() => handlePlayVideoInline(video.id)} className="relative w-full aspect-video bg-neutral-900 flex items-center justify-center cursor-pointer group overflow-hidden">
                   <img src={video.thumbnail} alt={video.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
                   
-                  {/* زر تشغيل فخم في المنتصف */}
                   <div className="w-14 h-14 bg-red-600 text-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-200 z-10">
                     <Play fill="currentColor" size={24} className="mr-0.5" />
                   </div>
-                  {/* مدة الفيديو */}
+
                   <span className="absolute bottom-3 left-3 text-[11px] bg-black/80 text-white px-2 py-0.5 rounded-md font-mono font-bold">{video.duration}</span>
-                  <span className="absolute top-3 right-3 text-[10px] bg-[#fbbf24] text-[#022c22] px-2 py-0.5 rounded-full font-bold flex items-center gap-1"><Star size={10} fill="currentColor" /> جاهز للمشاهدة</span>
+                  <span className="absolute top-3 right-3 text-[10px] bg-[#fbbf24] text-[#022c22] px-2 py-0.5 rounded-full font-bold flex items-center gap-1"><Star size={10} fill="currentColor" /> تشغيل داخلي</span>
                 </div>
               )}
 
-              {/* تفاصيل وبيانات الفيديو مثل اليوتيوب */}
-              <div onClick={() => toggleVideoPlay(video.id)} className="p-4 space-y-2 cursor-pointer hover:bg-[#064e3b]/30 transition-colors">
+              <div className="p-4 space-y-2">
                 <h3 className="font-bold text-sm md:text-base text-[#f0f9ff] line-clamp-2 leading-relaxed text-right">
                   {video.name}
                 </h3>
-                <div className="flex items-center justify-between text-xs text-[#059669]">
+                <div className="flex items-center justify-between text-xs text-[#059669] pt-1">
                   <span className="flex items-center gap-1 font-medium"><User size={12} className="text-[#fbbf24]" /> {video.englishName}</span>
-                  <span className="flex items-center gap-1 bg-[#059669]/10 px-2 py-1 rounded-lg"><Calendar size={12} /> {video.views}</span>
+                  <span className="flex items-center gap-1 bg-[#059669]/10 px-2.5 py-1 rounded-xl text-[#fbbf24]/90 font-bold">{video.views}</span>
                 </div>
               </div>
 
             </div>
           </motion.div> 
         ))} 
-
-        {activeTab === 'latmiyat' && youtubeResults.length === 0 && !isSearchingOnline && (
-          <div className="text-center p-12 bg-[#064e3b]/10 border border-[#059669]/10 rounded-[32px] space-y-3">
-            <div className="text-red-500 mx-auto w-fit p-3 bg-red-500/10 rounded-full animate-bounce"><Youtube size={28} /></div>
-            <h4 className="font-bold text-[#f0f9ff]">محرك بحث يوتيوب الفوري المباشر</h4>
-            <p className="text-xs text-[#059669] max-w-xs mx-auto leading-relaxed">اكتب الآن (مثال: باسم الكربلائي قارورة) لتعرض لك الفيديوهات والإصدارات الرسمية والكاملة مباشرة من اليوتيوب لتعمل بدون أي رسائل خطأ وبثبات كامل!</p>
-          </div>
-        )}
       </div> 
 
-      {/* مشغل الأدعية المحلي بالأسفل */}
       {currentDuaId && activeTab === 'duas' && ( 
         <div className="absolute bottom-0 left-0 right-0 bg-[#064e3b] px-6 py-5 border-t border-[#059669]/50 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] rounded-t-[32px] z-50"> 
           <div className="flex justify-between items-center"> 
             <div className="text-right"> 
               <h4 className="font-bold text-[#fbbf24] text-sm">{duasList.find(d => d.id === currentDuaId)?.name}</h4> 
-              <p className="text-xs text-[#059669] mt-0.5">{isPlaying ? 'جاري تشغيل الدعاء الآن...' : 'متوقف'}</p> 
+              <p className="text-xs text-[#059669] mt-0.5">{isPlaying ? 'جاري تشغيل الدعاء...' : 'متوقف'}</p> 
             </div> 
             <button onClick={() => setIsPlaying(!isPlaying)} className="p-4 bg-[#fbbf24] text-[#022c22] rounded-full shadow-lg"> 
               {isPlaying ? <Pause fill="currentColor" size={24} /> : <Play fill="currentColor" size={24} />} 
