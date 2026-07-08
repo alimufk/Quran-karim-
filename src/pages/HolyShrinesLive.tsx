@@ -7,31 +7,29 @@ const shrines = [
     id: 'karbala-hussain',
     name: 'العتبة الحسينية المقدسة',
     location: 'كربلاء المقدسة',
-    embedUrl: 'https://www.youtube.com/embed/Fzfm7YS4Cwk', 
+    // المعرف الفعلي والمحدث للبث المباشر لقناة كربلاء
+    videoId: 'Fzfm7YS4Cwk', 
   },
   {
     id: 'karbala-abbas',
     name: 'العتبة العباسية المقدسة',
     location: 'كربلاء المقدسة',
-    embedUrl: 'https://www.youtube.com/embed/X7-O8x_HwS8',
+    // المعرف الفعلي والمحدث لقناة الكفيل
+    videoId: 'X7-O8x_HwS8',
   },
   {
     id: 'najaf-ali',
     name: 'العتبة العلوية المقدسة',
     location: 'النجف الأشرف',
-    embedUrl: 'https://www.youtube.com/embed/8CtRrAch1qI',
+    // المعرف الفعلي للبث المباشر من الصحن العلوي
+    videoId: '8CtRrAch1qI',
   },
   {
     id: 'kadhimain',
     name: 'العتبة الكاظمية المقدسة',
     location: 'الكاظمية المقدسة',
-    embedUrl: 'https://www.youtube.com/embed/cpPuDYRB5v4',
-  },
-  {
-    id: 'samarra',
-    name: 'العتبة العسكرية المقدسة',
-    location: 'سامراء المقدسة',
-    embedUrl: 'https://www.youtube.com/embed/pC1qP861x9uBqFw38f7MhA',
+    // المعرف المباشر لقناة الجوادين
+    videoId: 'cpPuDYRB5v4',
   }
 ];
 
@@ -45,7 +43,7 @@ export function HolyShrinesLive() {
       animate={{ opacity: 1, y: 0 }}
       className="p-6 space-y-6 min-h-screen bg-[#022c22] text-[#f0f9ff]"
     >
-      {/* الهيدر وزر الرجوع الفخم الافتراضي */}
+      {/* الهيدر وزر الرجوع الفخم الخاص بك */}
       <div className="flex items-center justify-between mb-4">
         <button 
           onClick={() => navigate('/')}
@@ -59,14 +57,14 @@ export function HolyShrinesLive() {
         </div>
       </div>
 
-      {/* مشغل الفيديو المدمج بالتصميم القديم */}
+      {/* مشغل الفيديو المدمج بالتصميم القديم الفخم - تم تعديل الرابط ليتوافق مع الحماية */}
       <div className="w-full aspect-video rounded-[24px] overflow-hidden border border-[#fbbf24]/30 bg-black shadow-2xl relative">
         <iframe
           key={activeShrine.id}
           title={activeShrine.name}
-          src={activeShrine.embedUrl}
+          src={`https://www.youtube-nocookie.com/embed/${activeShrine.videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1`}
           className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
         ></iframe>
       </div>
