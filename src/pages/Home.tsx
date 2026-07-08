@@ -86,9 +86,9 @@ export function Home() {
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
           <Link to="/prayer" className="bg-[#064e3b] px-4 py-2 rounded-full border border-[#059669]/30 flex items-center gap-2 cursor-pointer">
-          <span className="text-xs text-[#059669]">الموقع</span>
-          <Settings className="w-4 h-4 text-[#fbbf24]" />
-        </Link>
+            <span className="text-xs text-[#059669]">الموقع</span>
+            <Settings className="w-4 h-4 text-[#fbbf24]" />
+          </Link>
         </div>
       </header>
 
@@ -246,55 +246,60 @@ export function Home() {
             </svg>
           </div><span className="font-medium text-sm text-[#f0f9ff]">المسبحة</span>
          </Link>
-            <Link to="/names-of-allah" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl flex flex-col items-center justify-center gap-3 group hover:bg-[#064e3b]/60 transition-all duration-300">
-            <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform duration-300">
+        <Link to="/names-of-allah" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl flex flex-col items-center justify-center gap-3 group hover:bg-[#064e3b]/60 transition-all duration-300">
+          <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform duration-300">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
             </svg>
-            </div>
-            <span className="font-medium text-sm text-[#f0f9ff]">أسماء الله</span>
-            </Link>
+          </div>
+          <span className="font-medium text-sm text-[#f0f9ff]">أسماء الله</span>
+        </Link>
         <Link to="/ramadan" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex flex-col items-center justify-center gap-3 hover:bg-[#059669]/30 transition-all group">
           <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
             <Moon size={28} />
           </div>
           <span className="font-medium text-sm text-[#f0f9ff]">قسم رمضان</span>
         </Link>
+
+        {/* 1. قسم البث المباشر للعتبات المقدسة (بطاقة كاملة وعريضة مستقلة) */}
+        <div 
+          onClick={() => navigate('/holy-shrines-live')} 
+          className="col-span-2 w-full flex items-center justify-between p-5 rounded-[24px] bg-[#064e3b]/40 border border-[#059669]/30 hover:border-[#fbbf24]/50 cursor-pointer transition-all duration-300 shadow-md"
+        >
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-[#059669]/20 text-[#fbbf24] animate-pulse">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2Z"/><path d="m17 2-5 5-5-5"/></svg>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-bold text-lg text-[#fbbf24] flex items-center gap-2">
+                البث المباشر للعتبات المقدسة
+                <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping" />
+              </span>
+              <span className="text-xs text-[#059669]">كربلاء، النجف الأشرف، الكاظمية، وسامراء</span>
+            </div>
+          </div>
+          <div className="text-[#fbbf24] opacity-70">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><path d="m15 18-6-6 6-6"/></svg>
+          </div>
+        </div>
+
+        {/* 2. قسم صائمون الأصلي (بطاقة كاملة وعريضة مستقلة تماماً) */}
         <Link to="/saimoon" className="col-span-2 bg-[#fbbf24]/10 border border-[#fbbf24]/30 p-5 rounded-[24px] flex items-center justify-between gap-3 hover:bg-[#fbbf24]/20 transition-all group relative overflow-hidden shadow-md">
           <div className="absolute -left-10 -bottom-10 w-24 h-24 bg-[#fbbf24]/5 rounded-full blur-xl" />
           <div className="flex items-center gap-4 relative z-10">
-             <div className="p-3 bg-[#fbbf24]/25 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
-               <Calendar size={28} />
-             </div>
-          </div>
-                                    {/* قسم البث المباشر للعتبات المقدسة (بطاقة كاملة وعريضة مستقلة) */}
-          <div 
-            onClick={() => navigate('/holy-shrines-live')} 
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-[#064e3b]/40 border border-[#059669]/30 hover:border-[#fbbf24]/50 cursor-pointer transition-all duration-300 shadow-md mb-4"
-          
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-[#059669]/20 text-[#fbbf24] animate-pulse">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2Z"/><path d="m17 2-5 5-5-5"/></svg>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-lg text-[#fbbf24] flex items-center gap-2">
-                  البث المباشر للعتبات المقدسة
-                  <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                </span>
-                <span className="text-xs text-[#059669]">كربلاء، النجف الأشرف، الكاظمية، وسامراء</span>
-              </div>
+            <div className="p-3 bg-[#fbbf24]/25 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
+              <Calendar size={28} />
             </div>
-            <div className="text-[#fbbf24] opacity-70">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><path d="m15 18-6-6 6-6"/></svg>
+            <div className="flex flex-col">
+              <span className="font-bold text-lg text-[#fbbf24]">قسم صائمون</span>
+              <span className="text-xs text-[#059669]">أوقات الصيام، عدادات القضاء، الأدعية، والأحكام</span>
             </div>
-             <div className="flex flex-col">
-               <span className="font-bold text-lg text-[#fbbf24]">قسم صائمون</span>
-               <span className="text-xs text-[#059669]">أوقات الصيام، عدادات القضاء، الأدعية، والأحكام</span>
-             </div>
           </div>
           <span className="text-[#fbbf24] font-bold text-lg">←</span>
         </Link>
+
+        {/* 3. قسم المساجد القريبة */}
         <Link to="/mosques" className="col-span-2 bg-[#10b981]/10 border border-[#10b981]/30 p-5 rounded-[24px] flex items-center justify-between gap-3 hover:bg-[#10b981]/20 transition-all group relative overflow-hidden shadow-md">
           <div className="absolute -left-10 -bottom-10 w-24 h-24 bg-[#10b981]/5 rounded-full blur-xl" />
           <div className="flex items-center gap-4 relative z-10">
@@ -308,6 +313,7 @@ export function Home() {
           </div>
           <span className="text-[#10b981] font-bold text-lg">←</span>
         </Link>
+
         <Link to="/radios" className="col-span-2 bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex items-center justify-between gap-3 hover:bg-[#059669]/30 transition-all group">
           <div className="flex items-center gap-4">
              <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
