@@ -22,7 +22,7 @@ const shrines = [
     name: 'العتبة العلوية المقدسة',
     location: 'النجف الأشرف',
     // رابط البث المباشر المدمج لقناة العتبة العلوية
-    embedUrl: 'https://www.youtube.com/embed/live_stream?channel=UCx9zD9Xy3v4fV7Jszf1E_bQ',
+    embedUrl: 'https://www.youtube.com/embed/5_Xk7nL1S6w',
   },
   {
     id: 'kadhimain',
