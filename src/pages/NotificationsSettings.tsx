@@ -23,15 +23,39 @@ export function NotificationsSettings() {
   const [testMode, setTestMode] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
-  // حالات محلية لحفظ الأوقات المدخلة لمنع اختفائها أثناء التحميل
-  const [morningTime, setMorningTime] = useState("07:00");
-  const [eveningTime, setEveningTime] = useState("17:00");
+  // 1️⃣ قراءة الحالات المحلية من الـ localStorage مباشرة عند التحميل الأولي لمنع اختفائها
+  const [morningTime, setMorningTime] = useState(() => {
+    return localStorage.getItem('local_morning_time') || "07:00";
+  });
+  const [eveningTime, setEveningTime] = useState(() => {
+    return localStorage.getItem('local_evening_time') || "17:00";
+  });
+  const [morningEnabled, setMorningEnabled] = useState(() => {
+    return localStorage.getItem('local_morning_enabled') === 'true';
+  });
+  const [eveningEnabled, setEveningEnabled] = useState(() => {
+    return localStorage.getItem('local_evening_enabled') === 'true';
+  });
 
-  // تحديث الحالات المحلية فور تحميل الإعدادات من الذاكرة
+  // 2️⃣ مزامنة الحالات مع الـ Hook الرئيسي إذا كان يحتوي على بيانات مسبقة
   useEffect(() => {
     if (settings) {
-      if (settings.morningTime) setMorningTime(settings.morningTime);
-      if (settings.eveningTime) setEveningTime(settings.eveningTime);
+      if (settings.morningTime) {
+        setMorningTime(settings.morningTime);
+        localStorage.setItem('local_morning_time', settings.morningTime);
+      }
+      if (settings.eveningTime) {
+        setEveningTime(settings.eveningTime);
+        localStorage.setItem('local_evening_time', settings.eveningTime);
+      }
+      if (settings.morningEnabled !== undefined) {
+        setMorningEnabled(settings.morningEnabled);
+        localStorage.setItem('local_morning_enabled', String(settings.morningEnabled));
+      }
+      if (settings.eveningEnabled !== undefined) {
+        setEveningEnabled(settings.eveningEnabled);
+        localStorage.setItem('local_evening_enabled', String(settings.eveningEnabled));
+      }
     }
   }, [settings]);
 
@@ -41,23 +65,43 @@ export function NotificationsSettings() {
     }
   }, []);
 
-  const handleToggle = (key: any) => {
+  // 3️⃣ تعديل دالة الـ Toggle لحفظ الحالة في الـ localStorage فوراً
+  const handleToggle = (key: 'morningEnabled' | 'eveningEnabled') => {
+    const currentVal = key === 'morningEnabled' ? morningEnabled : eveningEnabled;
+    const newVal = !currentVal;
+
+    if (key === 'morningEnabled') {
+      setMorningEnabled(newVal);
+      localStorage.setItem('local_morning_enabled', String(newVal));
+    } else {
+      setEveningEnabled(newVal);
+      localStorage.setItem('local_evening_enabled', String(newVal));
+    }
+
     const currentSettings = settings || {
       morningEnabled: false,
       eveningEnabled: false,
       morningTime: "07:00",
       eveningTime: "17:00"
     };
+
     const updated = {
       ...currentSettings,
-      [key]: !currentSettings[key]
+      [key]: newVal
     };
     saveSettings(updated);
   };
 
+  // 4️⃣ تعديل دالة الـ Time Change لحفظ الوقت في الـ localStorage فوراً
   const handleTimeChange = (key: 'morningTime' | 'eveningTime', val: string) => {
-    if (key === 'morningTime') setMorningTime(val);
-    if (key === 'eveningTime') setEveningTime(val);
+    if (key === 'morningTime') {
+      setMorningTime(val);
+      localStorage.setItem('local_morning_time', val);
+    }
+    if (key === 'eveningTime') {
+      setEveningTime(val);
+      localStorage.setItem('local_evening_time', val);
+    }
 
     const currentSettings = settings || {
       morningEnabled: false,
@@ -155,7 +199,7 @@ export function NotificationsSettings() {
               </div>
               <div className="flex items-center gap-3">
                 <input type="time" value={morningTime} onChange={(e) => handleTimeChange('morningTime', e.target.value)} className="bg-transparent text-xs font-bold p-1 rounded border border-[#059669]/20 text-inherit" />
-                <input type="checkbox" checked={!!settings?.morningEnabled} onChange={() => handleToggle('morningEnabled')} className="w-4 h-4 accent-[#059669]" />
+                <input type="checkbox" checked={morningEnabled} onChange={() => handleToggle('morningEnabled')} className="w-4 h-4 accent-[#059669]" />
               </div>
             </div>
 
@@ -169,7 +213,7 @@ export function NotificationsSettings() {
               </div>
               <div className="flex items-center gap-3">
                 <input type="time" value={eveningTime} onChange={(e) => handleTimeChange('eveningTime', e.target.value)} className="bg-transparent text-xs font-bold p-1 rounded border border-[#059669]/20 text-inherit" />
-                <input type="checkbox" checked={!!settings?.eveningEnabled} onChange={() => handleToggle('eveningEnabled')} className="w-4 h-4 accent-[#059669]" />
+                <input type="checkbox" checked={eveningEnabled} onChange={() => handleToggle('eveningEnabled')} className="w-4 h-4 accent-[#059669]" />
               </div>
             </div>
           </div>
