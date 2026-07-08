@@ -94,7 +94,7 @@ export function NotificationsSettings() {
     setTestMode(true);
     setTimeout(() => {
       triggerNotificationNow();
-      alert("تذكير مبارك: (تنبيه بنجاح) ✨");
+      alert("تذكير مبارك: (تنبيه تجريبي شغال بنجاح) ✨");
       setTestMode(false);
     }, 3000);
   };
