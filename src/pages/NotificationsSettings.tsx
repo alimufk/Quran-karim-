@@ -17,18 +17,21 @@ export function NotificationsSettings() {
   const { theme } = useTheme();
   const { settings, saveSettings, triggerNotificationNow } = useNotifications();
 
-  const [permission, setPermission] = useState<NotificationPermission>(
-    'Notification' in window ? Notification.permission : 'default'
-  );
+  // قراءة حالة السماح بالإشعارات من الذاكرة المحفوظة للتأكد من تفعيلها على الجوال
+  const [isPermissionGranted, setIsPermissionGranted] = useState(() => {
+    return localStorage.getItem('local_notification_permission') === 'granted' || 
+           ('Notification' in window && Notification.permission === 'granted');
+  });
+
   const [testMode, setTestMode] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
-  // 1️⃣ قراءة الحالات المحلية من الـ localStorage مباشرة عند التحميل الأولي لمنع اختفائها
+  // قراءة الحالات المحلية من الـ localStorage مباشرة عند التحميل الأولي لمنع اختفائها
   const [morningTime, setMorningTime] = useState(() => {
-    return localStorage.getItem('local_morning_time') || "07:00";
+    return localStorage.getItem('local_morning_time') || "08:00";
   });
   const [eveningTime, setEveningTime] = useState(() => {
-    return localStorage.getItem('local_evening_time') || "17:00";
+    return localStorage.getItem('local_evening_time') || "18:00";
   });
   const [morningEnabled, setMorningEnabled] = useState(() => {
     return localStorage.getItem('local_morning_enabled') === 'true';
@@ -37,7 +40,7 @@ export function NotificationsSettings() {
     return localStorage.getItem('local_evening_enabled') === 'true';
   });
 
-  // 2️⃣ مزامنة الحالات مع الـ Hook الرئيسي إذا كان يحتوي على بيانات مسبقة
+  // مزامنة الحالات مع الـ Hook الرئيسي إذا كان يحتوي على بيانات مسبقة
   useEffect(() => {
     if (settings) {
       if (settings.morningTime) {
@@ -59,13 +62,6 @@ export function NotificationsSettings() {
     }
   }, [settings]);
 
-  useEffect(() => {
-    if ('Notification' in window) {
-      setPermission(Notification.permission);
-    }
-  }, []);
-
-  // 3️⃣ تعديل دالة الـ Toggle لحفظ الحالة في الـ localStorage فوراً
   const handleToggle = (key: 'morningEnabled' | 'eveningEnabled') => {
     const currentVal = key === 'morningEnabled' ? morningEnabled : eveningEnabled;
     const newVal = !currentVal;
@@ -81,8 +77,8 @@ export function NotificationsSettings() {
     const currentSettings = settings || {
       morningEnabled: false,
       eveningEnabled: false,
-      morningTime: "07:00",
-      eveningTime: "17:00"
+      morningTime: "08:00",
+      eveningTime: "18:00"
     };
 
     const updated = {
@@ -92,7 +88,6 @@ export function NotificationsSettings() {
     saveSettings(updated);
   };
 
-  // 4️⃣ تعديل دالة الـ Time Change لحفظ الوقت في الـ localStorage فوراً
   const handleTimeChange = (key: 'morningTime' | 'eveningTime', val: string) => {
     if (key === 'morningTime') {
       setMorningTime(val);
@@ -106,8 +101,8 @@ export function NotificationsSettings() {
     const currentSettings = settings || {
       morningEnabled: false,
       eveningEnabled: false,
-      morningTime: "07:00",
-      eveningTime: "17:00"
+      morningTime: "08:00",
+      eveningTime: "18:00"
     };
     const updated = {
       ...currentSettings,
@@ -116,12 +111,14 @@ export function NotificationsSettings() {
     saveSettings(updated);
   };
 
+  // تعديل دالة طلب الصلاحية لتحديث الحالة وحفظها بشكل دائم ومؤكد داخل الجهاز
   const requestPermission = async () => {
     if ('Notification' in window) {
       try {
         const result = await Notification.requestPermission();
-        setPermission(result);
         if (result === 'granted') {
+          setIsPermissionGranted(true);
+          localStorage.setItem('local_notification_permission', 'granted');
           triggerNotificationNow();
           alert("تم تفعيل الإشعارات بنجاح! 🔔");
         }
@@ -129,7 +126,9 @@ export function NotificationsSettings() {
         console.error("Error requesting permission:", err);
       }
     } else {
-      setPermission('granted');
+      // للهواتف التي تفتح داخل التطبيق مباشرة ولا تدعم النوافذ المنبثقة الافتراضية
+      setIsPermissionGranted(true);
+      localStorage.setItem('local_notification_permission', 'granted');
       alert("تم تفعيل تنبيهات الأذكار والمواعيد على الهاتف بنجاح! 🔔");
     }
   };
@@ -140,7 +139,7 @@ export function NotificationsSettings() {
       triggerNotificationNow();
       alert("تذكير مبارك: (تنبيه تجريبي شغال بنجاح) ✨");
       setTestMode(false);
-    }, 3000);
+    }, 2000);
   };
 
   return (
@@ -161,7 +160,9 @@ export function NotificationsSettings() {
       </header>
 
       <main className="max-w-md mx-auto px-4 pt-6 space-y-6 font-['Cairo']">
-        {permission !== 'granted' && (
+        
+        {/* إذا لم يتم التفعيل مسبقاً يظهر كارت التنبيه الفخم */}
+        {!isPermissionGranted ? (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-to-br from-[#amber-500]/10 to-[#bbf7d0]/5 border border-[#fbbf24]/30 relative overflow-hidden">
             <div className="flex gap-4">
               <div className="p-3 rounded-xl bg-[#fbbf24]/10 text-[#fbbf24] h-fit">
@@ -177,6 +178,28 @@ export function NotificationsSettings() {
                 </button>
               </div>
             </div>
+          </motion.div>
+        ) : (
+          /* كارت فخم بديل يظهر عند التفعيل الناجح لتأكيد أن الإشعارات شغال بنجاح وبمظهر جرس مفعل */
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-4 rounded-2xl bg-[#064e3b]/40 border border-[#059669]/40 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-[#059669]/20 text-[#fbbf24] animate-bounce">
+                <Bell size={20} />
+              </div>
+              <div className="text-right">
+                <h3 className="font-bold text-sm text-[#fbbf24]">نظام التنبيهات نشط</h3>
+                <p className="text-xs text-[#059669] mt-0.5">التطبيق سيقوم بتذكيرك بالأذكار في مواقيتها</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => {
+                setIsPermissionGranted(false);
+                localStorage.removeItem('local_notification_permission');
+              }}
+              className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 px-2.5 py-1 rounded-lg hover:bg-red-500/20 transition-all"
+            >
+              إلغاء التفعيل
+            </button>
           </motion.div>
         )}
 
