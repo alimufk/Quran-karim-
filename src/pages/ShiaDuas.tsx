@@ -19,10 +19,10 @@ const duasList = [
 
 // 2. قائمة اللطميات الرسمية (تأكد من مطابقة حالة الأحرف الكبيرة والصغيرة للامتداد MP3 في مستودعك)
 const latmiyatList = [
-  { id: 'latmia-1', name: 'قصيدة يضمضمني - الحاج باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yandandnuni.mp3' },
-  { id: 'latmia-2', name: 'قصيدة يسجلني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yusajiluni.MP3' },
-  { id: 'latmia-3', name: 'قصيدة يمه اطمنج - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yameh_atmanj.MP3' },
-  { id: 'latmia-4', name: 'قصيدة تزوروني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/tazuruni.MP3' }
+  { id: 'latmia-1', name: 'قصيدة يمضموني - الحاج باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yandandnuni.mp3' },
+  { id: 'latmia-2', name: 'قصيدة يسجلني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yusajiluni.mp3' },
+  { id: 'latmia-3', name: 'قصيدة يمه اطمنج - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yameh_atmanj.mp3' },
+  { id: 'latmia-4', name: 'قصيدة تزوروني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/tazuruni.mp3' }, 
 ];
 
 export function ShiaDuas() { 
