@@ -1,4 +1,4 @@
-يمmport { useState, useRef, useEffect } from 'react'; 
+import { useState, useRef, useEffect } from 'react'; 
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { ArrowRight, Play, Pause, Search, Headphones, BookOpen, Volume2, ShieldCheck } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom'; 
