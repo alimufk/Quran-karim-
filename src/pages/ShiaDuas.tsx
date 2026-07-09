@@ -23,7 +23,9 @@ const latmiyatList = [
   { id: 'latmia-2', name: 'قصيدة يسجلني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yusajiluni.mp3' },
   { id: 'latmia-3', name: 'قصيدة  خطت حرب - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/khutat_harb.mp3' },
   { id: 'latmia-4', name: 'قصيدة تزوروني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/tazuruni.mp3' }, 
-  { id: 'latmia-4', name: 'قصيدة يمضموني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/m1.mp3' }
+  { id: 'latmia-5', name: 'قصيدة يمضموني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/m1.mp3' }, 
+  { id: 'latmia-6', name: 'قصيدة شد الثامة - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/shidalthaama.mp3' }, 
+  { id: 'latmia-7', name: 'قصيدة بلله ياشمر - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/blahaesmar.mp3' }
 ];
 
 export function ShiaDuas() { 
