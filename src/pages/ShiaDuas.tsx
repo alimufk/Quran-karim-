@@ -35,7 +35,6 @@ const latmiyatList = [
     url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yamah atmanj.MP3
   }, 
   {
-    
     id: 'latmia-4', 
     name: 'قصيدة تزوروني - باسم الكربلائي', 
     url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/tazuruni.MP3
