@@ -32,12 +32,12 @@ const latmiyatList = [
   {
     id: 'latmia-3', 
     name: 'قصيدة يمة اطمنج - باسم الكربلائي', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yamah_atmanj.MP3
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yamah_atmanj.MP3'
   }, 
   {
     id: 'latmia-4', 
     name: 'قصيدة تزوروني - باسم الكربلائي', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/tazuruni.MP3
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/tazuruni.MP3'
 ];
 
 export function ShiaDuas() { 
