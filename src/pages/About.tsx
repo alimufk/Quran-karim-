@@ -57,13 +57,19 @@ export function About() {
             <div className="bg-[#022c22]/50 p-4 rounded-2xl border border-[#059669]/30 mt-4 leading-relaxed">
               <p className="text-[#f0f9ff] text-sm flex items-center justify-center gap-2">
                 <Heart size={16} className="text-red-500 fill-red-500" />
-                <span>تم تطوير هذا التطبيق كصدقة جارية.</span>
+                <span>تم تطوير هذا التطبيق كصدقة جارية على روح والدي وبقبة الاموات.</span>
               </p>
               <p className="text-[#059669] text-xs mt-2">
                 نسأل الله أن ينفع به ويجعله في ميزان الحسنات.
               </p>
             </div>
           </div>
+                  <div className="mt-4 text-center">
+          <span className="inline-block bg-[#fbbf24]/10 text-[#fbbf24] border border-[#fbbf24]/20 rounded-full px-4 py-1 text-xs font-bold tracking-wide">
+            الإصدار الحالي: v1.0.0
+          </span>
+        </div>
+
         </motion.div>
       </div>
     </div>
