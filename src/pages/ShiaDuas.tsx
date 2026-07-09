@@ -19,9 +19,9 @@ const duasList = [
 
 // 2. قائمة اللطميات الرسمية (تأكد من مطابقة حالة الأحرف الكبيرة والصغيرة للامتداد MP3 في مستودعك)
 const latmiyatList = [
-  { id: 'latmia-1', name: 'قصيدة يمضموني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yandandnuni1.mp3' },
+  { id: 'latmia-1', name: 'قصيدة يمضموني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yand2.mp3' },
   { id: 'latmia-2', name: 'قصيدة يسجلني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yusajiluni.mp3' },
-  { id: 'latmia-3', name: 'قصيدة يمه اطمنج - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yameh_atmanj2.mp3' },
+  { id: 'latmia-3', name: 'قصيدة يمه اطمنج - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yamh2.mp3' },
   { id: 'latmia-4', name: 'قصيدة تزوروني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/tazuruni.mp3' }
 ];
 
