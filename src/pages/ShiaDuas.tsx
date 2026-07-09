@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react'; 
 import { motion, AnimatePresence } from 'framer-motion'; 
-import { ArrowRight, Play, Pause, Search, Headphones, BookOpen, Volume2, ShieldCheck } from 'lucide-react'; 
+import { ArrowRight, Play, Pause, Search, Headphones, BookOpen, Volume2, ShieldCheck, Download, CheckCircle } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom'; 
 
-// 1. قائمة الأدعية الكاملة المرفوعة على سيرفر GitHub الخاص بك
+// 1. قائمة الأدعية الكاملة والمستقرة
 const duasList = [
   { id: 'kumail', name: 'دعاء كميل', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_kumayl_farahmand_fani.mp3' },
   { id: 'nudbah', name: 'دعاء الندبة', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa-nudbah-farahmand.MP3' },
@@ -17,53 +17,34 @@ const duasList = [
   { id: 'Mujir', name: 'دعاء المجير', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa-Mujir-Mahdi Sahwan.mp3' }
 ];
 
-// 2. قائمة اللطميات المرفوعة على سيرفر جيت هاب (يمكنك إضافة أي لطمية ترفعها هنا مباشرة)
+// 2. قائمة اللطميات الرسمية والمطابقة لسيرفر جيت هاب الخاص بك
 const latmiyatList = [
-  { 
-    id: 'latmia-1', 
-    name: 'قصيدة يمضموني - الحاج باسم الكربلائي', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yandandnuni.mp3'
-  },
-  { 
-    id: 'latmia-2', 
-    name: 'قصيدة يسجلني - باسم الكربلائي', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yusajiluni.MP3'
-  },
-  { 
-    id: 'latmia-3', 
-    name: 'قصيدة يمه اطمنج - باسم الكربلائي', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yameh_atmanj.MP3'
-  },
-  { 
-    id: 'latmia-4', 
-    name: 'قصيدة تزوروني - باسم الكربلائي', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/tazuruni.MP3'
-  }
+  { id: 'latmia-1', name: 'قصيدة يضمضمني - الحاج باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yandandnuni.mp3' },
+  { id: 'latmia-2', name: 'قصيدة يسجلني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yusajiluni.MP3' },
+  { id: 'latmia-3', name: 'قصيدة يمه اطمنج - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yameh_atmanj.MP3' },
+  { id: 'latmia-4', name: 'قصيدة تزوروني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/tazuruni.MP3' }
 ];
-
 
 export function ShiaDuas() { 
   const navigate = useNavigate(); 
   const [search, setSearch] = useState(''); 
   const [activeTab, setActiveTab] = useState<'duas' | 'latmiyat'>('duas');
   
-  // التحكم بالملف الصوتي النشط الحالي
   const [currentTrack, setCurrentTrack] = useState<any | null>(null); 
   const [isPlaying, setIsPlaying] = useState(false); 
   const [isLoading, setIsLoading] = useState(false); 
   const audioRef = useRef<HTMLAudioElement | null>(null); 
 
-  // فلترة القوائم بناءً على نص البحث
   const filteredDuas = duasList.filter(d => d.name.includes(search)); 
   const filteredLatmiyat = latmiyatList.filter(l => l.name.includes(search));
 
-  // مراقبة وتشغيل الصوت بشكل مستقر وآمن للـ WebView
+  // تشغيل آمن يمنع توقف اللطميات والأدعية نهائياً ويصلح ترميز الروابط
   useEffect(() => { 
     if (audioRef.current && currentTrack) { 
       if (isPlaying) { 
         setIsLoading(true);
-        audioRef.current.crossOrigin = "anonymous"; // لتجنب مشاكل الـ CORS في التطبيقات
-        audioRef.current.src = currentTrack.url;
+        audioRef.current.crossOrigin = "anonymous"; 
+        audioRef.current.src = encodeURI(currentTrack.url); // تصليح وقراءة الروابط بشكل سليم لقنوات أندرويد
         audioRef.current.load();
         
         audioRef.current.play()
@@ -78,7 +59,6 @@ export function ShiaDuas() {
     } 
   }, [isPlaying, currentTrack]); 
 
-  // دالة اختيار وتغيير الملف الصوتي
   const handleTrackSelect = (track: any) => {
     if (currentTrack?.id === track.id) {
       setIsPlaying(!isPlaying);
@@ -88,10 +68,21 @@ export function ShiaDuas() {
     }
   };
 
+  // دالة التحميل المباشر للملفات الصوتية من السيرفر
+  const handleDownload = (e: React.MouseEvent, track: any) => {
+    e.stopPropagation(); // منع تشغيل الصوت عند الضغط على زر التحميل
+    const link = document.createElement('a');
+    link.href = encodeURI(track.url);
+    link.download = `${track.name}.mp3`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return ( 
     <div className="flex flex-col h-full bg-[#022c22] relative font-['Cairo'] text-right" dir="rtl"> 
       
-      {/* هيدر التطبيق الفخم */}
+      {/* الهيدر */}
       <header className="bg-[#064e3b] shadow-lg border-b border-[#059669]/30 px-4 py-3 flex items-center gap-4 z-20"> 
         <button onClick={() => navigate(-1)} className="p-2 text-[#fbbf24]"> 
           <ArrowRight size={24} /> 
@@ -99,12 +90,12 @@ export function ShiaDuas() {
         <div> 
           <h1 className="font-bold text-lg text-[#f0f9ff] tracking-tight">المكتبة الصوتية الشاملة</h1> 
           <p className="text-xs text-[#fbbf24] flex items-center gap-1">
-            <ShieldCheck size={13} /> تشغيل محلي فوري وآمن 100%
+            <ShieldCheck size={13} /> تشغيل وتحميل محلي آمن 100%
           </p> 
         </div> 
       </header> 
 
-      {/* شريط البحث والتبديل بين الأقسام */}
+      {/* شريط البحث والتبديل (تم إصلاح تداخل الأزرار) */}
       <div className="px-6 py-4 z-10 bg-[#022c22]/90 backdrop-blur-md border-b border-[#059669]/10 space-y-4"> 
         <div className="relative"> 
           <input 
@@ -117,28 +108,28 @@ export function ShiaDuas() {
           <Search className="absolute right-4 top-3.5 text-[#059669]" size={20} /> 
         </div> 
 
-        <div className="flex bg-[#064e3b]/40 p-1.5 rounded-2xl border border-[#059669]/15">
+        <div className="grid grid-cols-2 gap-2 bg-[#064e3b]/40 p-1.5 rounded-2xl border border-[#059669]/15">
           <button
             onClick={() => { setActiveTab('duas'); setSearch(''); }}
-            className={`flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 ${activeTab === 'duas' ? 'bg-[#fbbf24] text-[#022c22] shadow-md' : 'text-[#f0f9ff]/70 hover:text-white'}`}
+            className={`py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all duration-200 ${activeTab === 'duas' ? 'bg-[#fbbf24] text-[#022c22] shadow-md' : 'text-[#f0f9ff]/70 hover:text-white'}`}
           >
             <BookOpen size={16} />
             <span>الأدعية الصوتية ({duasList.length})</span>
           </button>
           <button
             onClick={() => { setActiveTab('latmiyat'); setSearch(''); }}
-            className={`flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 ${activeTab === 'latmiyat' ? 'bg-[#fbbf24] text-[#022c22] shadow-md' : 'text-[#f0f9ff]/70 hover:text-white'}`}
+            className={`py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all duration-200 ${activeTab === 'latmiyat' ? 'bg-[#fbbf24] text-[#022c22] shadow-md' : 'text-[#f0f9ff]/70 hover:text-white'}`}
           >
             <Headphones size={16} />
-            <span>اللطميات والمجالس</span>
+            <span>اللطميات والمجالس ({latmiyatList.length})</span>
           </button>
         </div>
       </div> 
 
-      {/* قائمة عرض العناصر (الأدعية واللطميات بنفس المظهر المتناسق والسريع) */}
+      {/* قائمة عرض العناصر والأيقونات الأصلية مع ميزة التحميل */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 pb-32"> 
         
-        {/* 1. قسم الأدعية */}
+        {/* قسم الأدعية الكامل */}
         {activeTab === 'duas' && filteredDuas.map((dua) => ( 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={dua.id} > 
             <div onClick={() => handleTrackSelect(dua)} className={`flex items-center justify-between p-4 rounded-[24px] border cursor-pointer transition-all ${currentTrack?.id === dua.id ? 'bg-[#059669]/30 border-[#fbbf24]/50 shadow-md' : 'border-[#059669]/20 bg-[#064e3b]/40 hover:bg-[#059669]/30'}`} > 
@@ -148,14 +139,18 @@ export function ShiaDuas() {
                 </div> 
                 <div> 
                   <h3 className={`font-bold text-base ${currentTrack?.id === dua.id ? 'text-[#fbbf24]' : 'text-[#f0f9ff]'}`}> {dua.name} </h3> 
-                  <p className="text-xs text-[#059669]">استماع فوري عبر السيرفر</p> 
+                  <p className="text-xs text-[#059669]">استماع وتحميل مباشر</p> 
                 </div> 
               </div> 
+              {/* أيقونة التحميل الأصلية للأدعية */}
+              <button onClick={(e) => handleDownload(e, dua)} className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-colors" title="تحميل الملف الصوتي">
+                <Download size={20} />
+              </button>
             </div> 
           </motion.div> 
         ))} 
 
-        {/* 2. قسم اللطميات (بنفس شكل الأدعية الفخم والسريع جداً لضمان الثبات) */}
+        {/* قسم اللطميات الكامل والمطابق */}
         {activeTab === 'latmiyat' && filteredLatmiyat.map((latmia) => ( 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={latmia.id} > 
             <div onClick={() => handleTrackSelect(latmia)} className={`flex items-center justify-between p-4 rounded-[24px] border cursor-pointer transition-all ${currentTrack?.id === latmia.id ? 'bg-[#059669]/30 border-[#fbbf24]/50 shadow-md' : 'border-[#059669]/20 bg-[#064e3b]/40 hover:bg-[#059669]/30'}`} > 
@@ -165,9 +160,13 @@ export function ShiaDuas() {
                 </div> 
                 <div> 
                   <h3 className={`font-bold text-base ${currentTrack?.id === latmia.id ? 'text-[#fbbf24]' : 'text-[#f0f9ff]'}`}> {latmia.name} </h3> 
-                  <p className="text-xs text-[#059669]">ملف صوتي عالي الجودة مستقر</p> 
+                  <p className="text-xs text-[#059669]">ملف صوتي عالي الجودة</p> 
                 </div> 
               </div> 
+              {/* أيقونة التحميل الأصلية لللطميات */}
+              <button onClick={(e) => handleDownload(e, latmia)} className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-colors" title="تحميل الملف الصوتي">
+                <Download size={20} />
+              </button>
             </div> 
           </motion.div> 
         ))} 
