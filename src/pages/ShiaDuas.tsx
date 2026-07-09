@@ -21,8 +21,9 @@ const duasList = [
 const latmiyatList = [
   { id: 'latmia-1', name: 'قصيدة درب احبابي - مرتضى حرب', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/darib_ahbabi.mp3' },
   { id: 'latmia-2', name: 'قصيدة يسجلني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yusajiluni.mp3' },
-  { id: 'latmia-3', name: 'قصيدة حكاية موت - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hikayat_mawt.mp3' },
-  { id: 'latmia-4', name: 'قصيدة تزوروني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/tazuruni.mp3' }
+  { id: 'latmia-3', name: 'قصيدة  خطت حرب - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/khutat_harb.mp3' },
+  { id: 'latmia-4', name: 'قصيدة تزوروني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/tazuruni.mp3' }, 
+  { id: 'latmia-4', name: 'قصيدة يمضموني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/m1.mp3' }
 ];
 
 export function ShiaDuas() { 
