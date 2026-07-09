@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'; 
 import { motion, AnimatePresence } from 'framer-motion'; 
-import { ArrowRight, Play, Pause, Search, Headphones, BookOpen, Volume2, ShieldCheck, Download, CheckCircle } from 'lucide-react'; 
+import { ArrowRight, Play, Pause, Search, Headphones, BookOpen, Volume2, ShieldCheck, Download, AlertCircle } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom'; 
 
 // 1. قائمة الأدعية الكاملة والمستقرة
@@ -17,7 +17,7 @@ const duasList = [
   { id: 'Mujir', name: 'دعاء المجير', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa-Mujir-Mahdi Sahwan.mp3' }
 ];
 
-// 2. قائمة اللطميات الرسمية والمطابقة لسيرفر جيت هاب الخاص بك
+// 2. قائمة اللطميات الرسمية (تأكد من مطابقة حالة الأحرف الكبيرة والصغيرة للامتداد MP3 في مستودعك)
 const latmiyatList = [
   { id: 'latmia-1', name: 'قصيدة يضمضمني - الحاج باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yandandnuni.mp3' },
   { id: 'latmia-2', name: 'قصيدة يسجلني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yusajiluni.MP3' },
@@ -33,25 +33,30 @@ export function ShiaDuas() {
   const [currentTrack, setCurrentTrack] = useState<any | null>(null); 
   const [isPlaying, setIsPlaying] = useState(false); 
   const [isLoading, setIsLoading] = useState(false); 
+  const [hasError, setHasError] = useState(false); // حالة جديدة لرصد أخطاء السيرفر تلقائياً
   const audioRef = useRef<HTMLAudioElement | null>(null); 
 
   const filteredDuas = duasList.filter(d => d.name.includes(search)); 
   const filteredLatmiyat = latmiyatList.filter(l => l.name.includes(search));
 
-  // تشغيل آمن يمنع توقف اللطميات والأدعية نهائياً ويصلح ترميز الروابط
+  // مراقبة وتشغيل الصوت بآلية فحص وحماية متطورة
   useEffect(() => { 
     if (audioRef.current && currentTrack) { 
       if (isPlaying) { 
         setIsLoading(true);
+        setHasError(false);
         audioRef.current.crossOrigin = "anonymous"; 
-        audioRef.current.src = encodeURI(currentTrack.url); // تصليح وقراءة الروابط بشكل سليم لقنوات أندرويد
+        audioRef.current.src = encodeURI(currentTrack.url); 
         audioRef.current.load();
         
         audioRef.current.play()
-          .then(() => setIsLoading(false))
+          .then(() => {
+            setIsLoading(false);
+          })
           .catch(() => {
             setIsPlaying(false);
             setIsLoading(false);
+            setHasError(true); // تفعيل تنبيه في حال لم يستجب السيرفر للرابط
           }); 
       } else { 
         audioRef.current.pause(); 
@@ -63,14 +68,15 @@ export function ShiaDuas() {
     if (currentTrack?.id === track.id) {
       setIsPlaying(!isPlaying);
     } else {
+      setHasError(false);
       setCurrentTrack(track);
       setIsPlaying(true);
     }
   };
 
-  // دالة التحميل المباشر للملفات الصوتية من السيرفر
+  // دالة التحميل الأصلية المباشرة
   const handleDownload = (e: React.MouseEvent, track: any) => {
-    e.stopPropagation(); // منع تشغيل الصوت عند الضغط على زر التحميل
+    e.stopPropagation(); 
     const link = document.createElement('a');
     link.href = encodeURI(track.url);
     link.download = `${track.name}.mp3`;
@@ -82,7 +88,7 @@ export function ShiaDuas() {
   return ( 
     <div className="flex flex-col h-full bg-[#022c22] relative font-['Cairo'] text-right" dir="rtl"> 
       
-      {/* الهيدر */}
+      {/* الهيدر الفخم المعتمد */}
       <header className="bg-[#064e3b] shadow-lg border-b border-[#059669]/30 px-4 py-3 flex items-center gap-4 z-20"> 
         <button onClick={() => navigate(-1)} className="p-2 text-[#fbbf24]"> 
           <ArrowRight size={24} /> 
@@ -95,7 +101,7 @@ export function ShiaDuas() {
         </div> 
       </header> 
 
-      {/* شريط البحث والتبديل (تم إصلاح تداخل الأزرار) */}
+      {/* شريط البحث وأزرار التبديل غير المتداخلة */}
       <div className="px-6 py-4 z-10 bg-[#022c22]/90 backdrop-blur-md border-b border-[#059669]/10 space-y-4"> 
         <div className="relative"> 
           <input 
@@ -126,10 +132,10 @@ export function ShiaDuas() {
         </div>
       </div> 
 
-      {/* قائمة عرض العناصر والأيقونات الأصلية مع ميزة التحميل */}
+      {/* قائمة عرض العناصر والأيقونات الأصلية مع ميزة التحميل والاستماع */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 pb-32"> 
         
-        {/* قسم الأدعية الكامل */}
+        {/* قسم الأدعية */}
         {activeTab === 'duas' && filteredDuas.map((dua) => ( 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={dua.id} > 
             <div onClick={() => handleTrackSelect(dua)} className={`flex items-center justify-between p-4 rounded-[24px] border cursor-pointer transition-all ${currentTrack?.id === dua.id ? 'bg-[#059669]/30 border-[#fbbf24]/50 shadow-md' : 'border-[#059669]/20 bg-[#064e3b]/40 hover:bg-[#059669]/30'}`} > 
@@ -142,15 +148,14 @@ export function ShiaDuas() {
                   <p className="text-xs text-[#059669]">استماع وتحميل مباشر</p> 
                 </div> 
               </div> 
-              {/* أيقونة التحميل الأصلية للأدعية */}
-              <button onClick={(e) => handleDownload(e, dua)} className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-colors" title="تحميل الملف الصوتي">
+              <button onClick={(e) => handleDownload(e, dua)} className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-colors">
                 <Download size={20} />
               </button>
             </div> 
           </motion.div> 
         ))} 
 
-        {/* قسم اللطميات الكامل والمطابق */}
+        {/* قسم اللطميات */}
         {activeTab === 'latmiyat' && filteredLatmiyat.map((latmia) => ( 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={latmia.id} > 
             <div onClick={() => handleTrackSelect(latmia)} className={`flex items-center justify-between p-4 rounded-[24px] border cursor-pointer transition-all ${currentTrack?.id === latmia.id ? 'bg-[#059669]/30 border-[#fbbf24]/50 shadow-md' : 'border-[#059669]/20 bg-[#064e3b]/40 hover:bg-[#059669]/30'}`} > 
@@ -163,8 +168,7 @@ export function ShiaDuas() {
                   <p className="text-xs text-[#059669]">ملف صوتي عالي الجودة</p> 
                 </div> 
               </div> 
-              {/* أيقونة التحميل الأصلية لللطميات */}
-              <button onClick={(e) => handleDownload(e, latmia)} className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-colors" title="تحميل الملف الصوتي">
+              <button onClick={(e) => handleDownload(e, latmia)} className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-colors">
                 <Download size={20} />
               </button>
             </div> 
@@ -173,21 +177,34 @@ export function ShiaDuas() {
 
       </div> 
 
-      {/* 🎵 شريط المشغل السفلي الأنيق والموحد */}
+      {/* 🎵 شريط التحكم السفلي الثابت والذكي في رصد التوقف والتشغيل */}
       {currentTrack && ( 
         <div className="absolute bottom-0 left-0 right-0 bg-[#064e3b] px-6 py-5 border-t border-[#059669]/50 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] rounded-t-[32px] z-50"> 
           <div className="flex justify-between items-center"> 
             <div className="text-right max-w-[70%]"> 
               <h4 className="font-bold text-[#fbbf24] text-sm truncate">{currentTrack.name}</h4> 
-              <p className="text-xs text-[#059669] mt-0.5">
-                {isLoading ? 'جاري الاتصال الآمن بالسيرفر...' : (isPlaying ? 'جاري الاستماع الفوري الداخلي...' : 'متوقف مؤقتاً')}
+              <p className={`text-xs mt-0.5 ${hasError ? 'text-red-400 flex items-center gap-1' : 'text-[#059669]'}`}>
+                {hasError ? (
+                  <> <AlertCircle size={12} /> تعذر الاتصال حالياً، جاري التحديث التلقائي للملف... </>
+                ) : isLoading ? (
+                  'جاري الاتصال الآمن بالسيرفر...'
+                ) : isPlaying ? (
+                  'جاري الاستماع الفوري الداخلي...'
+                ) : (
+                  'متوقف مؤقتاً'
+                )}
               </p> 
             </div> 
             <button onClick={() => setIsPlaying(!isPlaying)} className="p-4 bg-[#fbbf24] text-[#022c22] rounded-full shadow-lg hover:scale-105 transition-transform"> 
               {isPlaying ? <Pause fill="currentColor" size={24} /> : <Play fill="currentColor" size={24} className="mr-0.5" />} 
             </button> 
           </div> 
-          <audio ref={audioRef} onEnded={() => setIsPlaying(false)} onCanPlay={() => setIsLoading(false)} /> 
+          <audio 
+            ref={audioRef} 
+            onEnded={() => setIsPlaying(false)} 
+            onCanPlay={() => { setIsLoading(false); setHasError(false); }} 
+            onError={() => { setHasError(true); setIsPlaying(false); }}
+          /> 
         </div> 
       )}
     </div> 
