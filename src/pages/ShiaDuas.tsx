@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'; 
+يمmport { useState, useRef, useEffect } from 'react'; 
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { ArrowRight, Play, Pause, Search, Headphones, BookOpen, Volume2, ShieldCheck } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom'; 
@@ -22,23 +22,25 @@ const latmiyatList = [
   { 
     id: 'latmia-1', 
     name: 'قصيدة يمضموني - الحاج باسم الكربلائي', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yamdaminuni.mp3' // استبدله برابط اللطمية المباشر فور رفعه
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yandandnuni.mp3'
   },
   { 
     id: 'latmia-2', 
     name: 'قصيدة يسجلني - باسم الكربلائي', 
     url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yusajiluni.MP3'
-  }, 
-  {
+  },
+  { 
     id: 'latmia-3', 
-    name: 'قصيدة يمة اطمنج - باسم الكربلائي', 
-    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yamah_atmanj.MP3'
-  }, 
-  {
+    name: 'قصيدة يمه اطمنج - باسم الكربلائي', 
+    url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yameh_atmanj.MP3'
+  },
+  { 
     id: 'latmia-4', 
     name: 'قصيدة تزوروني - باسم الكربلائي', 
     url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/tazuruni.MP3'
+  }
 ];
+
 
 export function ShiaDuas() { 
   const navigate = useNavigate(); 
