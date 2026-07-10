@@ -1,193 +1,133 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ArrowRight, MapPin, Star, Phone, Globe, Navigation, 
-  Heart, Share2, Info, CheckCircle2 
-} from 'lucide-react';
-import { hotelsData, Hotel } from './data/hotelsData';
-
-export function HotelDetail() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [hotel, setHotel] = useState<Hotel | null>(null);
-  const [isFavorite, setIsFavorite] = useState(false);
-
-  useEffect(() => {
-    const foundHotel = hotelsData.find(h => h.id === id);
-    if (foundHotel) {
-      setHotel(foundHotel);
-    }
-  }, [id]);
-
-  const handleOpenMap = (e: React.MouseEvent, url: string) => {
-    e.preventDefault();
-    try {
-      const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-      if (!newWindow) {
-        alert('يرجى السماح بالنوافذ المنبثقة لفتح خرائط Google');
-      }
-    } catch (error) {
-      console.error('Failed to open map:', error);
-      alert('حدث خطأ أثناء محاولة فتح الخريطة.');
-    }
-  };
-
-  if (!hotel) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="pb-24 bg-gray-50 dark:bg-[#022c22] min-h-screen"
-    >
-      {/* Header Image */}
-      <div className="relative h-64 md:h-80 w-full">
-        <img 
-          src={hotel.imageUrl} 
-          alt={hotel.name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
-        
-        {/* Top Nav */}
-        <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10">
-          <button 
-            onClick={() => navigate(-1)}
-            className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-colors"
-          >
-            <ArrowRight size={20} />
-          </button>
-          <div className="flex gap-2">
-            <button 
-              onClick={() => setIsFavorite(!isFavorite)}
-              className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-colors"
-            >
-              <Heart size={20} className={isFavorite ? "fill-red-500 text-red-500" : ""} />
-            </button>
-            <button className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-colors">
-              <Share2 size={20} />
-            </button>
-          </div>
-        </div>
-
-        {/* Title Area */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="flex">
-              {[...Array(5)].map((_, i) => (
-                <Star 
-                  key={i} 
-                  size={14} 
-                  className={i < hotel.stars ? "text-[#fbbf24] fill-[#fbbf24]" : "text-gray-400"} 
-                />
-              ))}
-            </div>
-            <span className="bg-[#059669] px-2 py-0.5 rounded text-xs font-bold">{hotel.rating}</span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold mb-1">{hotel.name}</h1>
-          <p className="flex items-center gap-1.5 text-white/80 text-sm">
-            <MapPin size={14} />
-            {hotel.country}، {hotel.city} - يبعد {hotel.distance}م عن {hotel.shrine}
-          </p>
-        </div>
-      </div>
-
-      <div className="p-6 space-y-6">
-        
-        {/* Quick Info Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white dark:bg-[#064e3b]/40 border border-[#059669]/10 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
-            <span className="text-gray-500 dark:text-gray-400 text-xs mb-1">السعر التقريبي</span>
-            <span className="text-xl font-bold text-[#059669] dark:text-[#fbbf24]">${hotel.price} <span className="text-sm font-normal text-gray-500">/ ليلة</span></span>
-          </div>
-          <div className="bg-white dark:bg-[#064e3b]/40 border border-[#059669]/10 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
-            <span className="text-gray-500 dark:text-gray-400 text-xs mb-1">المسافة للمرقد</span>
-            <span className="text-xl font-bold text-[#059669] dark:text-[#fbbf24]">{hotel.distance} <span className="text-sm font-normal text-gray-500">متر</span></span>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="grid grid-cols-2 gap-3">
-          <button 
-            onClick={(e) => handleOpenMap(e, `https://www.google.com/maps/dir/?api=1&destination=${hotel.lat},${hotel.lng}`)}
-            className="bg-[#059669] text-white py-3.5 rounded-2xl flex items-center justify-center gap-2 font-bold hover:bg-[#047857] transition-colors shadow-lg shadow-[#059669]/20"
-          >
-            <Navigation size={20} />
-            بدء الملاحة
-          </button>
-          <a 
-            href={`tel:${hotel.phone}`}
-            className="bg-[#fbbf24] text-[#064e3b] py-3.5 rounded-2xl flex items-center justify-center gap-2 font-bold hover:bg-[#f5b000] transition-colors shadow-lg shadow-[#fbbf24]/20"
-          >
-            <Phone size={20} />
-            اتصال
-          </a>
-        </div>
-
-        {/* Details List */}
-        <div className="bg-white dark:bg-[#064e3b]/40 border border-[#059669]/10 rounded-3xl p-6 space-y-5">
-          <h3 className="font-bold text-[#064e3b] dark:text-[#fbbf24] border-b border-[#059669]/10 pb-3 flex items-center gap-2">
-            <Info size={18} />
-            معلومات الفندق
-          </h3>
-          
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#059669]/10 text-[#059669] flex items-center justify-center shrink-0">
-                <MapPin size={18} />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">الموقع</p>
-                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{hotel.country}، {hotel.city}</p>
-                <button onClick={(e) => handleOpenMap(e, `https://www.google.com/maps/search/?api=1&query=${hotel.lat},${hotel.lng}`)} className="text-xs text-[#059669] hover:underline mt-1 inline-block bg-transparent border-none p-0 cursor-pointer">عرض في خرائط Google</button>
-              </div>
-            </div>
-
-            {hotel.phone && (
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#059669]/10 text-[#059669] flex items-center justify-center shrink-0">
-                  <Phone size={18} />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">رقم الهاتف</p>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200" dir="ltr">{hotel.phone}</p>
-                </div>
-              </div>
-            )}
-
-            {hotel.website && (
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#059669]/10 text-[#059669] flex items-center justify-center shrink-0">
-                  <Globe size={18} />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">الموقع الإلكتروني</p>
-                  <a href={hotel.website} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-[#059669] hover:underline block" dir="ltr">
-                    {hotel.website.replace(/^https?:\/\//, '')}
-                  </a>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Features / Note */}
-        <div className="bg-[#064e3b]/5 dark:bg-[#064e3b]/20 border border-[#059669]/20 rounded-3xl p-5">
-           <div className="flex gap-3">
-             <div className="mt-1 text-[#059669]">
-               <CheckCircle2 size={20} />
-             </div>
-             <div>
-               <p className="text-sm font-medium text-[#064e3b] dark:text-[#f0f9ff] mb-1">يتم تحديث البيانات بشكل دوري</p>
-               <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                 الأسعار والمسافات المعروضة هي تقريبية وقد تتغير حسب الموسم ووقت الحجز. نوصي بالتواصل مع الفندق مباشرة للتأكد من التوافر والأسعار.
-               </p>
-             </div>
-           </div>
-        </div>
-
-      </div>
-    </motion.div>
-  );
+export interface Hotel {
+  id: string;
+  name: string;
+  city: string;
+  country: string;
+  stars: number;
+  rating: number;
+  reviews: number;
+  distance: number; // رقم صافي بالأمتار لكي تعمل فلترة وتصفية الكود بدقة (مثال: 150 يعني 150 متر)
+  shrine: string;
+  price: number;
+  imageUrl: string;
+  lat: number;
+  lng: number;
+  phone: string;
+  whatsapp?: string;
+  bookingUrl?: string; // رابط حجز احتياطي ذكي في حال لم تتوفر أرقام الاتصال
 }
+
+export const hotelsData: Hotel[] = [
+  // كربلاء المقدسة
+  {
+    id: "karbala-baron",
+    name: "فندق البارون كربلاء",
+    city: "كربلاء المقدسة",
+    country: "العراق",
+    stars: 5,
+    rating: 4.8,
+    reviews: 1240,
+    distance: 900,
+    shrine: "مرقد الإمام الحسين (ع)",
+    price: 120,
+    imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500",
+    lat: 32.6264,
+    lng: 44.0421,
+    phone: "+9647800000000",
+    whatsapp: "9647800000000",
+    bookingUrl: "https://www.booking.com/searchresults.html?ss=The+Baron+Hotel+Karbala"
+  },
+  {
+    id: "karbala-rayhaan",
+    name: "فندق ريحان روتانا كربلاء",
+    city: "كربلاء المقدسة",
+    country: "العراق",
+    stars: 5,
+    rating: 4.7,
+    reviews: 850,
+    distance: 350,
+    shrine: "مرقد أبا الفضل العباس (ع)",
+    price: 140,
+    imageUrl: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500",
+    lat: 32.6198,
+    lng: 44.0385,
+    phone: "+9647700000000",
+    whatsapp: "9647700000000",
+    bookingUrl: "https://www.booking.com/searchresults.html?ss=Kerbala+Rayhaan+by+Rotana"
+  },
+  // النجف الأشرف
+  {
+    id: "najaf-qasr-aldur",
+    name: "فندق قصر الدر النجف",
+    city: "النجف الأشرف",
+    country: "العراق",
+    stars: 5,
+    rating: 4.6,
+    reviews: 620,
+    distance: 150,
+    shrine: "المرقد العلوي المطهر",
+    price: 95,
+    imageUrl: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=500",
+    lat: 31.9958,
+    lng: 44.3135,
+    phone: "+9647500000000",
+    whatsapp: "9647500000000",
+    bookingUrl: "https://www.booking.com/searchresults.html?ss=Qasr+Al+Dur+Hotel+Najaf"
+  },
+  {
+    id: "najaf-grand-alkaleej",
+    name: "فندق خليج النجف الدولي",
+    city: "النجف الأشرف",
+    country: "العراق",
+    stars: 4,
+    rating: 4.4,
+    reviews: 310,
+    distance: 400,
+    shrine: "المرقد العلوي المطهر",
+    price: 70,
+    imageUrl: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=500",
+    lat: 31.9932,
+    lng: 44.3150,
+    phone: "", // نتركه فارغاً لمحاكاة الحجز بالوسائل البديلة الذكية
+    whatsapp: "",
+    bookingUrl: "https://www.booking.com/searchresults.html?ss=Najaf+Hotels"
+  },
+  // الكاظمية المقدسة
+  {
+    id: "kazimiya-bourj",
+    name: "فندق برج الكاظمية الكرام",
+    city: "الكاظمية المقدسة",
+    country: "العراق",
+    stars: 4,
+    rating: 4.5,
+    reviews: 415,
+    distance: 200,
+    shrine: "المرقد الكاظمي الجوادين (ع)",
+    price: 80,
+    imageUrl: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=500",
+    lat: 33.3798,
+    lng: 44.3412,
+    phone: "+9647900000000",
+    whatsapp: "9647900000000",
+    bookingUrl: "https://www.booking.com/searchresults.html?ss=Kadhimiya+Baghdad+Hotels"
+  },
+  // سامراء المقدسة
+  {
+    id: "samarra-palace",
+    name: "فندق قصر سامراء السياحي",
+    city: "سامراء المقدسة",
+    country: "العراق",
+    stars: 3,
+    rating: 4.2,
+    reviews: 180,
+    distance: 450,
+    shrine: "مرقد الإمامين العسكريين (ع)",
+    price: 55,
+    imageUrl: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=500",
+    lat: 34.1985,
+    lng: 43.8742,
+    phone: "",
+    whatsapp: "",
+    bookingUrl: "https://www.google.com/maps/search/?api=1&query=فنادق+قرب+مرقد+العسكريين+سامراء"
+  }
+];
