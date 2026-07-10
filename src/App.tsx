@@ -31,7 +31,6 @@ import { NotificationsSettings } from './pages/NotificationsSettings';
 import { usePrayerTimes, PrayerTimesProvider } from './hooks/usePrayerTimes';
 import { useNotifications } from './hooks/useNotifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
-import { VisitorGuide } from './pages/VisitorGuide';
 
 
 function AppContent() {
