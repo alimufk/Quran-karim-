@@ -125,13 +125,6 @@ export function Home() {
               <span className="text-xs text-[#059669]">الموقع</span>
               <Settings className="w-4 h-4 text-[#fbbf24]" />
             </Link>
-            <Link 
-              to="/visitor-guide" 
-              className="bg-[#064e3b] px-4 py-2 rounded-full border border-[#059669]/30 flex items-center gap-1.5 hover:bg-[#059669]/20 transition-colors"
-            > 
-            <span className="text-xs text-[#059669]">دليل الزائرين</span>
-            <span className="text-sm">🕋</span>
-            </Link>
           </div>
         </header>
 
