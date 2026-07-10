@@ -1,4 +1,4 @@
-import { HolyShrinesLive } from './pages/HolyShrinesLive';
+
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { BottomNav } from './pages/data/components/BottomNav';
 import { Home } from './pages/Home';
@@ -47,7 +47,6 @@ function AppContent() {
       <div className="flex-1 overflow-y-auto overflow-x-hidden scroll-smooth pb-20">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/holy-shrines-live" element={<HolyShrinesLive />} />
           <Route path="/about" element={<About />} />
           <Route path="/ai-assistant" element={<AiAssistant />} />
           <Route path="/quran" element={<Quran />} />
