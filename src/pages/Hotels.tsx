@@ -7,7 +7,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Fix for default marker icons in React-Leaflet
+// إصلاح مشكلة الأيقونات الافتراضية في React-Leaflet داخل متصفحات الموبايل
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -22,7 +22,6 @@ L.Icon.Default.mergeOptions({
 export function Hotels() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('الكل');
   const [selectedCity, setSelectedCity] = useState('الكل');
   const [selectedStars, setSelectedStars] = useState<number | 'الكل'>('الكل');
   const [maxDistance, setMaxDistance] = useState<number | 'الكل'>('الكل');
@@ -30,25 +29,23 @@ export function Hotels() {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
-  const countries = ['الكل', ...Array.from(new Set(hotelsData.map(h => h.country)))];
-  
+  // جلب المدن العراقية المقدسة المتوفرة تلقائياً
   const cities = useMemo(() => {
-    let filtered = hotelsData;
-    if (selectedCountry !== 'الكل') {
-      filtered = filtered.filter(h => h.country === selectedCountry);
-    }
-    return ['الكل', ...Array.from(new Set(filtered.map(h => h.city)))];
-  }, [selectedCountry]);
+    return ['الكل', ...Array.from(new Set(hotelsData.map(h => h.city)))];
+  }, []);
 
+  // نظام فلترة وبحث دقيق جداً للمدن والمراقد والمسافات بالأمتار
   const filteredHotels = useMemo(() => {
     let result = hotelsData.filter(hotel => {
-      const matchesSearch = hotel.name.includes(searchTerm) || hotel.shrine.includes(searchTerm);
-      const matchesCountry = selectedCountry === 'الكل' || hotel.country === selectedCountry;
+      const matchesSearch = hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            hotel.shrine.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            hotel.city.toLowerCase().includes(searchTerm.toLowerCase());
+      
       const matchesCity = selectedCity === 'الكل' || hotel.city === selectedCity;
       const matchesStars = selectedStars === 'الكل' || hotel.stars === selectedStars;
       const matchesDistance = maxDistance === 'الكل' || hotel.distance <= maxDistance;
 
-      return matchesSearch && matchesCountry && matchesCity && matchesStars && matchesDistance;
+      return matchesSearch && matchesCity && matchesStars && matchesDistance;
     });
 
     if (sortBy === 'price_asc') {
@@ -60,39 +57,40 @@ export function Hotels() {
     }
 
     return result;
-  }, [searchTerm, selectedCountry, selectedCity, selectedStars, maxDistance, sortBy]);
+  }, [searchTerm, selectedCity, selectedStars, maxDistance, sortBy]);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-4 md:p-6 pb-24 space-y-6"
+      className="p-4 md:p-6 pb-24 space-y-6 text-right"
+      dir="rtl"
     >
-      {/* Header */}
+      {/* هيدر الصفحة بتصميم فخم متناسق مع التطبيق */}
       <header className="flex items-center gap-4 mb-6">
         <button 
           onClick={() => navigate('/')}
-          className="p-2 bg-[#064e3b]/10 text-[#059669] rounded-full hover:bg-[#064e3b]/20 transition-colors"
+          className="p-2 bg-[#059669]/10 text-[#059669] dark:text-[#fbbf24] rounded-full hover:bg-[#059669]/20 transition-colors"
         >
           <ArrowRight size={24} />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-[#064e3b] dark:text-[#fbbf24]">فنادق الأماكن المقدسة</h1>
-          <p className="text-sm text-[#059669]">أقرب الفنادق للمراقد والمزارات</p>
+          <h1 className="text-2xl font-bold text-[#064e3b] dark:text-[#fbbf24]">فنادق العتبات المقدسة في العراق</h1>
+          <p className="text-sm text-[#059669]">أقرب الفنادق وأدقها للمراقد والمزارات الشريفة 🇮🇶</p>
         </div>
       </header>
 
-      {/* Search and Filters */}
+      {/* شريط البحث المطور وفلاتر التصفية الدقيقة */}
       <div className="space-y-4">
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-[#059669]/60 w-5 h-5" />
             <input
               type="text"
-              placeholder="ابحث عن فندق أو مرقد..."
+              placeholder="ابحث باسم الفندق، المدينة، أو العتبة القريبة..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white dark:bg-[#064e3b]/40 border border-[#059669]/20 rounded-2xl py-3 pr-10 pl-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/50 transition-all dark:text-white"
+              className="w-full bg-white dark:bg-[#064e3b]/40 border border-[#059669]/20 rounded-2xl py-3 pr-10 pl-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#059669]/50 transition-all dark:text-white text-right"
             />
           </div>
           <button 
@@ -106,44 +104,30 @@ export function Hotels() {
           </button>
         </div>
 
-        {/* Extended Filters */}
+        {/* فلاتر الفرز المخصصة للمدن المقدسة العراقية */}
         {showFilters && (
           <motion.div 
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="bg-white dark:bg-[#064e3b]/20 p-4 rounded-2xl border border-[#059669]/20 space-y-4"
+            className="bg-white dark:bg-[#064e3b]/20 p-4 rounded-2xl border border-[#059669]/20 space-y-4 text-right"
           >
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-[#059669] mb-1 block">الدولة</label>
-                <select 
-                  value={selectedCountry}
-                  onChange={(e) => {
-                    setSelectedCountry(e.target.value);
-                    setSelectedCity('الكل');
-                  }}
-                  className="w-full bg-transparent border border-[#059669]/30 rounded-xl p-2 text-sm dark:text-white"
-                >
-                  {countries.map(c => <option key={c} value={c} className="dark:bg-[#022c22]">{c}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-[#059669] mb-1 block">المدينة</label>
+                <label className="text-xs text-[#059669] dark:text-[#fbbf24] mb-1 block">المدينة المقدسة</label>
                 <select 
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
-                  className="w-full bg-transparent border border-[#059669]/30 rounded-xl p-2 text-sm dark:text-white"
-                  disabled={selectedCountry === 'الكل' && cities.length === 1}
+                  className="w-full bg-transparent border border-[#059669]/30 rounded-xl p-2 text-sm dark:text-white focus:outline-none"
                 >
                   {cities.map(c => <option key={c} value={c} className="dark:bg-[#022c22]">{c}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs text-[#059669] mb-1 block">التصنيف</label>
+                <label className="text-xs text-[#059669] dark:text-[#fbbf24] mb-1 block">تصنيف النجوم</label>
                 <select 
                   value={selectedStars}
                   onChange={(e) => setSelectedStars(e.target.value === 'الكل' ? 'الكل' : Number(e.target.value))}
-                  className="w-full bg-transparent border border-[#059669]/30 rounded-xl p-2 text-sm dark:text-white"
+                  className="w-full bg-transparent border border-[#059669]/30 rounded-xl p-2 text-sm dark:text-white focus:outline-none"
                 >
                   <option value="الكل" className="dark:bg-[#022c22]">الكل</option>
                   <option value={5} className="dark:bg-[#022c22]">5 نجوم</option>
@@ -152,30 +136,29 @@ export function Hotels() {
                 </select>
               </div>
               <div>
-                <label className="text-xs text-[#059669] mb-1 block">المسافة (أقل من)</label>
+                <label className="text-xs text-[#059669] dark:text-[#fbbf24] mb-1 block">المسافة القصوى للمرقد</label>
                 <select 
                   value={maxDistance}
                   onChange={(e) => setMaxDistance(e.target.value === 'الكل' ? 'الكل' : Number(e.target.value))}
-                  className="w-full bg-transparent border border-[#059669]/30 rounded-xl p-2 text-sm dark:text-white"
+                  className="w-full bg-transparent border border-[#059669]/30 rounded-xl p-2 text-sm dark:text-white focus:outline-none"
                 >
                   <option value="الكل" className="dark:bg-[#022c22]">الكل</option>
-                  <option value={100} className="dark:bg-[#022c22]">100 متر</option>
-                  <option value={300} className="dark:bg-[#022c22]">300 متر</option>
-                  <option value={500} className="dark:bg-[#022c22]">500 متر</option>
-                  <option value={1000} className="dark:bg-[#022c22]">1 كم</option>
+                  <option value={200} className="dark:bg-[#022c22]">أقل من 200 متر</option>
+                  <option value={500} className="dark:bg-[#022c22]">أقل من 500 متر</option>
+                  <option value={1000} className="dark:bg-[#022c22]">أقل من 1 كم</option>
                 </select>
               </div>
-              <div className="col-span-2">
-                <label className="text-xs text-[#059669] mb-1 block">ترتيب حسب</label>
+              <div>
+                <label className="text-xs text-[#059669] dark:text-[#fbbf24] mb-1 block">الترتيب حسب</label>
                 <select 
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="w-full bg-transparent border border-[#059669]/30 rounded-xl p-2 text-sm dark:text-white"
+                  className="w-full bg-transparent border border-[#059669]/30 rounded-xl p-2 text-sm dark:text-white focus:outline-none"
                 >
-                  <option value="recommended" className="dark:bg-[#022c22]">المقترحة</option>
+                  <option value="recommended" className="dark:bg-[#022c22]">المقترحة للزوار</option>
                   <option value="price_asc" className="dark:bg-[#022c22]">السعر: الأقل أولاً</option>
                   <option value="price_desc" className="dark:bg-[#022c22]">السعر: الأعلى أولاً</option>
-                  <option value="rating" className="dark:bg-[#022c22]">تقييم الزوار</option>
+                  <option value="rating" className="dark:bg-[#022c22]">تقييم الزوار الحقيقي</option>
                 </select>
               </div>
             </div>
@@ -183,7 +166,7 @@ export function Hotels() {
         )}
       </div>
 
-      {/* View Toggle */}
+      {/* زر التبديل بين خريطة وقائمة */}
       <div className="flex justify-center mb-4">
         <div className="bg-[#059669]/10 p-1 rounded-2xl flex items-center w-full max-w-sm">
           <button 
@@ -191,19 +174,19 @@ export function Hotels() {
             className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${viewMode === 'list' ? 'bg-[#059669] text-white shadow-md' : 'text-[#064e3b] dark:text-[#fbbf24] hover:bg-[#059669]/20'}`}
           >
             <List size={18} />
-            قائمة
+            عرض قائمة
           </button>
           <button 
             onClick={() => setViewMode('map')}
             className={`flex-1 py-2 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${viewMode === 'map' ? 'bg-[#059669] text-white shadow-md' : 'text-[#064e3b] dark:text-[#fbbf24] hover:bg-[#059669]/20'}`}
           >
             <MapIcon size={18} />
-            خريطة
+            عرض الخريطة
           </button>
         </div>
       </div>
 
-      {/* Content */}
+      {/* عرض قائمة العناصر المتوفرة بالفلاتر الذكية */}
       {viewMode === 'list' ? (
         <div className="space-y-4">
           {filteredHotels.length > 0 ? (
@@ -211,7 +194,7 @@ export function Hotels() {
               <Link 
                 key={hotel.id} 
                 to={`/hotel/${hotel.id}`}
-                className="flex bg-white dark:bg-[#064e3b]/30 border border-[#059669]/20 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group"
+                className="flex bg-white dark:bg-[#064e3b]/30 border border-[#059669]/20 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group text-right"
               >
                 <div className="w-1/3 relative overflow-hidden">
                   <img 
@@ -228,21 +211,23 @@ export function Hotels() {
                         <Star key={i} size={12} className={i < hotel.stars ? "text-[#fbbf24] fill-[#fbbf24]" : "text-gray-300 dark:text-gray-600"} />
                       ))}
                     </div>
-                    <p className="text-xs text-[#059669] line-clamp-1 flex items-center gap-1">
+                    <p className="text-xs text-[#059669] dark:text-[#fbbf24] line-clamp-1 flex items-center gap-1">
                       <MapPin size={12} />
                       {hotel.city} - قرب {hotel.shrine}
                     </p>
                   </div>
                   <div className="flex items-end justify-between mt-3">
-                    <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">تبعد {hotel.distance >= 1000 ? `${(hotel.distance/1000).toFixed(1)} كم` : `${hotel.distance} م`}</div>
+                    <div className="text-right">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
+                        يبعد {hotel.distance >= 1000 ? `${(hotel.distance/1000).toFixed(1)} كم` : `${hotel.distance} م`} عن الحرم
+                      </div>
                       <div className="flex items-center gap-1">
                         <div className="bg-[#059669] text-white px-1.5 py-0.5 rounded text-xs font-bold">{hotel.rating}</div>
                         <span className="text-[10px] text-gray-500 dark:text-gray-400">({hotel.reviews} تقييم)</span>
                       </div>
                     </div>
                     <div className="text-left">
-                      <span className="text-[10px] text-gray-500 dark:text-gray-400 block mb-0.5">ابتداءً من</span>
+                      <span className="text-[10px] text-gray-500 dark:text-gray-400 block mb-0.5">تبدأ من</span>
                       <span className="font-bold text-lg text-[#059669] dark:text-[#fbbf24]">${hotel.price}</span>
                     </div>
                   </div>
@@ -254,12 +239,13 @@ export function Hotels() {
               <div className="w-16 h-16 bg-[#059669]/10 rounded-full flex items-center justify-center mx-auto mb-4 text-[#059669]">
                 <Search size={32} />
               </div>
-              <h3 className="text-lg font-bold text-[#064e3b] dark:text-[#f0f9ff] mb-2">لم يتم العثور على فنادق</h3>
-              <p className="text-[#059669]">حاول تغيير خيارات البحث أو التصفية</p>
+              <h3 className="text-lg font-bold text-[#064e3b] dark:text-[#f0f9ff] mb-2">لم نجد فنادق تطابق بحثك</h3>
+              <p className="text-[#059669] text-sm">حاول تغيير خيارات البحث أو كتابة اسم مدينة عراقية أخرى</p>
             </div>
           )}
         </div>
       ) : (
+        /* عرض الخرائط التفاعلية للأماكن المقدسة بالعراق */
         <div className="h-[60vh] rounded-2xl overflow-hidden border border-[#059669]/20 shadow-md">
           {filteredHotels.length > 0 ? (
             <MapContainer 
@@ -278,7 +264,7 @@ export function Hotels() {
                       <h4 className="font-bold text-[#064e3b] text-sm mb-1">{hotel.name}</h4>
                       <p className="text-xs text-gray-600 mb-2">{hotel.city} - قرب {hotel.shrine}</p>
                       <Link to={`/hotel/${hotel.id}`} className="text-[#059669] text-xs hover:underline font-bold">
-                        عرض التفاصيل
+                        عرض وحجز الفندق
                       </Link>
                     </div>
                   </Popup>
@@ -288,7 +274,7 @@ export function Hotels() {
           ) : (
             <div className="h-full flex flex-col items-center justify-center bg-[#059669]/5">
               <MapIcon size={48} className="text-[#059669]/30 mb-4" />
-              <p className="text-[#064e3b] dark:text-[#f0f9ff] font-medium">لا توجد فنادق متاحة في هذا الموقع</p>
+              <p className="text-[#064e3b] dark:text-[#f0f9ff] font-medium">لا توجد فنادق متاحة في هذا الموقع المختار</p>
             </div>
           )}
         </div>
