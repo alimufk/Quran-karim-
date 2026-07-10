@@ -131,3 +131,123 @@ export const hotelsData: Hotel[] = [
     bookingUrl: "https://www.google.com/maps/search/?api=1&query=فنادق+قرب+مرقد+العسكريين+سامراء"
   }
 ];
+// أضف هذه الاستيرادات في أعلى ملف HotelDetail.tsx إذا لم تكن موجودة
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowRight, Phone, MessageSquare, ExternalLink, MapPin, Star } from 'lucide-react';
+
+// أضف هذه الدالة في نهاية ملف src/pages/HotelDetail.tsx بعد مصفوفة hotelsData
+export function HotelDetail() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  // البحث عن الفندق المحدد بواسطة الـ id
+  const hotel = hotelsData.find(h => h.id === id);
+
+  if (!hotel) {
+    return (
+      <div className="p-6 text-center space-y-4" dir="rtl">
+        <p className="text-red-500 font-bold">عذراً، لم يتم العثور على الفندق المطلوب.</p>
+        <button onClick={() => navigate('/hotels')} className="text-[#059669] underline">العودة لقائمة الفنادق</button>
+      </div>
+    );
+  }
+
+  // دالة الحجز الذكي والوسائل البديلة
+  const handleBooking = () => {
+    if (hotel.whatsapp) {
+      window.open(`https://wa.me/${hotel.whatsapp}`, '_blank');
+    } else if (hotel.phone) {
+      window.open(`tel:${hotel.phone}`, '_self');
+    } else if (hotel.bookingUrl) {
+      window.open(hotel.bookingUrl, '_blank');
+    } else {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.name + ' ' + hotel.city)}`, '_blank');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-[#022c22] text-right pb-12" dir="rtl">
+      {/* الهيدر */}
+      <header className="flex items-center gap-4 p-4 bg-white dark:bg-[#064e3b] shadow-sm sticky top-0 z-50">
+        <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-600 dark:text-white">
+          <ArrowRight size={24} />
+        </button>
+        <h1 className="text-xl font-bold text-[#064e3b] dark:text-[#fbbf24] truncate">{hotel.name}</h1>
+      </header>
+
+      {/* صورة الفندق */}
+      <div className="w-full h-64 md:h-96 relative">
+        <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-full object-cover" />
+        <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-xl text-sm backdrop-blur-sm">
+          {hotel.city}
+        </div>
+      </div>
+
+      {/* تفاصيل الفندق */}
+      <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-6">
+        <div className="bg-white dark:bg-[#064e3b]/30 border border-gray-100 dark:border-[#059669]/20 p-5 rounded-3xl shadow-sm space-y-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-2xl font-bold text-[#064e3b] dark:text-white mb-2">{hotel.name}</h2>
+              <div className="flex items-center gap-1 mb-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} size={16} className={i < hotel.stars ? "text-[#fbbf24] fill-[#fbbf24]" : "text-gray-300 dark:text-gray-600"} />
+                ))}
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-1">
+                <MapPin size={16} className="text-[#059669]" />
+                {hotel.city} - بالقرب من {hotel.shrine}
+              </p>
+            </div>
+            <div className="text-left">
+              <span className="text-xs text-gray-500 block">السعر التقريبي</span>
+              <span className="text-2xl font-black text-[#059669] dark:text-[#fbbf24]">${hotel.price}</span>
+              <span className="text-xs text-gray-500 block">/ ليلة</span>
+            </div>
+          </div>
+
+          <hr className="border-gray-100 dark:border-gray-800" />
+
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600 dark:text-gray-300">المسافة إلى العتبة:</span>
+            <span className="font-bold text-[#064e3b] dark:text-[#fbbf24]">
+              {hotel.distance >= 1000 ? `${(hotel.distance / 1000).toFixed(1)} كم` : `${hotel.distance} متر فقط`}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600 dark:text-gray-300">تقييم النزلاء:</span>
+            <span className="font-bold bg-[#059669] text-white px-2 py-0.5 rounded-lg text-xs">
+              {hotel.rating} ({hotel.reviews} تقييم)
+            </span>
+          </div>
+        </div>
+
+        {/* أزرار إجراء الحجز الذكي بأي وسيلة متوفرة */}
+        <div className="space-y-3">
+          <button 
+            onClick={handleBooking}
+            className="w-full bg-[#059669] hover:bg-[#047857] text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.98]"
+          >
+            {hotel.whatsapp ? (
+              <>
+                <MessageSquare size={20} />
+                تواصل عبر الواتساب للحجز المباشر
+              </>
+            ) : hotel.phone ? (
+              <>
+                <Phone size={20} />
+                اتصل بالفندق الآن للحجز
+              </>
+            ) : (
+              <>
+                <ExternalLink size={20} />
+                الانتقال لوسيلة الحجز الإلكترونية المتاحة
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
