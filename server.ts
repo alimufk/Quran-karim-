@@ -195,9 +195,9 @@ async function startServer() {
 
   // Initialize GoogleGenAI client dynamically on each call (to pick up runtime key updates and avoid caching stale client)
   function getGeminiClient() {
-    const key = process.env.GEMINI_API_KEY;
+    const key = process.env."AQ.Ab8RN6JFQJQD3XHdxOF96cmfvQM7EBN8onoq9W4chtsyU44wGw";
     if (!key) {
-      throw new Error("AQ.Ab8RN6IlZvlUBY2m8XiU4XuWXWAUGbWxkcDAsBkE4UOWO6qtgg");
+      throw new Error("");
     }
     return new GoogleGenAI({
       apiKey: key,
