@@ -227,7 +227,7 @@ async function startServer() {
     
     if (isQuota) {
       return {
-        error: "" 
+        error: "", 
         isQuotaError: true
       };
     }
