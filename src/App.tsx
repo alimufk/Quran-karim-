@@ -31,7 +31,7 @@ import { NotificationsSettings } from './pages/NotificationsSettings';
 import { usePrayerTimes, PrayerTimesProvider } from './hooks/usePrayerTimes';
 import { useNotifications } from './hooks/useNotifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
-import GuideDashboard from './components/GuideDashboard';
+import GuideDashboard from './pages/GuideDashboard';
 
 
 function AppContent() {
