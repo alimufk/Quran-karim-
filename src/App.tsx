@@ -75,7 +75,6 @@ function AppContent() {
           <Route path="/hotel/:id" element={<HotelDetail />} />
           <Route path="/notifications" element={<NotificationsSettings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
-          <Route path="/visitor-guide" element={<VisitorGuide />} />
         </Routes>
       </div>
       <BottomNav />
