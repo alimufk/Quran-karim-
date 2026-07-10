@@ -227,7 +227,7 @@ async function startServer() {
     
     if (isQuota) {
       return {
-        error: "عذرًا، لقد تم تجاوز الحصّة المجانية المخصصة للاستخدام اليومي (Quota/Rate Limit Exceeded - 429). \n\n💡 لحل هذه المشكلة الجغرافية، يرجى إدخال مفتاح الـ GEMINI_API_KEY الخاص بك في لوحة الإعدادات (Settings في شريط نظام AI Studio) لضمان الخدمة دون قيود، أو الانتظار بضع دقائق وإعادة تكرار الطلب.",
+        error: "" 
         isQuotaError: true
       };
     }
