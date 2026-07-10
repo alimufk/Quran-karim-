@@ -298,28 +298,6 @@ export function Home() {
             <span className="font-medium text-sm text-[#f0f9ff]">قسم رمضان</span>
           </Link>
 
-          {/* 1. قسم البث المباشر للعتبات المقدسة */}
-          <div 
-            onClick={() => navigate('/holy-shrines-live')} 
-            className="col-span-2 w-full flex items-center justify-between p-5 rounded-[24px] bg-[#064e3b]/40 border border-[#059669]/30 hover:border-[#fbbf24]/50 cursor-pointer transition-all duration-300 shadow-md"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-[#059669]/20 text-[#fbbf24] animate-pulse">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2Z"/><path d="m17 2-5 5-5-5"/></svg>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-lg text-[#fbbf24] flex items-center gap-2">
-                  البث المباشر للعتبات المقدسة
-                  <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                </span>
-                <span className="text-xs text-[#059669]">كربلاء، النجف الأشرف، الكاظمية، وسامراء</span>
-              </div>
-            </div>
-            <div className="text-[#fbbf24] opacity-70">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="rotate-180"><path d="m15 18-6-6 6-6"/></svg>
-            </div>
-          </div>
-
           {/* 2. قسم صائمون الأصلي */}
           <Link to="/saimoon" className="col-span-2 bg-[#fbbf24]/10 border border-[#fbbf24]/30 p-5 rounded-[24px] flex items-center justify-between gap-3 hover:bg-[#fbbf24]/20 transition-all group relative overflow-hidden shadow-md">
             <div className="absolute -left-10 -bottom-10 w-24 h-24 bg-[#fbbf24]/5 rounded-full blur-xl" />
