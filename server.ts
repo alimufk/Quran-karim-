@@ -197,7 +197,7 @@ async function startServer() {
   function getGeminiClient() {
     const key = process.env.GEMINI_API_KEY;
     if (!key) {
-      throw new Error("GEMINI_API_KEY environment variable is required.");
+      throw new Error("AQ.Ab8RN6IlZvlUBY2m8XiU4XuWXWAUGbWxkcDAsBkE4UOWO6qtgg");
     }
     return new GoogleGenAI({
       apiKey: key,
