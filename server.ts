@@ -195,10 +195,10 @@ async function startServer() {
 
   // Initialize GoogleGenAI client dynamically on each call (to pick up runtime key updates and avoid caching stale client)
   function getGeminiClient() {
-   const key = "AQ..AbRn6JFJQJD3HdXOF96cmfvQM7EBN8onoq9W4chtsyU44wGw";
+    const key = "AQ..AbRn6JFJQJD3HdXOF96cmfvQM7EBN8onoq9W4chtsyU44wGw";
 
     if (!key) {
-      throw new Error("");
+      throw new Error("GEMINI_API_KEY environment variable is required.");
     }
     return new GoogleGenAI({
       apiKey: key,
@@ -227,7 +227,7 @@ async function startServer() {
     
     if (isQuota) {
       return {
-        error: "", 
+        error: "عذراً، لقد تم تجاوز الحصة المجانية المخصصة للاستخدام اليومي", 
         isQuotaError: true
       };
     }
@@ -249,7 +249,7 @@ async function startServer() {
 بناءً على موقعك الجغرافي، تم رصد المساجد والمصليات المباركة التالية في محيطك بدقة عالية:
 
 1. **مسجد الكوفة المعظم**: من أقدم المساجد التاريخية وأعظمها قداسة، يضم مقامات الأنبياء ومصلى الإمام علي (ع). (يبعد بضع كيلومترات باتجاه الشمال الشرقي).
-2. **مسجد السهلة المعظم**: مسجد مبارك في السهلة الكوفة، ذو فضل عظيم ومقام للمستجيبين.
+2. **مسجد السهلة المعظم**: مسجد مبارك في السهلة الكوفة, ذو فضل عظيم ومقام للمستجيبين.
 3. **جامع ومزار الصادق (ع)**: مصلى ومقامات علمية وتعبدية مباركة.
 
 💡 ملحوظة: يمكنك تصفح تفاصيل الملاحة والـ GPS الحقيقي لكل منها وتوجيه مسارك مباشرة عبر زر "توجيه وملاحة" في القائمة الرئيسية.`;
