@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'; 
-import { Settings, Bell, BookOpen, Clock, HeartPulse, Bookmark, ListTodo, Star, Sun, Moon, Image, Calendar, MapPin, Sparkles, ArrowUpCircle, X } from 'lucide-react'; 
+import { Settings, Bell, BookOpen, Clock, HeartPulse, Bookmark, ListTodo, Star, Sun, Moon, Image, Calendar, MapPin, Sparkles, ArrowUpCircle, X, RotateCcw, Globe, HelpCircle, CalendarDays } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom'; 
 import { useState, useEffect } from 'react'; 
 import { useTheme } from '../context/ThemeContext'; 
