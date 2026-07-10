@@ -31,6 +31,8 @@ import { NotificationsSettings } from './pages/NotificationsSettings';
 import { usePrayerTimes, PrayerTimesProvider } from './hooks/usePrayerTimes';
 import { useNotifications } from './hooks/useNotifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { VisitorGuide } from './pages/VisitorGuide';
+
 
 function AppContent() {
   const { audioRef, resolvedUrl } = usePrayerTimes();
@@ -74,6 +76,7 @@ function AppContent() {
           <Route path="/hotel/:id" element={<HotelDetail />} />
           <Route path="/notifications" element={<NotificationsSettings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/visitor-guide" element={<VisitorGuide />} />
         </Routes>
       </div>
       <BottomNav />
