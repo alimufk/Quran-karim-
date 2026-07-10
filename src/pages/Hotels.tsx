@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, MapPin, Star, Filter, ArrowRight, Map as MapIcon, List } from 'lucide-react';
-import { hotelsData } from './data/hotelsData';
+import { hotelsData } from './HotelDetail';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
