@@ -31,6 +31,7 @@ import { NotificationsSettings } from './pages/NotificationsSettings';
 import { usePrayerTimes, PrayerTimesProvider } from './hooks/usePrayerTimes';
 import { useNotifications } from './hooks/useNotifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import GuideDashboard from './components/GuideDashboard';
 
 
 function AppContent() {
@@ -74,6 +75,7 @@ function AppContent() {
           <Route path="/hotel/:id" element={<HotelDetail />} />
           <Route path="/notifications" element={<NotificationsSettings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/guide" element={<GuideDashboard />} />
         </Routes>
       </div>
       <BottomNav />
