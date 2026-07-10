@@ -1,4 +1,3 @@
-
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { BottomNav } from './pages/data/components/BottomNav';
 import { Home } from './pages/Home';
@@ -74,8 +73,12 @@ function AppContent() {
           <Route path="/hotels" element={<Hotels />} />
           <Route path="/hotel/:id" element={<HotelDetail />} />
           <Route path="/notifications" element={<NotificationsSettings />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          
+          {/* تم رفع سطر صفحة الدليل هنا لتظهر وتعمل بشكل سليم تماماً */}
           <Route path="/guide" element={<GuideDashboard />} />
+          
+          {/* سطر النجمة يبقى دائماً الأخير ليعيد توجيه الصفحات الخاطئة فقط */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
       <BottomNav />
