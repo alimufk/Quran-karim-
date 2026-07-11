@@ -80,10 +80,10 @@ function AppContent() {
           <Route path="/guide" element={<GuideDashboard />} />
           
           {/* 🌟 مسارات الأقسام الأربعة الجديدة المضافة بعناية 🌟 */}
-          <Route path="/Hajjport" element={<Hajjportal />} />
-          <Route path="/tawaf" element={<Tawaf />} />
-          <Route path="/calendar-converter" element={<CalendarConverter />} />
-          <Route path="/lost-and-found" element={<LostAndFound />} />
+          <Route path="/HajjPortl" element={<HajjPortal />} />
+          <Route path="/Tawaf" element={<Tawaf />} />
+          <Route path="/Calendar-Converter" element={<CalendarConverter />} />
+          <Route path="/Lost-And-Found" element={<LostAndFound />} />
           
           {/* سطر النجمة يبقى دائماً الأخير ليعيد توجيه الصفحات الخاطئة فقط */}
           <Route path="*" element={<Navigate to="/" replace />} />
