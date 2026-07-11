@@ -33,7 +33,7 @@ import GuideDashboard from './pages/GuideDashboard';
 // 🌟 استيراد الأقسام الأربعة الجديدة 🌟
 import { HajjPortal } from './pages/Hajj';
 import { Tawaf } from './pages/Tawaf';
-import  CalendarConverter  from './pages/CalendarConverter';
+import { CalendarConverter} from './pages/CalendarConverter';
 import { LostAndFound } from './pages/LostAndFound';
 
 
@@ -80,7 +80,7 @@ function AppContent() {
           <Route path="/guide" element={<GuideDashboard />} />
           
           {/* 🌟 مسارات الأقسام الأربعة الجديدة المضافة بعناية 🌟 */}
-          <Route path="/hajj" element={<Hajj />} />
+          <Route path="/hajjportal" element={<Hajjportal />} />
           <Route path="/tawaf" element={<Tawaf />} />
           <Route path="/calendar-converter" element={<CalendarConverter />} />
           <Route path="/lost-and-found" element={<LostAndFound />} />
