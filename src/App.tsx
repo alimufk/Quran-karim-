@@ -23,9 +23,7 @@ import { AzkarDetail } from './pages/AzkarDetail';
 import { Wallpapers } from './pages/Wallpapers';
 import { Saimoon } from './pages/Saimoon';
 import { Ramadan } from './pages/Ramadan';
-import { Mosques } from './pages/Mosques';
-import { Hotels } from './pages/Hotels';
-import { HotelDetail } from './pages/HotelDetail';
+import { Mosques } from './pages/Mosques'
 import { NotificationsSettings } from './pages/NotificationsSettings';
 import { usePrayerTimes, PrayerTimesProvider } from './hooks/usePrayerTimes';
 import { useNotifications } from './hooks/useNotifications';
