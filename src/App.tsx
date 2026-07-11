@@ -31,7 +31,7 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 import GuideDashboard from './pages/GuideDashboard';
 
 // 🌟 استيراد الأقسام الأربعة الجديدة مطابقة لأسماء ملفاتك الحقيقية 🌟
-import Hajjportal from './pages/Hajjportal'; 
+import {Hajjportal} from './pages/Hajjportal'; 
 import { Tawaf } from './pages/Tawaf';
 import CalendarConverter from './pages/CalendarConverter';
 import { LostAndFound } from './pages/LostAndFound';
