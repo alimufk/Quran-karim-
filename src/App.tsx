@@ -68,8 +68,6 @@ function AppContent() {
           <Route path="/saimoon" element={<Saimoon />} />
           <Route path="/ramadan" element={<Ramadan />} />
           <Route path="/mosques" element={<Mosques />} />
-          <Route path="/hotels" element={<Hotels />} />
-          <Route path="/hotel/:id" element={<HotelDetail />} />
           <Route path="/notifications" element={<NotificationsSettings />} />
           
           {/* تم رفع سطر صفحة الدليل هنا لتظهر وتعمل بشكل سليم تماماً */}
