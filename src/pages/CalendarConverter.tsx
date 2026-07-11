@@ -1,128 +1,124 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Calendar, Bell, Share2, RefreshCw, ChevronLeft } from 'lucide-react';
-
-// تعريف متغيرات الحركة الاحترافية
-const pageVariants = {
-  initial: { opacity: 0, x: 20 },
-  animate: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -20 },
-};
 
 export default function CalendarConverter() {
+  // إدارة التبديل بين الواجهات داخلياً لتفادي مشاكل الـ Routing
   const [view, setView] = useState<'main' | 'converter'>('main');
+  const [selectedDate, setSelectedDate] = useState('2026-07-11');
+
+  // مصفوفة أيام التقويم الهجري
+  const hijriDays = Array.from({ length: 30 }, (_, i) => ({
+    day: i + 1,
+    isCurrent: i + 1 === 24, // اليوم الحالي المميز باللون الأحمر
+    isFriday: (i + 1) % 7 === 3 // محاكاة لأيام الجمعة
+  }));
+
+  // تحويل الأرقام إلى الهندية/العربية
+  const toArabicNum = (num: number) => num.toLocaleString('ar-EG');
 
   return (
-    <div className="w-full h-full bg-[#121212] overflow-hidden">
-      <AnimatePresence mode="wait">
-        {view === 'main' ? (
-          <MainCalendarView key="main" onNavigate={() => setView('converter')} />
-        ) : (
-          <ConverterView key="converter" onBack={() => setView('main')} />
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-// --- واجهة التقويم الرئيسية (الدارك مود) ---
-function MainCalendarView({ onNavigate }: { onNavigate: () => void }) {
-  return (
-    <motion.div
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="flex flex-col h-full bg-[#121212]"
-    >
-      {/* هيدر الصورة */}
-      <div className="relative h-56 bg-zinc-900 overflow-hidden flex flex-col justify-end p-6 border-b border-white/5">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=800')] bg-cover bg-center opacity-30" />
-        <div className="relative z-10">
-          <h1 className="text-3xl font-black text-white mb-1">٢٤ محرم ١٤٤٨ هـ</h1>
-          <p className="text-sm text-zinc-400 font-medium">الجمعة، ١٠ تموز ٢٠٢٦</p>
-        </div>
-      </div>
-
-      {/* التقويم */}
-      <div className="p-4 grid grid-cols-7 gap-y-4 text-center mt-2">
-        {['ع', 'ث', 'ل', 'ك', 'ي', 'ن', 'ا'].map((d) => (
-          <div key={d} className="text-xs text-zinc-600 font-bold">{d}</div>
-        ))}
-        {Array.from({ length: 30 }).map((_, i) => (
-          <div key={i} className="flex justify-center items-center">
-            {i + 1 === 24 ? (
-              <motion.div layoutId="active-date" className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center font-bold text-white shadow-lg shadow-red-600/30">
-                ٢٤
-              </motion.div>
-            ) : (
-              <span className="text-sm text-zinc-400">{i + 1}</span>
-            )}
+    <div className="w-full min-h-screen bg-[#121212] text-white flex flex-col font-sans select-none" style={{ direction: 'rtl' }}>
+      
+      {/* === 1. الواجهة الرئيسية (التقويم الداكن الفخم) === */}
+      {view === 'main' ? (
+        <div className="flex flex-col flex-1 pb-6">
+          {/* صورة الهيدر الخلفية */}
+          <div 
+            className="relative h-48 bg-cover bg-center flex flex-col justify-end p-5 border-b border-zinc-800"
+            style={{ backgroundImage: `linear-gradient(to top, #121212, rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=600')` }}
+          >
+            <h1 className="text-2xl font-bold">٢٤ محرم ١٤٤٨ هـ</h1>
+            <p className="text-xs text-zinc-400 mt-1">الجمعة، ١٠ تموز ٢٠٢٦</p>
           </div>
-        ))}
-      </div>
 
-      {/* أزرار التحويل */}
-      <div className="px-4 py-6 grid grid-cols-2 gap-3">
-        <button onClick={onNavigate} className="p-4 bg-[#1e1e1e] rounded-2xl text-right border border-white/5 hover:border-amber-500/50 transition-all">
-          <Calendar className="text-amber-500 mb-2" size={20} />
-          <p className="text-xs font-bold text-white">تحويل التاريخ</p>
-        </button>
-      </div>
+          {/* أيام الأسبوع */}
+          <div className="grid grid-cols-7 text-center pt-4 text-xs font-bold text-zinc-600">
+            <div>ح</div><div>ن</div><div>ث</div><div>ر</div><div>خ</div><div>ج</div><div>س</div>
+          </div>
 
-      {/* كارت الحدث القادم */}
-      <motion.div 
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="mx-4 p-5 bg-[#1e1e1e] rounded-2xl border border-white/5"
-      >
-        <div className="flex justify-between items-center mb-3">
-          <span className="text-[10px] font-bold text-zinc-500 bg-zinc-800 px-2 py-1 rounded">الحدث القادم</span>
-          <Share2 size={16} className="text-zinc-500" />
+          {/* شبكة أيام الشهر */}
+          <div className="p-4 grid grid-cols-7 gap-y-4 text-center text-sm font-medium">
+            {hijriDays.map((item) => (
+              <div key={item.day} className="flex items-center justify-center h-10">
+                {item.isCurrent ? (
+                  <div className="w-9 h-9 bg-red-600 rounded-full flex items-center justify-center font-bold text-white shadow-md">
+                    {toArabicNum(item.day)}
+                  </div>
+                ) : (
+                  <span className={item.isFriday ? 'text-blue-400' : 'text-zinc-400'}>
+                    {toArabicNum(item.day)}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* الأزرار والأدوات */}
+          <div className="p-4 space-y-3">
+            <p className="text-xs font-bold text-zinc-500">الأدوات</p>
+            <button 
+              onClick={() => setView('converter')}
+              className="w-full p-4 bg-[#1e1e1e] border border-zinc-800 rounded-xl flex items-center justify-between hover:bg-zinc-800 transition-colors"
+            >
+              <div className="text-right">
+                <h4 className="font-bold text-sm text-zinc-100">تحويل التاريخ الميلادي</h4>
+                <p className="text-[11px] text-zinc-500 mt-0.5">تحويل من ميلادي إلى هجري</p>
+              </div>
+              <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-amber-500 font-bold">
+                📅
+              </div>
+            </button>
+          </div>
+
+          {/* كارت الحدث القادم */}
+          <div className="p-4 mt-auto mx-4 bg-[#1e1e1e] border border-zinc-800 rounded-xl space-y-3 text-right">
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] bg-zinc-800 px-2 py-1 rounded text-zinc-400 font-bold">٢٥ محرم</span>
+              <span className="text-[10px] bg-amber-500/10 text-amber-500 px-2 py-1 rounded font-bold">الحدث القادم</span>
+            </div>
+            <h2 className="text-xs font-bold leading-relaxed text-zinc-200">
+              شهادة الإمام علي بن الحسين السجاد (عليهما السلام) في المدينة المنورة سنة ٩٥هـ
+            </h2>
+            <button className="w-full py-2.5 bg-red-600 text-white font-bold text-xs rounded-lg active:scale-95 transition-transform">
+              🔔 إضافة تذكير
+            </button>
+          </div>
         </div>
-        <h2 className="text-sm font-bold text-white mb-4 leading-relaxed">شهادة الإمام علي بن الحسين السجاد (عليهما السلام) في المدينة المنورة سنة ٩٥هـ</h2>
-        <button className="w-full py-3 bg-red-600 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2">
-          <Bell size={14} /> إضافة تذكير
-        </button>
-      </motion.div>
-    </motion.div>
-  );
-}
+      ) : (
+        
+        /* === 2. واجهة محول التقويم (الثيم الأخضر) === */
+        <div className="flex flex-col flex-1 bg-[#022c22] p-5">
+          <div className="flex items-center justify-between mb-8">
+            <button 
+              onClick={() => setView('main')} 
+              className="w-10 h-10 rounded-full bg-[#064e3b] flex items-center justify-center text-[#ffcc29] font-bold"
+            >
+              ⬅️
+            </button>
+            <div className="text-right">
+              <h1 className="text-xl font-black text-[#ffcc29]">محول التقويم الإسلامي</h1>
+              <p className="text-xs text-emerald-400">تحويل التاريخ الميلادي بسهولة</p>
+            </div>
+          </div>
 
-// --- واجهة المحول (اللون الأخضر) ---
-function ConverterView({ onBack }: { onBack: () => void }) {
-  return (
-    <motion.div
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="flex flex-col h-full bg-[#022c22] p-6"
-    >
-      <button onClick={onBack} className="w-10 h-10 rounded-full bg-[#064e3b] flex items-center justify-center mb-8">
-        <ArrowRight size={20} className="text-yellow-500" />
-      </button>
+          <div className="bg-[#064e3b] p-5 rounded-xl border border-emerald-800 space-y-3 text-right">
+            <label className="block text-xs font-bold text-emerald-300">اختر التاريخ الميلادي</label>
+            <input 
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full p-3.5 bg-[#022c22] border border-emerald-900 rounded-lg text-white focus:outline-none focus:border-[#ffcc29]"
+            />
+          </div>
 
-      <div className="mb-8">
-        <h2 className="text-2xl font-black text-[#ffcc29] mb-2">محول التقويم الإسلامي</h2>
-        <p className="text-emerald-300 text-sm">تحويل التاريخ الميلادي إلى ما يقابله بالهجري</p>
-      </div>
-
-      <div className="bg-[#064e3b] p-6 rounded-2xl border border-emerald-700/50 shadow-xl">
-        <label className="block text-emerald-100 text-xs font-bold mb-3">اختر التاريخ الميلادي</label>
-        <div className="flex items-center justify-between p-4 bg-[#022c22] rounded-xl border border-emerald-800">
-           <span className="text-emerald-500">10 / 07 / 2026</span>
-           <Calendar className="text-yellow-500" size={20} />
+          <button 
+            onClick={() => alert('تم التحويل!')}
+            className="mt-auto w-full py-3.5 bg-[#ffcc29] text-emerald-950 font-black text-sm rounded-xl shadow-lg active:scale-95 transition-transform"
+          >
+            🔄 تحويل الآن
+          </button>
         </div>
-      </div>
+      )}
 
-      <motion.button 
-        whileHover={{ scale: 0.98 }}
-        whileTap={{ scale: 0.95 }}
-        className="mt-auto w-full py-4 bg-[#ffcc29] text-[#022c22] font-black rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-black/20"
-      >
-        <RefreshCw size={20} /> تحويل الآن
-      </motion.button>
-    </motion.div>
+    </div>
   );
 }
