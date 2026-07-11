@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'; 
-import { Settings, Bell, BookOpen, Clock, HeartPulse, Bookmark, ListTodo, Star, Sun, Moon, Image, Calendar, MapPin, Sparkles, ArrowUpCircle, X, RotateCcw, Globe, HelpCircle, CalendarDays } from 'lucide-react';
+import { Settings, Bell, BookOpen, Clock, HeartPulse, Bookmark, ListTodo, Star, Sun, Moon, Image, Calendar, MapPin, Sparkles, ArrowUpCircle, X, RotateCcw, Globe, HelpCircle, CalendarDays } from 'lucide-react'; 
 import { Link, useNavigate } from 'react-router-dom'; 
 import { useState, useEffect } from 'react'; 
 import { useTheme } from '../context/ThemeContext'; 
@@ -124,7 +124,8 @@ export function Home() {
             </div> 
             <div className="space-y-1"> 
               <p className="text-[#059669] text-sm font-bold">أوقات الصلاة</p> 
-              <h3 className="text-xl font-bold text-[#f0f9ff]">عرض المواقيت والأذان</h3> </div> 
+              <h3 className="text-xl font-bold text-[#f0f9ff]">عرض المواقيت والأذان</h3> 
+            </div> 
           </div> 
           <div className="relative z-10"> 
             <p className="text-2xl font-black text-[#fbbf24] mr-4">←</p> 
@@ -159,23 +160,19 @@ export function Home() {
               </div> 
               <div className="text-right"> 
                 <p className="text-[#fbbf24] text-xs font-bold uppercase tracking-wide mb-0.5 flex items-center gap-1 justify-start"> 
-                  <span>جديد</span> 
-                  <span className="w-1.5 h-1.5 bg-[#fbbf24] rounded-full" /> 
+                  <span>جديد</span> <span className="w-1.5 h-1.5 bg-[#fbbf24] rounded-full" /> 
                 </p> 
                 <h3 className="text-lg font-black text-[#f0f9ff]">مساعد الذكاء الاصطناعي</h3> 
                 <p className="text-emerald-100/70 text-xs mt-0.5 font-medium">اطرح أي سؤال حول معالم الكوفة، تفسير الآيات والأدعية</p> 
               </div> 
             </div> 
-            <span className="text-[#fbbf24] text-xl font-bold">←</span> 
-          </div> 
+            <span className="text-[#fbbf24] text-xl font-bold">←</span> </div> 
         </Link> 
 
         {/* Quick Actions */} 
         <div className="grid grid-cols-2 gap-4 mt-6"> 
           
-          {/* تم مسح زر الفنادق بنجاح من هنا */}
-
-          {/* 🌟 زر دليل الأربعين الجديد والمطور مدمج هنا بدقة واحترافية 🌟 */} 
+          {/* دليل الأربعين */} 
           <button onClick={() => navigate('/guide')} className="col-span-2 bg-gradient-to-r from-[#d97706]/10 to-[#b45309]/20 border border-[#d97706]/40 p-5 rounded-[24px] flex items-center justify-between gap-3 hover:bg-[#d97706]/20 transition-all group relative overflow-hidden shadow-md text-right"> 
             <div className="absolute -left-10 -bottom-10 w-24 h-24 bg-[#d97706]/5 rounded-full blur-xl" /> 
             <div className="flex items-center gap-4 relative z-10"> 
@@ -184,11 +181,40 @@ export function Home() {
               </div> 
               <div className="flex flex-col"> 
                 <span className="font-bold text-lg text-[#fbbf24]">دليل الأربعين والزائرين</span> 
-                <span className="text-xs text-emerald-100/70">المرافق والمواكب والخدمات في كربلاء، النجف وبابل</span> 
-              </div> 
+                <span className="text-xs text-emerald-100/70">المرافق والمواكب والخدمات في كربلاء، النجف وبابل</span> </div> 
             </div> 
             <span className="text-[#fbbf24] font-bold text-lg">←</span> 
           </button> 
+
+          {/* 🌟 إضافة الأزرار الأربعة الجديدة هنا بالتنسيق مع باقي الأزرار 🌟 */}
+          <Link to="/hajj" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex flex-col items-center justify-center gap-3 hover:bg-[#059669]/30 transition-all group">
+            <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
+              <Globe size={28} />
+            </div>
+            <span className="font-medium text-sm text-[#f0f9ff]">بوابة الحج</span>
+          </Link>
+
+          <Link to="/tawaf" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex flex-col items-center justify-center gap-3 hover:bg-[#059669]/30 transition-all group">
+            <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
+              <RotateCcw size={28} />
+            </div>
+            <span className="font-medium text-sm text-[#f0f9ff]">عداد الطواف</span>
+          </Link>
+
+          <Link to="/calendar-converter" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex flex-col items-center justify-center gap-3 hover:bg-[#059669]/30 transition-all group">
+            <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
+              <CalendarDays size={28} />
+            </div>
+            <span className="font-medium text-sm text-[#f0f9ff]">محول التقويم</span>
+          </Link>
+
+          <Link to="/lost-and-found" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex flex-col items-center justify-center gap-3 hover:bg-[#059669]/30 transition-all group">
+            <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
+              <HelpCircle size={28} />
+            </div>
+            <span className="font-medium text-sm text-[#f0f9ff]">إرشاد التائهين</span>
+          </Link>
+          {/* ----------------------------------------------- */}
 
           <Link to="/quran" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex flex-col items-center justify-center gap-3 hover:bg-[#059669]/30 transition-all group"> 
             <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform"> 
@@ -276,7 +302,7 @@ export function Home() {
             <span className="font-medium text-sm text-[#f0f9ff]">قسم رمضان</span> 
           </Link> 
 
-          {/* 2. قسم صائمون الأصلي */} 
+          {/* قسم صائمون الأصلي */} 
           <Link to="/saimoon" className="col-span-2 bg-[#fbbf24]/10 border border-[#fbbf24]/30 p-5 rounded-[24px] flex items-center justify-between gap-3 hover:bg-[#fbbf24]/20 transition-all group relative overflow-hidden shadow-md"> 
             <div className="absolute -left-10 -bottom-10 w-24 h-24 bg-[#fbbf24]/5 rounded-full blur-xl" /> 
             <div className="flex items-center gap-4 relative z-10"> 
@@ -290,7 +316,7 @@ export function Home() {
             <span className="text-[#fbbf24] font-bold text-lg">←</span> 
           </Link> 
 
-          {/* 3. قسم المساجد القريبة */} 
+          {/* قسم المساجد القريبة */} 
           <Link to="/mosques" className="col-span-2 bg-[#10b981]/10 border border-[#10b981]/30 p-5 rounded-[24px] flex items-center justify-between gap-3 hover:bg-[#10b981]/20 transition-all group relative overflow-hidden shadow-md"> 
             <div className="absolute -left-10 -bottom-10 w-24 h-24 bg-[#10b981]/5 rounded-full blur-xl" /> 
             <div className="flex items-center gap-4 relative z-10"> 
