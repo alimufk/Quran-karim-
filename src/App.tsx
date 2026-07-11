@@ -30,12 +30,12 @@ import { useNotifications } from './hooks/useNotifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import GuideDashboard from './pages/GuideDashboard';
 
-// 🌟 استيراد الأقسام الأربعة الجديدة 🌟
-import { HajjPortal } from './pages/Hajj';
+// 🌟 تصحيح استيراد الأقسام الأربعة الجديدة 🌟
+// تأكد أن أسماء الملفات في مجلد pages تتطابق مع هذه الحروف
+import { HajjPortal } from './pages/Hajj'; 
 import { Tawaf } from './pages/Tawaf';
-import  CalendarConverter from './pages/CalendarConverter';
+import CalendarConverter from './pages/CalendarConverter';
 import { LostAndFound } from './pages/LostAndFound';
-
 
 function AppContent() {
   const { audioRef, resolvedUrl } = usePrayerTimes();
@@ -76,21 +76,18 @@ function AppContent() {
           <Route path="/mosques" element={<Mosques />} />
           <Route path="/notifications" element={<NotificationsSettings />} />
           
-          {/* تم رفع سطر صفحة الدليل هنا لتظهر وتعمل بشكل سليم تماماً */}
           <Route path="/guide" element={<GuideDashboard />} />
           
-          {/* 🌟 مسارات الأقسام الأربعة الجديدة المضافة بعناية 🌟 */}
-          <Route path="/HajjPortl" element={<HajjPortal />} />
-          <Route path="/Tawaf" element={<Tawaf />} />
-          <Route path="/Calendar-Converter" element={<CalendarConverter />} />
-          <Route path="/Lost-And-Found" element={<LostAndFound />} />
+          {/* 🌟 مسارات الأقسام الأربعة الجديدة (تم التصحيح) 🌟 */}
+          <Route path="/hajj" element={<HajjPortal />} />
+          <Route path="/tawaf" element={<Tawaf />} />
+          <Route path="/calendar-converter" element={<CalendarConverter />} />
+          <Route path="/lost-and-found" element={<LostAndFound />} />
           
-          {/* سطر النجمة يبقى دائماً الأخير ليعيد توجيه الصفحات الخاطئة فقط */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
       <BottomNav />
-      {/* Hidden Adhan audio element */}
       <audio 
          ref={audioRef} 
          src={resolvedUrl || null}
