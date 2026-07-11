@@ -80,7 +80,7 @@ function AppContent() {
           <Route path="/guide" element={<GuideDashboard />} />
           
           {/* 🌟 مسارات الأقسام الأربعة الجديدة المضافة بعناية 🌟 */}
-          <Route path="/hajjportal" element={<Hajjportal />} />
+          <Route path="/Hajjport" element={<Hajjportal />} />
           <Route path="/tawaf" element={<Tawaf />} />
           <Route path="/calendar-converter" element={<CalendarConverter />} />
           <Route path="/lost-and-found" element={<LostAndFound />} />
