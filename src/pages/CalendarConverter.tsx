@@ -1,22 +1,20 @@
 import { useState } from 'react';
 
 export default function CalendarConverter() {
-  // إدارة التبديل بين الواجهات داخلياً لتفادي مشاكل الـ Routing
   const [view, setView] = useState<'main' | 'converter'>('main');
   const [selectedDate, setSelectedDate] = useState('2026-07-11');
 
-  // مصفوفة أيام التقويم الهجري
-  const hijriDays = Array.from({ length: 30 }, (_, i) => ({
+  const hijriDays = Array.from({ length: 29 }, (_, i) => ({
     day: i + 1,
-    isCurrent: i + 1 === 24, // اليوم الحالي المميز باللون الأحمر
-    isFriday: (i + 1) % 7 === 3 // محاكاة لأيام الجمعة
+    isCurrent: i + 1 === 24,
+    isFriday: (i + 1) % 7 === 3
   }));
 
-  // تحويل الأرقام إلى الهندية/العربية
   const toArabicNum = (num: number) => num.toLocaleString('ar-EG');
 
   return (
-    <div className="w-full min-h-screen bg-[#121212] text-white flex flex-col font-sans select-none" style={{ direction: 'rtl' }}>
+    // تم تحويل الطبقة إلى fixed وبـ z-index عالي لتظهر فوق الشاشة الخضراء الفارغة تماماً
+    <div className="fixed inset-0 top-0 left-0 w-full h-full bg-[#121212] text-white flex flex-col font-sans select-none z-50 overflow-y-auto pb-24" style={{ direction: 'rtl' }}>
       
       {/* === 1. الواجهة الرئيسية (التقويم الداكن الفخم) === */}
       {view === 'main' ? (
@@ -27,7 +25,7 @@ export default function CalendarConverter() {
             style={{ backgroundImage: `linear-gradient(to top, #121212, rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=600')` }}
           >
             <h1 className="text-2xl font-bold">٢٤ محرم ١٤٤٨ هـ</h1>
-            <p className="text-xs text-zinc-400 mt-1">الجمعة، ١٠ تموز ٢٠٢٦</p>
+            <p className="text-xs text-zinc-400 mt-1 font-medium">السبت، ١١ تموز ٢٠٢٦</p>
           </div>
 
           {/* أيام الأسبوع */}
@@ -63,9 +61,7 @@ export default function CalendarConverter() {
                 <h4 className="font-bold text-sm text-zinc-100">تحويل التاريخ الميلادي</h4>
                 <p className="text-[11px] text-zinc-500 mt-0.5">تحويل من ميلادي إلى هجري</p>
               </div>
-              <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-amber-500 font-bold">
-                📅
-              </div>
+              <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center text-amber-500">📅</div>
             </button>
           </div>
 
@@ -78,9 +74,7 @@ export default function CalendarConverter() {
             <h2 className="text-xs font-bold leading-relaxed text-zinc-200">
               شهادة الإمام علي بن الحسين السجاد (عليهما السلام) في المدينة المنورة سنة ٩٥هـ
             </h2>
-            <button className="w-full py-2.5 bg-red-600 text-white font-bold text-xs rounded-lg active:scale-95 transition-transform">
-              🔔 إضافة تذكير
-            </button>
+            <button className="w-full py-2.5 bg-red-600 text-white font-bold text-xs rounded-lg">🔔 إضافة تذكير</button>
           </div>
         </div>
       ) : (
@@ -106,19 +100,15 @@ export default function CalendarConverter() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full p-3.5 bg-[#022c22] border border-emerald-900 rounded-lg text-white focus:outline-none focus:border-[#ffcc29]"
+              className="w-full p-3.5 bg-[#022c22] border border-emerald-900 rounded-lg text-white"
             />
           </div>
 
-          <button 
-            onClick={() => alert('تم التحويل!')}
-            className="mt-auto w-full py-3.5 bg-[#ffcc29] text-emerald-950 font-black text-sm rounded-xl shadow-lg active:scale-95 transition-transform"
-          >
+          <button onClick={() => alert('تم التحويل!')} className="mt-auto w-full py-3.5 bg-[#ffcc29] text-emerald-950 font-black text-sm rounded-xl">
             🔄 تحويل الآن
           </button>
         </div>
       )}
-
     </div>
   );
 }
