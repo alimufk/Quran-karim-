@@ -33,7 +33,7 @@ import GuideDashboard from './pages/GuideDashboard';
 // 🌟 استيراد الأقسام الأربعة الجديدة 🌟
 import { HajjPortal } from './pages/Hajj';
 import { Tawaf } from './pages/Tawaf';
-import { CalendarConverter} from './pages/CalendarConverter';
+import  CalendarConverter from './pages/CalendarConverter';
 import { LostAndFound } from './pages/LostAndFound';
 
 
