@@ -23,12 +23,18 @@ import { AzkarDetail } from './pages/AzkarDetail';
 import { Wallpapers } from './pages/Wallpapers';
 import { Saimoon } from './pages/Saimoon';
 import { Ramadan } from './pages/Ramadan';
-import { Mosques } from './pages/Mosques'
+import { Mosques } from './pages/Mosques';
 import { NotificationsSettings } from './pages/NotificationsSettings';
 import { usePrayerTimes, PrayerTimesProvider } from './hooks/usePrayerTimes';
 import { useNotifications } from './hooks/useNotifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import GuideDashboard from './pages/GuideDashboard';
+
+// 🌟 استيراد الأقسام الأربعة الجديدة 🌟
+import { Hajj } from './pages/Hajj';
+import { Tawaf } from './pages/Tawaf';
+import { CalendarConverter } from './pages/CalendarConverter';
+import { LostAndFound } from './pages/LostAndFound';
 
 
 function AppContent() {
@@ -72,6 +78,12 @@ function AppContent() {
           
           {/* تم رفع سطر صفحة الدليل هنا لتظهر وتعمل بشكل سليم تماماً */}
           <Route path="/guide" element={<GuideDashboard />} />
+          
+          {/* 🌟 مسارات الأقسام الأربعة الجديدة المضافة بعناية 🌟 */}
+          <Route path="/hajj" element={<Hajj />} />
+          <Route path="/tawaf" element={<Tawaf />} />
+          <Route path="/calendar-converter" element={<CalendarConverter />} />
+          <Route path="/lost-and-found" element={<LostAndFound />} />
           
           {/* سطر النجمة يبقى دائماً الأخير ليعيد توجيه الصفحات الخاطئة فقط */}
           <Route path="*" element={<Navigate to="/" replace />} />
