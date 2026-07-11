@@ -32,7 +32,7 @@ import GuideDashboard from './pages/GuideDashboard';
 
 // 🌟 استيراد الأقسام الأربعة الجديدة مطابقة لأسماء ملفاتك الحقيقية 🌟
 // 🌟 استيراد الأقسام الأربعة الجديدة بطريقة تضمن تخطي أخطاء التصدير 🌟
-import HajjportalComponent from './pages/Hajjportal'; 
+import * as HajjModule from './pages/Hajjportal'; 
 import { Tawaf } from './pages/Tawaf';
 import CalendarConverter from './pages/CalendarConverter';
 import { LostAndFound } from './pages/LostAndFound';
@@ -80,7 +80,7 @@ function AppContent() {
           <Route path="/guide" element={<GuideDashboard />} />
           
           {/* 🌟 مسارات الأقسام الأربعة الجديدة المصححة 🌟 */}
-          <Route path="/hajj" element={<HajjportalComponent />} />
+          <Route path="/hajj" element={HajjModule.HajjPortal ? <HajjModule.HajjPortal /> : <HajjModule.Hajjportal />} />
           <Route path="/tawaf" element={<Tawaf />} />
           <Route path="/calendar-converter" element={<CalendarConverter />} />
           <Route path="/lost-and-found" element={<LostAndFound />} />
