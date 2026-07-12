@@ -264,46 +264,28 @@ export function HajjPortal() {
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-            useEffect(() => {
-    if (audioRef.current && currentTrack) {
+              useEffect(() => {
+    // التأكد من وجود عنصر الصوت ومن اختيار عنصر من القائمة
+    if (audioRef.current && activeList && activeList[selectedItem]) {
       if (isPlaying) {
-        setIsLoading(true);
-        setHasError(false);
         audioRef.current.crossOrigin = "anonymous";
-        // إذا كان المجلد في الواجهة الرئيسية باسم audio/
-        audioRef.current.src = `/audio/${currentTrack.audioFile}`; 
+        
+        // جلب اسم الملف الصوتي مباشرة من القائمة الفعالة
+        const audioFileName = activeList[selectedItem].audioFile;
+        
+        // تركيب المسار بالاعتماد على مجلد audio الموجود بالواجهة الرئيسية
+        audioRef.current.src = `/audio/${audioFileName}`;
+        
         audioRef.current.load();
-        audioRef.current.play()
-          .then(() => {
-            setIsLoading(false);
-          })
-          .catch((err) => {
-            console.error("خطأ تشغيل:", err);
-            setIsPlaying(false);
-            setIsLoading(false);
-            setHasError(true);
-          });
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [isPlaying, currentTrack]);
-  
-    const togglePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current.play().then(() => {
-          setIsPlaying(true);
-        }).catch((err) => {
-          // قمنا بحذف الـ alert المزعج من هنا نهائياً
-          console.error("خطأ في تشغيل ملف الصوت:", err);
+        audioRef.current.play().catch((err) => {
+          console.error("خطأ في تشغيل ملف الصوت من مجلد audio:", err);
+          setIsPlaying(false);
         });
+      } else {
+        audioRef.current.pause();
       }
     }
-  };
+  }, [isPlaying, selectedItem, view, currentSection]);
 
   const renderIllustration = (type: 'kaaba-pray' | 'kaaba-man' | 'kaaba-front') => {
     const gradient = currentSection === 'intro' 
