@@ -3,9 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Play, Pause, ChevronLeft, ChevronRight, RefreshCw, BookOpen, Layers, Info } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom'; 
 
-// 1️⃣ استيراد جميع ملفات الصوت من المجلد الرئيسي (خارج src)
-const audioModules = import.meta.glob('../../audio/*.mp3', { eager: true, import: 'default' });
-
 interface ManasikItem { 
   id: string; 
   title: string; 
@@ -64,7 +61,7 @@ export function HajjPortal() {
       imageType: 'kaaba-man',
       audioFile: 'umrah-01.mp3',
       content: [
-        "الإحرام هو نية الدخول في Nسك مقروناً بعمل من أعماله كالتلبية أو الإشعار.",
+        "الإحرام هو نية الدخول في النسك مقروناً بعمل من أعماله كالتلبية أو الإشعار.",
         "الواجب فيه: النية (أحرم لعمرة التمتع لحج التمتع قربة إلى الله تعالى)، ولبس ثوبي الإحرام (للرجال)، والتلبية بصوت مسموع.",
         "\"لبيك اللهم لبيك، لبيك لا شريك لك لبيك، إن الحمد والنعمة لك والملك، لا شريك لك لبيك\"."
       ]
@@ -143,23 +140,18 @@ export function HajjPortal() {
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-  // 2️⃣ الـ useEffect المعدل لقراءة المسارات من المجلد الرئيسي مباشرة
   useEffect(() => {
     if (!activeList || !activeList[selectedItem]) return;
 
     const audioFileName = activeList[selectedItem].audioFile;
     
-    // جلب المسار الصحيح المطابق للمجلد الخارجي ومطابق للسيناريوهين الاحتياطيين
-    const audioSrc = (audioModules[`../../audio/${audioFileName}`] || audioModules[`../audio/${audioFileName}`]) as string;
+    // 🌍 الحل الجذري: نعتمد على مستودع جيت هاب المباشر (Raw) الخاص بك لقراءة ملف الصوت 
+    // وبذلك يعمل الصوت على أندرويد والويب 100% بدون الاعتماد على المسارات الداخلية المزعجة.
+    const audioSrc = `https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/${audioFileName}`;
 
     if (isPlaying) {
       if (!audioRef.current) {
         audioRef.current = new Audio();
-      }
-
-      if (!audioSrc) {
-        console.error("تعذر العثور على الملف الصوتي:", audioFileName);
-        return;
       }
       
       if (audioRef.current.src !== audioSrc) {
@@ -182,7 +174,7 @@ export function HajjPortal() {
       audioRef.current.addEventListener('ended', handleAudioEnd);
 
       audioRef.current.play().catch((err) => {
-        console.error("خطأ أثناء تشغيل الصوت:", err);
+        console.error("خطأ تشغيل الصوت عبر الإنترنت:", err);
       });
 
       return () => {
