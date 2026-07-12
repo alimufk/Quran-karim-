@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { ArrowRight, Play, Pause, ChevronLeft, ChevronRight, RefreshCw, BookOpen, Layers, Info } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom'; 
-// استيراد جميع ملفات الصوت من المجلد الخارجي وتخزين مساراتها
-const audioModules = import.meta.glob('../audio/*.mp3', { eager: true, import: 'default' });
+
+// 1️⃣ استيراد جميع ملفات الصوت من المجلد الرئيسي (خارج src)
+const audioModules = import.meta.glob('../../audio/*.mp3', { eager: true, import: 'default' });
 
 interface ManasikItem { 
   id: string; 
@@ -63,7 +64,7 @@ export function HajjPortal() {
       imageType: 'kaaba-man',
       audioFile: 'umrah-01.mp3',
       content: [
-        "الإحرام هو نية الدخول في النسك مقروناً بعمل من أعماله كالتلبية أو الإشعار.",
+        "الإحرام هو نية الدخول في Nسك مقروناً بعمل من أعماله كالتلبية أو الإشعار.",
         "الواجب فيه: النية (أحرم لعمرة التمتع لحج التمتع قربة إلى الله تعالى)، ولبس ثوبي الإحرام (للرجال)، والتلبية بصوت مسموع.",
         "\"لبيك اللهم لبيك، لبيك لا شريك لك لبيك، إن الحمد والنعمة لك والملك، لا شريك لك لبيك\"."
       ]
@@ -142,27 +143,25 @@ export function HajjPortal() {
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-    u  useEffect(() => {
+  // 2️⃣ الـ useEffect المعدل لقراءة المسارات من المجلد الرئيسي مباشرة
+  useEffect(() => {
     if (!activeList || !activeList[selectedItem]) return;
 
     const audioFileName = activeList[selectedItem].audioFile;
     
-    // استخراج المسار الصحيح الذي عالجه Vite
-    // نبحث عن الملف في القاموس الذي أنشأناه
-    const audioSrc = audioModules[`../audio/${audioFileName}`] as string;
+    // جلب المسار الصحيح المطابق للمجلد الخارجي ومطابق للسيناريوهين الاحتياطيين
+    const audioSrc = (audioModules[`../../audio/${audioFileName}`] || audioModules[`../audio/${audioFileName}`]) as string;
 
     if (isPlaying) {
       if (!audioRef.current) {
         audioRef.current = new Audio();
       }
 
-      // إذا لم يجد الملف (خطأ في الاسم)، سيطبع تحذيراً
       if (!audioSrc) {
-        console.error("لم يتم العثور على ملف الصوت:", audioFileName);
+        console.error("تعذر العثور على الملف الصوتي:", audioFileName);
         return;
       }
       
-      // تعيين المسار المعالج
       if (audioRef.current.src !== audioSrc) {
         audioRef.current.src = audioSrc;
         audioRef.current.load();
@@ -183,7 +182,7 @@ export function HajjPortal() {
       audioRef.current.addEventListener('ended', handleAudioEnd);
 
       audioRef.current.play().catch((err) => {
-        console.error("خطأ في تشغيل الصوت:", err);
+        console.error("خطأ أثناء تشغيل الصوت:", err);
       });
 
       return () => {
@@ -198,6 +197,18 @@ export function HajjPortal() {
       }
     }
   }, [isPlaying, selectedItem, currentSection, activeList]);
+
+  useEffect(() => {
+    setIsPlaying(false);
+    setAudioProgress(0);
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+  }, [view, currentSection]);
+
+  const togglePlay = () => {
+    setIsPlaying(!isPlaying);
+  };
 
   const renderIllustration = (type: 'kaaba-pray' | 'kaaba-man' | 'kaaba-front') => {
     const gradient = currentSection === 'intro' ? "from-[#0d9488] to-[#ccfbf1]" : currentSection === 'umrah' ? "from-[#3b82f6] to-[#bfdbfe]" : "from-[#b45309] to-[#fef3c7]"; 
