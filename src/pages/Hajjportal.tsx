@@ -259,7 +259,7 @@ export function HajjPortal() {
                   </div>
                   <p className="text-[10px] mt-1 text-stone-600">
                     {hasError ? (
-                      <span className="text-red-600 flex items-center gap-1"><AlertCircle size={10}/> تعذر تشغيل الصوت، تأكد من اتصال الإنترنت</span>
+                      <span className="text-red-600 flex items-center gap-1"><AlertCircle size={10}/> تعذر تشغيل الصوت، يرجى التأكد من اسم الملف على جيت هاب</span>
                     ) : isLoading ? (
                       "جاري الاتصال الآمن بالسيرفر..."
                     ) : isPlaying ? (
