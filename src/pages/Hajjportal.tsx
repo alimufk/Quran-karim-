@@ -132,43 +132,50 @@ export function HajjPortal() {
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-  useEffect(() => {
-    if (audioRef.current && activeList[selectedItem]) {
-      if (isPlaying) {
-        setIsLoading(true);
-        setHasError(false);
-        audioRef.current.crossOrigin = "anonymous";
-        audioRef.current.src = encodeURI(activeList[selectedItem].audioUrl);
-        audioRef.current.load();
-        
-        audioRef.current.play()
-          .then(() => {
-            setIsLoading(false);
-          })
-          .catch((err) => {
-            console.error("Audio play error:", err);
-            setIsPlaying(false);
-            setIsLoading(false);
-            setHasError(true);
-          });
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [isPlaying, selectedItem, currentSection]);
-
+  // إجبار الكاش والمشغل على التصفير الكامل عند الانتقال بين العناصر لتفادي تعليق الأندرويد
   useEffect(() => {
     setIsPlaying(false);
     setAudioProgress(0);
     setHasError(false);
     setIsLoading(false);
+    
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.src = ""; // تنظيف المسار القديم تماماً من الذاكرة
+      audioRef.current.load();
     }
-  }, [view, currentSection, selectedItem]);
+  }, [selectedItem, currentSection, view]);
 
+  // دالة التحكم الذكي والآمن بالتشغيل والإيقاف
   const togglePlay = () => {
-    setIsPlaying(!isPlaying);
+    if (!audioRef.current || !activeList[selectedItem]) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      setIsLoading(true);
+      setHasError(false);
+
+      // في حال كان المشغل فارغاً، نقوم بإسناد الرابط الجديد بشكل محمي
+      if (!audioRef.current.src || audioRef.current.src === window.location.href || audioRef.current.src.ベッド === 0) {
+        audioRef.current.crossOrigin = "anonymous";
+        audioRef.current.src = encodeURI(activeList[selectedItem].audioUrl);
+        audioRef.current.load();
+      }
+
+      audioRef.current.play()
+        .then(() => {
+          setIsLoading(false);
+          setIsPlaying(true);
+        })
+        .catch((err) => {
+          console.error("Audio playback failed:", err);
+          setIsLoading(false);
+          setIsPlaying(false);
+          setHasError(true);
+        });
+    }
   };
 
   const renderIllustration = (type: 'kaaba-pray' | 'kaaba-man' | 'kaaba-front') => {
@@ -203,7 +210,7 @@ export function HajjPortal() {
                 <button onClick={() => navigate(-1)} className="p-2 bg-white/10 rounded-full"> <ArrowRight size={20} /> </button> 
                 <div> 
                   <h1 className="text-xl font-black text-[#ffcc29]">بوابة الحج والعمرة</h1> 
-                  <p className="text-xs text-emerald-400">الدليل التفاعلي الصوتي المباشر</p> 
+                  <p className="text-xs text-emerald-400">الدليل التفاعلي الصوتى المباشر</p> 
                 </div> 
               </div> 
             </div> 
@@ -259,13 +266,13 @@ export function HajjPortal() {
                   </div>
                   <p className="text-[10px] mt-1 text-stone-600">
                     {hasError ? (
-                      <span className="text-red-600 flex items-center gap-1"><AlertCircle size={10}/> تعذر تشغيل الصوت، يرجى التأكد من اسم الملف على جيت هاب</span>
+                      <span className="text-red-600 flex items-center gap-1"><AlertCircle size={10}/> تعذر تشغيل هذا الملف، يرجى التحقق من مساره المرفوع</span>
                     ) : isLoading ? (
-                      "جاري الاتصال الآمن بالسيرفر..."
+                      "جاري تهيئة الملف الصوتي الفوري..."
                     ) : isPlaying ? (
                       "جاري الاستماع الداخلي الفوري..."
                     ) : (
-                      "متوقف مؤقتاً"
+                      "جاهز للتشغيل"
                     )}
                   </p>
                 </div> 
