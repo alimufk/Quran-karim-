@@ -3,35 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronDown, Play, Pause, ChevronLeft, ChevronRight, RefreshCw, Compass, BookOpen, Layers, Info } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom'; 
 
-// 1️⃣ استيراد ملفات الصوت مباشرة (Vite / CRA سيتعامل معها كمسارات ديناميكية آمنة)
-// ملاحظة: تأكد من وضع هذه الملفات في مجلد src/assets/audio/ أو تعديل المسارات أدناه حسب مكانها في مشروعك
-import introHajjAudio from '../audio/intro-hajj.mp3';
-import introIhramAudio from '../audio/intro-ihram.mp3';
-import umrah01Audio from '../audio/umrah-01.mp3';
-import umrah02Audio from '../audio/umrah-02.mp3';
-import umrah03Audio from '../audio/umrah-03.mp3';
-import umrah04Audio from '../audio/umrah-04.mp3';
-import umrah05Audio from '../audio/umrah-05.mp3';
-import hajj01Audio from '../audio/hajj-01.mp3';
-import hajj02Audio from '../audio/hajj-02.mp3';
-import hajj03Audio from '../audio/hajj-03.mp3';
-import hajj04Audio from '../audio/hajj-04.mp3';
-import hajj05Audio from '../audio/hajj-05.mp3';
-import hajj06Audio from '../audio/hajj-06.mp3';
-import hajj07Audio from '../audio/hajj-07.mp3';
-import hajj08Audio from '../audio/hajj-08.mp3';
-import hajj09Audio from '../audio/hajj-09.mp3';
-import hajj10Audio from '../audio/hajj-10.mp3';
-import hajj11Audio from '../audio/hajj-11.mp3';
-import hajj12Audio from '../audio/hajj-12.mp3';
-import hajj13Audio from '../audio/hajj-13.mp3';
-
 interface ManasikItem { 
   id: string; 
   title: string; 
   subtitle?: string; 
   imageType: 'kaaba-pray' | 'kaaba-man' | 'kaaba-front'; 
-  audioSource: any; // تغيير النوع ليقبل الملف المستورد مباشرة
+  audioFile: string; 
   content: string[]; 
 } 
 
@@ -47,14 +24,13 @@ export function HajjPortal() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // ربط المصفوفات بالملفات المستوردة مباشرة
   const introList: ManasikItem[] = [
     {
       id: 'i1',
       title: 'مقدمة عن الحج وفضله',
       subtitle: 'أهمية وفريضة الحج في الإسلام',
       imageType: 'kaaba-man',
-      audioSource: introHajjAudio,
+      audioFile: 'intro-hajj.mp3',
       content: [
         "الحج: هو أحد أركان الدين ومن أوكد فرائض المسلمين قال الله تعالى (وَلِلَّهِ عَلَى النَّاسِ حِجُّ الْبَيْتِ مَنِ اسْتَطَاعَ إِلَيْهِ سَبِيلًا).",
         "فالحج فريضة الإسلام وركن الإيمان ومن أعظم العبادات والقربات ..",
@@ -67,7 +43,7 @@ export function HajjPortal() {
       title: 'مقدمة عن أحكام الإحرام',
       subtitle: 'النية، التلبية، ومحرمات الإحرام',
       imageType: 'kaaba-front',
-      audioSource: introIhramAudio,
+      audioFile: 'intro-ihram.mp3',
       content: [
         "الإحرام: نيته أن أحرم لحج التمتع حجة الإسلام لوجوبه قربة إلى الله تعالى. ويقول: \"لبيك اللهم لبيك، لبيك لا شريك لك لبيك\".",
         "ويستحب إضافة: \"إن الحمد والنعمة لك والملك، لا شريك لك\". ويكون ميقات حج التمتع مكة المكرمة.",
@@ -83,7 +59,7 @@ export function HajjPortal() {
       title: '1. الإحرام من الميقات',
       subtitle: 'أولى خطوات عمرة التمتع',
       imageType: 'kaaba-man',
-      audioSource: umrah01Audio,
+      audioFile: 'umrah-01.mp3',
       content: [
         "الإحرام هو نية الدخول في النسك مقروناً بعمل من أعماله كالتلبية أو الإشعار.",
         "الواجب فيه: النية (أحرم لعمرة التمتع لحج التمتع قربة إلى الله تعالى)، ولبس ثوبي الإحرام (للرجال)، والتلبية بصوت مسموع.",
@@ -95,7 +71,7 @@ export function HajjPortal() {
       title: '2. الطواف حول الكعبة',
       subtitle: 'سبعة أشواط بالبيت العتيق',
       imageType: 'kaaba-pray',
-      audioSource: umrah02Audio,
+      audioFile: 'umrah-02.mp3',
       content: [
         "الطواف هو الدوران حول الكعبة المشرفة سبعة أشواط متتالية بدءاً من الحجر الأسود وانتهاءً به.",
         "يشترط في الطواف: الطهارة من الحدثين الأكبر والأصغر، وستر العورة، ومراعاة جعل الكعبة على الجانب الأيسر أثناء الحركة."
@@ -106,7 +82,7 @@ export function HajjPortal() {
       title: '3. صلاة ركعتي الطواف',
       subtitle: 'خلف مقام إبراهيم عليه السلام',
       imageType: 'kaaba-front',
-      audioSource: umrah03Audio,
+      audioFile: 'umrah-03.mp3',
       content: [
         "بعد الفراغ من الطواف مباشرة، تجب صلاة ركعتين كصلاة الصبح.",
         "موقعها: خلف مقام إبراهيم عليه السلام، وفي حال الزحام يجوز الإتيان بها في أي مكان قريب من المقام داخل المسجد الحرام، ويقرأ فيهما بالحمد وسورة بعدها بنية ركعتي طواف العمرة."
@@ -117,7 +93,7 @@ export function HajjPortal() {
       title: '4. السعي بين الصفا والمروة',
       subtitle: 'سبعة أشواط بين الجبلين',
       imageType: 'kaaba-man',
-      audioSource: umrah04Audio,
+      audioFile: 'umrah-04.mp3',
       content: [
         "السعي هو المشي بين جبلي الصفا والمروة سبع مرات، يبدأ الشوط الأول من الصفا وينتهي بالمروة، والإياب من المروة للصفا شوط ثانٍ.",
         "النية: أسعى بين الصفا والمروة لعمرة التمتع قربة إلى الله تعالى. ولا تشترط فيه الطهارة وإن كانت مستحبة."
@@ -128,7 +104,7 @@ export function HajjPortal() {
       title: '5. التقصير',
       subtitle: 'خاتمة أعمال عمرة التمتع',
       imageType: 'kaaba-front',
-      audioSource: umrah05Audio,
+      audioFile: 'umrah-05.mp3',
       content: [
         "التقصير هو أخذ شيء من شعر الرأس أو اللحية أو الشارب أو قَصّ ظفر.",
         "بإتمام التقصير يحل للمحرم كل ما حرم عليه بالإحرام، وتنتهي أعمال عمرة التمتع بالكامل ليكون متهيئاً لإحرام الحج."
@@ -142,24 +118,24 @@ export function HajjPortal() {
       title: '1. الإحرام للحج من مكة',
       subtitle: 'يوم التروية (8 ذو الحجة)',
       imageType: 'kaaba-man',
-      audioSource: hajj01Audio,
+      audioFile: 'hajj-01.mp3',
       content: [
         "العمل الأول من أعمال الحج هو الإحرام، وأفضل أوقاته يوم التروية (الثامن من ذو الحجة)، ومكانه مكة المكرمة والأفضل في المسجد الحرام.",
         "النية: أحرم لحج التمتع حجة الإسلام لوجوبه قربة إلى الله تعالى، ثم يلبس ثيابه ويلبي التلبيات الأربع."
       ]
     },
-    { id: 'h2', title: '2. الوقوف في عرفات', subtitle: 'يوم عرفة (9 ذو الحجة)', imageType: 'kaaba-pray', audioSource: hajj02Audio, content: ["يجب الحضور والوقوف في أرض عرفات في اليوم التاسع من ذي الحجة من زوال الشمس إلى غروبها الشرعي."] },
-    { id: 'h3', title: '3. الوقوف في المشعر الحرام', subtitle: 'ليلة وفجر (10 ذو الحجة)', imageType: 'kaaba-front', audioSource: hajj03Audio, content: ["بعد الغروب من يوم عرفة يتوجه الحاج إلى المزدلفة (المشعر الحرام) والمبيت فيها ليلته."] },
-    { id: 'h4', title: '4. رمي جمرة العقبة الكبرى', subtitle: 'يوم العيد في منى', imageType: 'kaaba-man', audioSource: hajj04Audio, content: ["بعد طلوع الشمس يوم العاشر يتوجه إلى منى، وأول عمل فيها هو رمي جمرة العقبة الكبرى بسبع حصيات."] },
-    { id: 'h5', title: '5. الذبح أو الهدي', subtitle: 'تقديم القربان في منى', imageType: 'kaaba-pray', audioSource: hajj05Audio, content: ["الواجب الخامس بعد الرمي هو ذبح الهدي في المسالخ المعينة في منى خلال يوم العيد."] },
-    { id: 'h6', title: '6. الحلق أو التقصير', subtitle: 'التحلل الأول من الإحرام', imageType: 'kaaba-front', audioSource: hajj06Audio, content: ["بعد الذبح يجب الحلق أو التقصير بنية القربة لحج التمتع."] },
-    { id: 'h7', title: '7. طواف الحج (الإفاضة)', subtitle: 'العودة للمسجد الحرام', imageType: 'kaaba-pray', audioSource: hajj07Audio, content: ["يتوجه الحاج إلى مكة للطواف بالبيت سبعة أشواط متتالية طواف الحج."] },
-    { id: 'h8', title: '8. صلاة ركعتي طواف الحج', subtitle: 'ركعتان خلف مقام إبراهيم', imageType: 'kaaba-front', audioSource: hajj08Audio, content: ["صلاة ركعتين متتاليتين خلف مقام إبراهيم عليه السلام كصلاة الصبح تماماً."] },
-    { id: 'h9', title: '9. السعي للحج', subtitle: 'بين الصفا والمروة للحج', imageType: 'kaaba-man', audioSource: hajj09Audio, content: ["الخروج للمسعى والسعي سبعة أشواط تبدأ من الصفا وتختم بالمروة."] },
-    { id: 'h10', title: '10. طواف النساء', subtitle: 'طواف واجب في الحج', imageType: 'kaaba-pray', audioSource: hajj10Audio, content: ["طواف واجب على الرجال والنساء، وسمي بذلك لأن الإتيان به يحلل ارتباط النساء."] },
-    { id: 'h11', title: '11. صلاة ركعتي طواف النساء', subtitle: 'خلف المقام الشريف', imageType: 'kaaba-front', audioSource: hajj11Audio, content: ["بعد الفراغ من طواف النساء يصلي ركعتين خلف المقام مباشرة."] },
-    { id: 'h12', title: '12. المبيت في منى', subtitle: 'ليلة 11 و 12 ذو الحجة', imageType: 'kaaba-man', audioSource: hajj12Audio, content: ["يجب على الحاج العودة إلى منى للمبيت بها ليلتي الحادي عشر والثاني عشر."] },
-    { id: 'h13', title: '13. رمي الجمرات الثلاث', subtitle: 'خاتمة مناسك الحج', imageType: 'kaaba-front', audioSource: hajj13Audio, content: ["في الأيام الحادي عشر والثاني عشر يجب رمي الجمرات الثلاث بالترتيب."] }
+    { id: 'h2', title: '2. الوقوف في عرفات', subtitle: 'يوم عرفة (9 ذو الحجة)', imageType: 'kaaba-pray', audioFile: 'hajj-02.mp3', content: ["يجب الحضور والوقوف في أرض عرفات في اليوم التاسع من ذي الحجة من زوال الشمس إلى غروبها الشرعي."] },
+    { id: 'h3', title: '3. الوقوف في المشعر الحرام', subtitle: 'ليلة وفجر (10 ذو الحجة)', imageType: 'kaaba-front', audioFile: 'hajj-03.mp3', content: ["بعد الغروب من يوم عرفة يتوجه الحاج إلى المزدلفة (المشعر الحرام) والمبيت فيها ليلته."] },
+    { id: 'h4', title: '4. رمي جمرة العقبة الكبرى', subtitle: 'يوم العيد في منى', imageType: 'kaaba-man', audioFile: 'hajj-04.mp3', content: ["بعد طلوع الشمس يوم العاشر يتوجه إلى منى، وأول عمل فيها هو رمي جمرة العقبة الكبرى بسبع حصيات."] },
+    { id: 'h5', title: '5. الذبح أو الهدي', subtitle: 'تقديم القربان في منى', imageType: 'kaaba-pray', audioFile: 'hajj-05.mp3', content: ["الواجب الخامس بعد الرمي هو ذبح الهدي في المسالخ المعينة في منى خلال يوم العيد."] },
+    { id: 'h6', title: '6. الحلق أو التقصير', subtitle: 'التحلل الأول من الإحرام', imageType: 'kaaba-front', audioFile: 'hajj-06.mp3', content: ["بعد الذبح يجب الحلق أو التقصير بنية القربة لحج التمتع."] },
+    { id: 'h7', title: '7. طواف الحج (الإفاضة)', subtitle: 'العودة للمسجد الحرام', imageType: 'kaaba-pray', audioFile: 'hajj-07.mp3', content: ["يتوجه الحاج إلى مكة للطواف بالبيت سبعة أشواط متتالية طواف الحج."] },
+    { id: 'h8', title: '8. صلاة ركعتي طواف الحج', subtitle: 'ركعتان خلف مقام إبراهيم', imageType: 'kaaba-front', audioFile: 'hajj-08.mp3', content: ["صلاة ركعتين متتاليتين خلف مقام إبراهيم عليه السلام كصلاة الصبح تماماً."] },
+    { id: 'h9', title: '9. السعي للحج', subtitle: 'بين الصفا والمروة للحج', imageType: 'kaaba-man', audioFile: 'hajj-09.mp3', content: ["الخروج للمسعى والسعي سبعة أشواط تبدأ من الصفا وتختم بالمروة."] },
+    { id: 'h10', title: '10. طواف النساء', subtitle: 'طواف واجب في الحج', imageType: 'kaaba-pray', audioFile: 'hajj-10.mp3', content: ["طواف واجب على الرجال والنساء، وسمي بذلك لأن الإتيان به يحلل ارتباط النساء."] },
+    { id: 'h11', title: '11. صلاة ركعتي طواف النساء', subtitle: 'خلف المقام الشريف', imageType: 'kaaba-front', audioFile: 'hajj-11.mp3', content: ["بعد الفراغ من طواف النساء يصلي ركعتين خلف المقام مباشرة."] },
+    { id: 'h12', title: '12. المبيت في منى', subtitle: 'ليلة 11 و 12 ذو الحجة', imageType: 'kaaba-man', audioFile: 'hajj-12.mp3', content: ["يجب على الحاج العودة إلى منى للمبيت بها ليلتي الحادي عشر والثاني عشر."] },
+    { id: 'h13', title: '13. رمي الجمرات الثلاث', subtitle: 'خاتمة مناسك الحج', imageType: 'kaaba-front', audioFile: 'hajj-13.mp3', content: ["في الأيام الحادي عشر والثاني عشر يجب رمي الجمرات الثلاث بالترتيب."] }
   ];
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
@@ -167,17 +143,18 @@ export function HajjPortal() {
   useEffect(() => {
     if (!activeList || !activeList[selectedItem]) return;
 
-    // استخدام الملف المستورد مباشرة كمصدر آمن للصوت
-    const targetAudio = activeList[selectedItem].audioSource;
+    // استخدام مسار مرن متوافق مع خوادم الويب وتطبيقات الهواتف (Capacitor)
+    const audioFileName = activeList[selectedItem].audioFile;
+    const primaryPath = `${window.location.origin}/audio/${audioFileName}`;
 
     if (isPlaying) {
       if (!audioRef.current) {
         audioRef.current = new Audio();
       }
       
-      // تغيير المصدر فقط إذا اختلف الملف لضمان عدم توقف الصوت عند إعادة البناء المفاجئة
-      if (audioRef.current.src !== targetAudio) {
-        audioRef.current.src = targetAudio;
+      // التغيير فقط عند الحاجة لمنع تكرار التحميل الفاشل
+      if (audioRef.current.src !== primaryPath && !audioRef.current.src.endsWith(audioFileName)) {
+        audioRef.current.src = primaryPath;
         audioRef.current.load();
       }
       
@@ -195,10 +172,17 @@ export function HajjPortal() {
       audioRef.current.addEventListener('timeupdate', updateProgress);
       audioRef.current.addEventListener('ended', handleAudioEnd);
 
-      // البدء بالتشغيل الفعلي
+      // تشغيل الصوت مع آلية حماية ذكية للهواتف (Fallback)
       audioRef.current.play().catch((err) => {
-        console.error("تعذر تشغيل الصوت المدمج:", err);
-        setIsPlaying(false);
+        console.warn("خطأ تشغيل المتصفح، جاري تجربة مسار الأندرويد الداخلي...");
+        if (audioRef.current) {
+          // في أندرويد كاباسيتور، يتم اختصار المسار النسبي المباشر هكذا:
+          audioRef.current.src = `audio/${audioFileName}`;
+          audioRef.current.play().catch(e => {
+            console.error("تعذر تشغيل الصوت نهائياً على الهاتف:", e);
+            setIsPlaying(false);
+          });
+        }
       });
 
       return () => {
