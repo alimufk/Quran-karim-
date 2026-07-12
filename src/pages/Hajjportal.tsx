@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { ArrowRight, Play, Pause, ChevronLeft, ChevronRight, RefreshCw, BookOpen, Layers, Info } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom'; 
+// استيراد جميع ملفات الصوت من المجلد الخارجي وتخزين مساراتها
+const audioModules = import.meta.glob('../audio/*.mp3', { eager: true, import: 'default' });
 
 interface ManasikItem { 
   id: string; 
