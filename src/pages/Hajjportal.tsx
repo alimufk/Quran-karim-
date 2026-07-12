@@ -264,9 +264,12 @@ export function HajjPortal() {
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-  useEffect(() => {
+    useEffect(() => {
     if (view === 'player' && activeList[selectedItem]) {
-      const audio = new Audio(`/${activeList[selectedItem].audioFile}`);
+      // تعديل ذكي للمسار ليعمل على جيت هاب والهاتف بدون مشاكل
+      const audioUrl = `${window.location.origin}${window.location.pathname.replace(/\/$/, '')}/${activeList[selectedItem].audioFile}`;
+      
+      const audio = new Audio(audioUrl);
       audioRef.current = audio;
 
       const updateProgress = () => {
