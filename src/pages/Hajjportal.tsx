@@ -264,10 +264,10 @@ export function HajjPortal() {
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-        useEffect(() => {
+          useEffect(() => {
     if (view === 'player' && activeList[selectedItem]) {
-      // قراءة الملف الصوتي مباشرة من مجلد public المحلي
-      const audioUrl = `/${activeList[selectedItem].audioFile}`;
+      // تعديل المسار ليقرأ من مجلد audio بجوار ملفات الأدعية
+      const audioUrl = `/audio/${activeList[selectedItem].audioFile}`;
       
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
@@ -288,7 +288,7 @@ export function HajjPortal() {
 
       if (isPlaying) {
         audio.play().catch((err) => {
-          console.error("خطأ في تشغيل الصوت:", err);
+          console.error("خطأ في تشغيل الصوت من مجلد audio:", err);
           setIsPlaying(false);
         });
       }
