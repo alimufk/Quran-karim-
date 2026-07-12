@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'; 
 import { motion, AnimatePresence } from 'framer-motion'; 
-import { ArrowRight, ChevronDown, Play, Pause, ChevronLeft, ChevronRight, RefreshCw, Compass, BookOpen, Layers, Info } from 'lucide-react'; 
+import { ArrowRight, Play, Pause, ChevronLeft, ChevronRight, RefreshCw, BookOpen, Layers, Info } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom'; 
 
 interface ManasikItem { 
@@ -143,18 +143,19 @@ export function HajjPortal() {
   useEffect(() => {
     if (!activeList || !activeList[selectedItem]) return;
 
-    // استخدام مسار مرن متوافق مع خوادم الويب وتطبيقات الهواتف (Capacitor)
     const audioFileName = activeList[selectedItem].audioFile;
-    const primaryPath = `${window.location.origin}/audio/${audioFileName}`;
-
+    
     if (isPlaying) {
       if (!audioRef.current) {
         audioRef.current = new Audio();
       }
       
-      // التغيير فقط عند الحاجة لمنع تكرار التحميل الفاشل
-      if (audioRef.current.src !== primaryPath && !audioRef.current.src.endsWith(audioFileName)) {
-        audioRef.current.src = primaryPath;
+      // نعتمد مساراً ديناميكياً تماماً يتوافق مع الويب وتطبيقات الأندرويد المحتواه
+      const isCapacitor = window.location.protocol === 'file:' || window.location.hostname === 'localhost';
+      const audioPath = isCapacitor ? `audio/${audioFileName}` : `${window.location.origin}/audio/${audioFileName}`;
+
+      if (!audioRef.current.src.endsWith(audioFileName)) {
+        audioRef.current.src = audioPath;
         audioRef.current.load();
       }
       
@@ -172,16 +173,11 @@ export function HajjPortal() {
       audioRef.current.addEventListener('timeupdate', updateProgress);
       audioRef.current.addEventListener('ended', handleAudioEnd);
 
-      // تشغيل الصوت مع آلية حماية ذكية للهواتف (Fallback)
       audioRef.current.play().catch((err) => {
-        console.warn("خطأ تشغيل المتصفح، جاري تجربة مسار الأندرويد الداخلي...");
+        console.warn("محاولة تشغيل بديلة للمسار الاحتياطي...");
         if (audioRef.current) {
-          // في أندرويد كاباسيتور، يتم اختصار المسار النسبي المباشر هكذا:
           audioRef.current.src = `audio/${audioFileName}`;
-          audioRef.current.play().catch(e => {
-            console.error("تعذر تشغيل الصوت نهائياً على الهاتف:", e);
-            setIsPlaying(false);
-          });
+          audioRef.current.play().catch(e => console.error("خطأ تشغيل نهائي:", e));
         }
       });
 
