@@ -142,22 +142,26 @@ export function HajjPortal() {
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-  useEffect(() => {
+    useEffect(() => {
     if (!activeList || !activeList[selectedItem]) return;
 
     const audioFileName = activeList[selectedItem].audioFile;
     
+    // جلب مسار الصوت الصحيح الذي قام Vite بمعالجته وتضمينه داخل الأصول
+    const audioSrc = audioModules[`../audio/${audioFileName}`] as string;
+
     if (isPlaying) {
       if (!audioRef.current) {
         audioRef.current = new Audio();
       }
-      
-      // نعتمد مساراً ديناميكياً تماماً يتوافق مع الويب وتطبيقات الأندرويد المحتواه
-      const isCapacitor = window.location.protocol === 'file:' || window.location.hostname === 'localhost';
-      const audioPath = isCapacitor ? `audio/${audioFileName}` : `${window.location.origin}/audio/${audioFileName}`;
 
-      if (!audioRef.current.src.endsWith(audioFileName)) {
-        audioRef.current.src = audioPath;
+      if (!audioSrc) {
+        console.error("لم يتم العثور على ملف الصوت في المجلد:", audioFileName);
+        return;
+      }
+      
+      if (audioRef.current.src !== audioSrc) {
+        audioRef.current.src = audioSrc;
         audioRef.current.load();
       }
       
@@ -176,11 +180,7 @@ export function HajjPortal() {
       audioRef.current.addEventListener('ended', handleAudioEnd);
 
       audioRef.current.play().catch((err) => {
-        console.warn("محاولة تشغيل بديلة للمسار الاحتياطي...");
-        if (audioRef.current) {
-          audioRef.current.src = `audio/${audioFileName}`;
-          audioRef.current.play().catch(e => console.error("خطأ تشغيل نهائي:", e));
-        }
+        console.error("خطأ أثناء تشغيل الصوت:", err);
       });
 
       return () => {
@@ -195,18 +195,6 @@ export function HajjPortal() {
       }
     }
   }, [isPlaying, selectedItem, currentSection, activeList]);
-
-  useEffect(() => {
-    setIsPlaying(false);
-    setAudioProgress(0);
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-  }, [view, currentSection]);
-
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying);
-  };
 
   const renderIllustration = (type: 'kaaba-pray' | 'kaaba-man' | 'kaaba-front') => {
     const gradient = currentSection === 'intro' ? "from-[#0d9488] to-[#ccfbf1]" : currentSection === 'umrah' ? "from-[#3b82f6] to-[#bfdbfe]" : "from-[#b45309] to-[#fef3c7]"; 
