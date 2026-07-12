@@ -5,26 +5,26 @@ import { useNavigate } from 'react-router-dom';
 
 // 1️⃣ استيراد ملفات الصوت مباشرة (Vite / CRA سيتعامل معها كمسارات ديناميكية آمنة)
 // ملاحظة: تأكد من وضع هذه الملفات في مجلد src/assets/audio/ أو تعديل المسارات أدناه حسب مكانها في مشروعك
-import introHajjAudio from '../assets/audio/intro-hajj.mp3';
-import introIhramAudio from '../assets/audio/intro-ihram.mp3';
-import umrah01Audio from '../assets/audio/umrah-01.mp3';
-import umrah02Audio from '../assets/audio/umrah-02.mp3';
-import umrah03Audio from '../assets/audio/umrah-03.mp3';
-import umrah04Audio from '../assets/audio/umrah-04.mp3';
-import umrah05Audio from '../assets/audio/umrah-05.mp3';
-import hajj01Audio from '../assets/audio/hajj-01.mp3';
-import hajj02Audio from '../assets/audio/hajj-02.mp3';
-import hajj03Audio from '../assets/audio/hajj-03.mp3';
-import hajj04Audio from '../assets/audio/hajj-04.mp3';
-import hajj05Audio from '../assets/audio/hajj-05.mp3';
-import hajj06Audio from '../assets/audio/hajj-06.mp3';
-import hajj07Audio from '../assets/audio/hajj-07.mp3';
-import hajj08Audio from '../assets/audio/hajj-08.mp3';
-import hajj09Audio from '../assets/audio/hajj-09.mp3';
-import hajj10Audio from '../assets/audio/hajj-10.mp3';
-import hajj11Audio from '../assets/audio/hajj-11.mp3';
-import hajj12Audio from '../assets/audio/hajj-12.mp3';
-import hajj13Audio from '../assets/audio/hajj-13.mp3';
+import introHajjAudio from '../audio/intro-hajj.mp3';
+import introIhramAudio from '../audio/intro-ihram.mp3';
+import umrah01Audio from '../audio/umrah-01.mp3';
+import umrah02Audio from '../audio/umrah-02.mp3';
+import umrah03Audio from '../audio/umrah-03.mp3';
+import umrah04Audio from '../audio/umrah-04.mp3';
+import umrah05Audio from '../audio/umrah-05.mp3';
+import hajj01Audio from '../audio/hajj-01.mp3';
+import hajj02Audio from '../audio/hajj-02.mp3';
+import hajj03Audio from '../audio/hajj-03.mp3';
+import hajj04Audio from '../audio/hajj-04.mp3';
+import hajj05Audio from '../audio/hajj-05.mp3';
+import hajj06Audio from '../audio/hajj-06.mp3';
+import hajj07Audio from '../audio/hajj-07.mp3';
+import hajj08Audio from '../audio/hajj-08.mp3';
+import hajj09Audio from '../audio/hajj-09.mp3';
+import hajj10Audio from '../audio/hajj-10.mp3';
+import hajj11Audio from '../audio/hajj-11.mp3';
+import hajj12Audio from '../audio/hajj-12.mp3';
+import hajj13Audio from '../audio/hajj-13.mp3';
 
 interface ManasikItem { 
   id: string; 
