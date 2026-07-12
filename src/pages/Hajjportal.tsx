@@ -50,7 +50,7 @@ export function HajjPortal() {
         "الإحرام: نيته أن أحرم لحج التمتع حجة الإسلام لوجوبه قربة إلى الله تعالى. ويقول: \"لبيك اللهم لبيك، لبيك لا شريك لك لبيك\".",
         "ويستحب إضافة: \"إن الحمد والنعمة لك والملك، لا شريك لك\". ويكون ميقات حج التمتع مكة المكرمة.",
         "فإذا لبى انعقد الإحرام ووجب عليه ترك مجموعة من الأمور وهي خمسة وعشرون كما يلي:",
-        "( ١ ) الص الصيد البري. ( ٢ ) مجامعة النساء. ( ٣ ) تقبيل النساء. ( ٤ ) لمس النساء. ( ٥ ) النظر إلى المرأة وملاعبتها. ( ٦ ) الاستمناء. ( ٧ ) عقد النكاح."
+        "( ١ ) الص الصيد البري. ( ٢ ) مجامعة النساء. ( ٤ ) لمس النساء. ( ٥ ) النظر إلى المرأة وملاعبتها. ( ٦ ) الاستمناء. ( ٧ ) عقد النكاح."
       ]
     }
   ];
@@ -132,7 +132,6 @@ export function HajjPortal() {
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-  // آلية تشغيل متطابقة 100% مع كود الأدعية الناجح في الأندرويد
   useEffect(() => {
     if (audioRef.current && activeList[selectedItem]) {
       if (isPlaying) {
@@ -158,7 +157,6 @@ export function HajjPortal() {
     }
   }, [isPlaying, selectedItem, currentSection]);
 
-  // تحديث النسبة المئوية للمشغل وتفريغ الموارد عند تغيير العنصر
   useEffect(() => {
     setIsPlaying(false);
     setAudioProgress(0);
@@ -198,7 +196,7 @@ export function HajjPortal() {
   return ( 
     <div className="min-h-screen bg-[#022c22] text-white flex flex-col justify-between font-sans text-right" dir="rtl"> 
       <AnimatePresence mode="wait"> 
-        {view === 'portal' && ( orientation
+        {view === 'portal' && ( 
           <motion.div key="portal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto" > 
             <div className="flex items-center justify-between pt-2"> 
               <div className="flex items-center gap-2"> 
