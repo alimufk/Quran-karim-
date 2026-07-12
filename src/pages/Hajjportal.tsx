@@ -302,7 +302,7 @@ export function HajjPortal() {
     }
   }, [view, selectedItem, currentSection, isPlaying]);
   
-  const togglePlay = () => {
+    const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
@@ -311,8 +311,8 @@ export function HajjPortal() {
         audioRef.current.play().then(() => {
           setIsPlaying(true);
         }).catch((err) => {
-          alert(`تنبيه: يرجى رفع ملف الصوت باسم [ ${activeList[selectedItem].audioFile} ] داخل مجلد public`);
-          console.error(err);
+          // قمنا بحذف الـ alert المزعج من هنا نهائياً
+          console.error("خطأ في تشغيل ملف الصوت:", err);
         });
       }
     }
