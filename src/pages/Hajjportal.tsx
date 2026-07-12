@@ -246,7 +246,7 @@ export function HajjPortal() {
       audioFile: 'hajj-12.mp3',
       content: [
         "يجب على الحاج العودة إلى منى للمبيت بها ليلتي الحادي عشر والثاني عشر من ذي الحجة من الغروب إلى منتصف الليل.",
-        "النية: أبيت هذه الليلة في منى لحج التمتع قربة إلى الله تعالى."
+        "النية: أبيت هذه الليلة in منى لحج التمتع قربة إلى الله تعالى."
       ]
     },
     {
@@ -268,14 +268,23 @@ export function HajjPortal() {
   useEffect(() => {
     if (!activeList || !activeList[selectedItem]) return;
 
+    // بناء المسار بطريقة ديناميكية متوافقة مع الأنظمة المختلفة والمجلد العام العام الأساسي للتطبيق
+    const baseUrl = window.location.origin;
+    const audioUrl = `${baseUrl}/audio/${activeList[selectedItem].audioFile}`;
+
     if (isPlaying) {
       if (!audioRef.current) {
         audioRef.current = new Audio();
       }
       
+      // إعدادات تجاوز الأمان والتحميل الصارم للملف الصوتي التفاعلي
       audioRef.current.crossOrigin = "anonymous";
-      audioRef.current.src = `/audio/${activeList[selectedItem].audioFile}`;
-      audioRef.current.load();
+      
+      // التغيير الحرج هنا: التأكد من تحديث المسار فقط إذا كان ملفاً جديداً لئلا يسبب تهنيجاً عند النقر المستمر
+      if (audioRef.current.src !== audioUrl) {
+        audioRef.current.src = audioUrl;
+        audioRef.current.load();
+      }
       
       const updateProgress = () => {
         if (audioRef.current && audioRef.current.duration) {
@@ -292,7 +301,7 @@ export function HajjPortal() {
       audioRef.current.addEventListener('ended', handleAudioEnd);
 
       audioRef.current.play().catch((err) => {
-        console.error("تعذر تشغيل الصوت من المجلد المحلي الرئيسي:", err);
+        console.error("خطأ تشغيل الصوت. يرجى التأكد من وجود الملف الصوتي داخل المجلد public/audio/ بالاسم الصحيح:", err);
         setIsPlaying(false);
       });
 
@@ -307,18 +316,17 @@ export function HajjPortal() {
         audioRef.current.pause();
       }
     }
-  }, [isPlaying, selectedItem, currentSection]);
+  }, [isPlaying, selectedItem, currentSection, activeList]);
 
-  // إيقاف الصوت تلقائياً عند تغيير التبويب أو إغلاق المشغل لحماية الأداء
+  // إيقاف الصوت تلقائياً عند تغيير الواجهة تماماً لحماية كفاءة الذاكرة وعمر البطارية
   useEffect(() => {
     setIsPlaying(false);
     setAudioProgress(0);
     if (audioRef.current) {
       audioRef.current.pause();
     }
-  }, [view, currentSection, selectedItem]);
+  }, [view, currentSection]);
 
-  // دالة تشغيل وإيقاف الصوت الأساسية المربوطة بالواجهة (تم إعادتها وإصلاح الانهيار)
   const togglePlay = () => {
     setIsPlaying(!isPlaying);
   };
