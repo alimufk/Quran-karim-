@@ -142,12 +142,13 @@ export function HajjPortal() {
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-    useEffect(() => {
+    u  useEffect(() => {
     if (!activeList || !activeList[selectedItem]) return;
 
     const audioFileName = activeList[selectedItem].audioFile;
     
-    // جلب مسار الصوت الصحيح الذي قام Vite بمعالجته وتضمينه داخل الأصول
+    // استخراج المسار الصحيح الذي عالجه Vite
+    // نبحث عن الملف في القاموس الذي أنشأناه
     const audioSrc = audioModules[`../audio/${audioFileName}`] as string;
 
     if (isPlaying) {
@@ -155,11 +156,13 @@ export function HajjPortal() {
         audioRef.current = new Audio();
       }
 
+      // إذا لم يجد الملف (خطأ في الاسم)، سيطبع تحذيراً
       if (!audioSrc) {
-        console.error("لم يتم العثور على ملف الصوت في المجلد:", audioFileName);
+        console.error("لم يتم العثور على ملف الصوت:", audioFileName);
         return;
       }
       
+      // تعيين المسار المعالج
       if (audioRef.current.src !== audioSrc) {
         audioRef.current.src = audioSrc;
         audioRef.current.load();
@@ -180,7 +183,7 @@ export function HajjPortal() {
       audioRef.current.addEventListener('ended', handleAudioEnd);
 
       audioRef.current.play().catch((err) => {
-        console.error("خطأ أثناء تشغيل الصوت:", err);
+        console.error("خطأ في تشغيل الصوت:", err);
       });
 
       return () => {
