@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'; 
 import { motion, AnimatePresence } from 'framer-motion'; 
-import { ArrowRight, Play, Pause, ChevronLeft, ChevronRight, RefreshCw, BookOpen, Layers, Info } from 'lucide-react'; 
+import { ArrowRight, Play, Pause, ChevronLeft, ChevronRight, RefreshCw, BookOpen, Layers, Info, AlertCircle } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom'; 
 
 interface ManasikItem { 
@@ -8,7 +8,7 @@ interface ManasikItem {
   title: string; 
   subtitle?: string; 
   imageType: 'kaaba-pray' | 'kaaba-man' | 'kaaba-front'; 
-  audioFile: string; 
+  audioUrl: string; 
   content: string[]; 
 } 
 
@@ -19,6 +19,8 @@ export function HajjPortal() {
   const [currentSection, setCurrentSection] = useState<'intro' | 'umrah' | 'hajj'>('intro');
   const [selectedItem, setSelectedItem] = useState<number>(0); 
   const [isPlaying, setIsPlaying] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0); 
   const [tawafCount, setTawafCount] = useState(0); 
 
@@ -30,7 +32,7 @@ export function HajjPortal() {
       title: 'مقدمة عن الحج وفضله',
       subtitle: 'أهمية وفريضة الحج في الإسلام',
       imageType: 'kaaba-man',
-      audioFile: 'intro-hajj.mp3',
+      audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/intro-hajj.mp3',
       content: [
         "الحج: هو أحد أركان الدين ومن أوكد فرائض المسلمين قال الله تعالى (وَلِلَّهِ عَلَى النَّاسِ حِجُّ الْبَيْتِ مَنِ اسْتَطَاعَ إِلَيْهِ سَبِيلًا).",
         "فالحج فريضة الإسلام وركن الإيمان ومن أعظم العبادات والقربات ..",
@@ -43,7 +45,7 @@ export function HajjPortal() {
       title: 'مقدمة عن أحكام الإحرام',
       subtitle: 'النية، التلبية، ومحرمات الإحرام',
       imageType: 'kaaba-front',
-      audioFile: 'intro-ihram.mp3',
+      audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/intro-ihram.mp3',
       content: [
         "الإحرام: نيته أن أحرم لحج التمتع حجة الإسلام لوجوبه قربة إلى الله تعالى. ويقول: \"لبيك اللهم لبيك، لبيك لا شريك لك لبيك\".",
         "ويستحب إضافة: \"إن الحمد والنعمة لك والملك، لا شريك لك\". ويكون ميقات حج التمتع مكة المكرمة.",
@@ -59,7 +61,7 @@ export function HajjPortal() {
       title: '1. الإحرام من الميقات',
       subtitle: 'أولى خطوات عمرة التمتع',
       imageType: 'kaaba-man',
-      audioFile: 'umrah-01.mp3',
+      audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/umrah-01.mp3',
       content: [
         "الإحرام هو نية الدخول في النسك مقروناً بعمل من أعماله كالتلبية أو الإشعار.",
         "الواجب فيه: النية (أحرم لعمرة التمتع لحج التمتع قربة إلى الله تعالى)، ولبس ثوبي الإحرام (للرجال)، والتلبية بصوت مسموع.",
@@ -71,7 +73,7 @@ export function HajjPortal() {
       title: '2. الطواف حول الكعبة',
       subtitle: 'سبعة أشواط بالبيت العتيق',
       imageType: 'kaaba-pray',
-      audioFile: 'umrah-02.mp3',
+      audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/umrah-02.mp3',
       content: [
         "الطواف هو الدوران حول الكعبة المشرفة سبعة أشواط متتالية بدءاً من الحجر الأسود وانتهاءً به.",
         "يشترط في الطواف: الطهارة من الحدثين الأكبر والأصغر، وستر العورة، ومراعاة جعل الكعبة على الجانب الأيسر أثناء الحركة."
@@ -82,7 +84,7 @@ export function HajjPortal() {
       title: '3. صلاة ركعتي الطواف',
       subtitle: 'خلف مقام إبراهيم عليه السلام',
       imageType: 'kaaba-front',
-      audioFile: 'umrah-03.mp3',
+      audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/umrah-03.mp3',
       content: [
         "بعد الفراغ من الطواف مباشرة، تجب صلاة ركعتين كصلاة الصبح.",
         "موقعها: خلف مقام إبراهيم عليه السلام، وفي حال الزحام يجوز الإتيان بها في أي مكان قريب من المقام داخل المسجد الحرام، ويقرأ فيهما بالحمد وسورة بعدها بنية ركعتي طواف العمرة."
@@ -93,7 +95,7 @@ export function HajjPortal() {
       title: '4. السعي بين الصفا والمروة',
       subtitle: 'سبعة أشواط بين الجبلين',
       imageType: 'kaaba-man',
-      audioFile: 'umrah-04.mp3',
+      audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/umrah-04.mp3',
       content: [
         "السعي هو المشي بين جبلي الصفا والمروة سبع مرات، يبدأ الشوط الأول من الصفا وينتهي بالمروة، والإياب من المروة للصفا شوط ثانٍ.",
         "النية: أسعى بين الصفا والمروة لعمرة التمتع قربة إلى الله تعالى. ولا تشترط فيه الطهارة وإن كانت مستحبة."
@@ -104,7 +106,7 @@ export function HajjPortal() {
       title: '5. التقصير',
       subtitle: 'خاتمة أعمال عمرة التمتع',
       imageType: 'kaaba-front',
-      audioFile: 'umrah-05.mp3',
+      audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/umrah-05.mp3',
       content: [
         "التقصير هو أخذ شيء من شعر الرأس أو اللحية أو الشارب أو قَصّ ظفر.",
         "بإتمام التقصير يحل للمحرم كل ما حرم عليه بالإحرام، وتنتهي أعمال عمرة التمتع بالكامل ليكون متهيئاً لإحرام الحج."
@@ -113,90 +115,59 @@ export function HajjPortal() {
   ];
 
   const hajjList: ManasikItem[] = [
-    {
-      id: 'h1',
-      title: '1. الإحرام للحج من مكة',
-      subtitle: 'يوم التروية (8 ذو الحجة)',
-      imageType: 'kaaba-man',
-      audioFile: 'hajj-01.mp3',
-      content: [
-        "العمل الأول من أعمال الحج هو الإحرام، وأفضل أوقاته يوم التروية (الثامن من ذو الحجة)، ومكانه مكة المكرمة والأفضل في المسجد الحرام.",
-        "النية: أحرم لحج التمتع حجة الإسلام لوجوبه قربة إلى الله تعالى، ثم يلبس ثيابه ويلبي التلبيات الأربع."
-      ]
-    },
-    { id: 'h2', title: '2. الوقوف في عرفات', subtitle: 'يوم عرفة (9 ذو الحجة)', imageType: 'kaaba-pray', audioFile: 'hajj-02.mp3', content: ["يجب الحضور والوقوف في أرض عرفات في اليوم التاسع من ذي الحجة من زوال الشمس إلى غروبها الشرعي."] },
-    { id: 'h3', title: '3. الوقوف في المشعر الحرام', subtitle: 'ليلة وفجر (10 ذو الحجة)', imageType: 'kaaba-front', audioFile: 'hajj-03.mp3', content: ["بعد الغروب من يوم عرفة يتوجه الحاج إلى المزدلفة (المشعر الحرام) والمبيت فيها ليلته."] },
-    { id: 'h4', title: '4. رمي جمرة العقبة الكبرى', subtitle: 'يوم العيد في منى', imageType: 'kaaba-man', audioFile: 'hajj-04.mp3', content: ["بعد طلوع الشمس يوم العاشر يتوجه إلى منى، وأول عمل فيها هو رمي جمرة العقبة الكبرى بسبع حصيات."] },
-    { id: 'h5', title: '5. الذبح أو الهدي', subtitle: 'تقديم القربان في منى', imageType: 'kaaba-pray', audioFile: 'hajj-05.mp3', content: ["الواجب الخامس بعد الرمي هو ذبح الهدي في المسالخ المعينة في منى خلال يوم العيد."] },
-    { id: 'h6', title: '6. الحلق أو التقصير', subtitle: 'التحلل الأول من الإحرام', imageType: 'kaaba-front', audioFile: 'hajj-06.mp3', content: ["بعد الذبح يجب الحلق أو التقصير بنية القربة لحج التمتع."] },
-    { id: 'h7', title: '7. طواف الحج (الإفاضة)', subtitle: 'العودة للمسجد الحرام', imageType: 'kaaba-pray', audioFile: 'hajj-07.mp3', content: ["يتوجه الحاج إلى مكة للطواف بالبيت سبعة أشواط متتالية طواف الحج."] },
-    { id: 'h8', title: '8. صلاة ركعتي طواف الحج', subtitle: 'ركعتان خلف مقام إبراهيم', imageType: 'kaaba-front', audioFile: 'hajj-08.mp3', content: ["صلاة ركعتين متتاليتين خلف مقام إبراهيم عليه السلام كصلاة الصبح تماماً."] },
-    { id: 'h9', title: '9. السعي للحج', subtitle: 'بين الصفا والمروة للحج', imageType: 'kaaba-man', audioFile: 'hajj-09.mp3', content: ["الخروج للمسعى والسعي سبعة أشواط تبدأ من الصفا وتختم بالمروة."] },
-    { id: 'h10', title: '10. طواف النساء', subtitle: 'طواف واجب في الحج', imageType: 'kaaba-pray', audioFile: 'hajj-10.mp3', content: ["طواف واجب على الرجال والنساء، وسمي بذلك لأن الإتيان به يحلل ارتباط النساء."] },
-    { id: 'h11', title: '11. صلاة ركعتي طواف النساء', subtitle: 'خلف المقام الشريف', imageType: 'kaaba-front', audioFile: 'hajj-11.mp3', content: ["بعد الفراغ من طواف النساء يصلي ركعتين خلف المقام مباشرة."] },
-    { id: 'h12', title: '12. المبيت في منى', subtitle: 'ليلة 11 و 12 ذو الحجة', imageType: 'kaaba-man', audioFile: 'hajj-12.mp3', content: ["يجب على الحاج العودة إلى منى للمبيت بها ليلتي الحادي عشر والثاني عشر."] },
-    { id: 'h13', title: '13. رمي الجمرات الثلاث', subtitle: 'خاتمة مناسك الحج', imageType: 'kaaba-front', audioFile: 'hajj-13.mp3', content: ["في الأيام الحادي عشر والثاني عشر يجب رمي الجمرات الثلاث بالترتيب."] }
+    { id: 'h1', title: '1. الإحرام للحج من مكة', subtitle: 'يوم التروية (8 ذو الحجة)', imageType: 'kaaba-man', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-01.mp3', content: ["العمل الأول من أعمال الحج هو الإحرام، وأفضل أوقاته يوم التروية (الثامن من ذو الحجة)، ومكانه مكة المكرمة والأفضل في المسجد الحرام.", "النية: أحرم لحج التمتع حجة الإسلام لوجوبه قربة إلى الله تعالى، ثم يلبس ثيابه ويلبي التلبيات الأربع."] },
+    { id: 'h2', title: '2. الوقوف في عرفات', subtitle: 'يوم عرفة (9 ذو الحجة)', imageType: 'kaaba-pray', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-02.mp3', content: ["يجب الحضور والوقوف في أرض عرفات في اليوم التاسع من ذي الحجة من زوال الشمس إلى غروبها الشرعي."] },
+    { id: 'h3', title: '3. الوقوف في المشعر الحرام', subtitle: 'ليلة وفجر (10 ذو الحجة)', imageType: 'kaaba-front', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-03.mp3', content: ["بعد الغروب من يوم عرفة يتوجه الحاج إلى المزدلفة (المشعر الحرام) والمبيت فيها ليلته."] },
+    { id: 'h4', title: '4. رمي جمرة العقبة الكبرى', subtitle: 'يوم العيد في منى', imageType: 'kaaba-man', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-04.mp3', content: ["بعد طلوع الشمس يوم العاشر يتوجه إلى منى، وأول عمل فيها هو رمي جمرة العقبة الكبرى بسبع حصيات."] },
+    { id: 'h5', title: '5. الذبح أو الهدي', subtitle: 'تقديم القربان في منى', imageType: 'kaaba-pray', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-05.mp3', content: ["الواجب الخامس بعد الرمي هو ذبح الهدي في المسالخ المعينة في منى خلال يوم العيد."] },
+    { id: 'h6', title: '6. الحلق أو التقصير', subtitle: 'التحلل الأول من الإحرام', imageType: 'kaaba-front', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-06.mp3', content: ["بعد الذبح يجب الحلق أو التقصير بنية القربة لحج التمتع."] },
+    { id: 'h7', title: '7. طواف الحج (الإفاضة)', subtitle: 'العودة للمسجد الحرام', imageType: 'kaaba-pray', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-07.mp3', content: ["يتوجه الحاج إلى مكة للطواف بالبيت سبعة أشواط متتالية طواف الحج."] },
+    { id: 'h8', title: '8. صلاة ركعتي طواف الحج', subtitle: 'ركعتان خلف مقام إبراهيم', imageType: 'kaaba-front', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-08.mp3', content: ["صلاة ركعتين متتاليتين خلف مقام إبراهيم عليه السلام كصلاة الصبح تماماً."] },
+    { id: 'h9', title: '9. السعي للحج', subtitle: 'بين الصفا والمروة للحج', imageType: 'kaaba-man', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-09.mp3', content: ["الخروج للمسعى والسعي سبعة أشواط تبدأ من الصفا وتختم بالمروة."] },
+    { id: 'h10', title: '10. طواف النساء', subtitle: 'طواف واجب في الحج', imageType: 'kaaba-pray', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-10.mp3', content: ["طواف واجب على الرجال والنساء، وسمي بذلك لأن الإتيان به يحلل ارتباط النساء."] },
+    { id: 'h11', title: '11. صلاة ركعتي طواف النساء', subtitle: 'خلف المقام الشريف', imageType: 'kaaba-front', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-11.mp3', content: ["بعد الفراغ من طواف النساء يصلي ركعتين خلف المقام مباشرة."] },
+    { id: 'h12', title: '12. المبيت في منى', subtitle: 'ليلة 11 و 12 ذو الحجة', imageType: 'kaaba-man', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-12.mp3', content: ["يجب على الحاج العودة إلى منى للمبيت بها ليلتي الحادي عشر والثاني عشر."] },
+    { id: 'h13', title: '13. رمي الجمرات الثلاث', subtitle: 'خاتمة مناسك الحج', imageType: 'kaaba-front', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-13.mp3', content: ["في الأيام الحادي عشر والثاني عشر يجب رمي الجمرات الثلاث بالترتيب."] }
   ];
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
+  // آلية تشغيل متطابقة 100% مع كود الأدعية الناجح في الأندرويد
   useEffect(() => {
-    if (!activeList || !activeList[selectedItem]) return;
-
-    const audioFileName = activeList[selectedItem].audioFile;
-    
-    // 🌍 الحل الجذري: نعتمد على مستودع جيت هاب المباشر (Raw) الخاص بك لقراءة ملف الصوت 
-    // وبذلك يعمل الصوت على أندرويد والويب 100% بدون الاعتماد على المسارات الداخلية المزعجة.
-    const audioSrc = `https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/${audioFileName}`;
-
-    if (isPlaying) {
-      if (!audioRef.current) {
-        audioRef.current = new Audio();
-      }
-      
-      if (audioRef.current.src !== audioSrc) {
-        audioRef.current.src = audioSrc;
+    if (audioRef.current && activeList[selectedItem]) {
+      if (isPlaying) {
+        setIsLoading(true);
+        setHasError(false);
+        audioRef.current.crossOrigin = "anonymous";
+        audioRef.current.src = encodeURI(activeList[selectedItem].audioUrl);
         audioRef.current.load();
-      }
-      
-      const updateProgress = () => {
-        if (audioRef.current && audioRef.current.duration) {
-          setAudioProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
-        }
-      };
-
-      const handleAudioEnd = () => {
-        setIsPlaying(false);
-        setAudioProgress(0);
-      };
-
-      audioRef.current.addEventListener('timeupdate', updateProgress);
-      audioRef.current.addEventListener('ended', handleAudioEnd);
-
-      audioRef.current.play().catch((err) => {
-        console.error("خطأ تشغيل الصوت عبر الإنترنت:", err);
-      });
-
-      return () => {
-        if (audioRef.current) {
-          audioRef.current.removeEventListener('timeupdate', updateProgress);
-          audioRef.current.removeEventListener('ended', handleAudioEnd);
-        }
-      };
-    } else {
-      if (audioRef.current) {
+        
+        audioRef.current.play()
+          .then(() => {
+            setIsLoading(false);
+          })
+          .catch((err) => {
+            console.error("Audio play error:", err);
+            setIsPlaying(false);
+            setIsLoading(false);
+            setHasError(true);
+          });
+      } else {
         audioRef.current.pause();
       }
     }
-  }, [isPlaying, selectedItem, currentSection, activeList]);
+  }, [isPlaying, selectedItem, currentSection]);
 
+  // تحديث النسبة المئوية للمشغل وتفريغ الموارد عند تغيير العنصر
   useEffect(() => {
     setIsPlaying(false);
     setAudioProgress(0);
+    setHasError(false);
+    setIsLoading(false);
     if (audioRef.current) {
       audioRef.current.pause();
     }
-  }, [view, currentSection]);
+  }, [view, currentSection, selectedItem]);
 
   const togglePlay = () => {
     setIsPlaying(!isPlaying);
@@ -225,9 +196,9 @@ export function HajjPortal() {
   }; 
 
   return ( 
-    <div className="min-h-screen bg-[#022c22] text-white flex flex-col justify-between font-sans"> 
+    <div className="min-h-screen bg-[#022c22] text-white flex flex-col justify-between font-sans text-right" dir="rtl"> 
       <AnimatePresence mode="wait"> 
-        {view === 'portal' && ( 
+        {view === 'portal' && ( orientation
           <motion.div key="portal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto" > 
             <div className="flex items-center justify-between pt-2"> 
               <div className="flex items-center gap-2"> 
@@ -261,7 +232,7 @@ export function HajjPortal() {
               <button onClick={() => setView('tawaf')} className="w-full p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-between text-right" >
                 <div className="flex items-center gap-3">
                   <span>🔄</span>
-                  <span className="text-sm font-bold text-emerald-300">عداد الأشواط والطواف</span>
+                  <span className="text-sm font-bold text-emerald-300">مساعد عداد أشواط الطواف</span>
                 </div>
                 <ChevronLeft size={16} />
               </button>
@@ -270,7 +241,7 @@ export function HajjPortal() {
         )} 
 
         {view === 'player' && activeList[selectedItem] && ( 
-          <motion.div key="player" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="flex-1 bg-[#f4ebd0] text-stone-900 flex flex-col justify-between" > 
+          <motion.div key="player" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }} className="flex-1 bg-[#f4ebd0] text-stone-900 flex flex-col justify-between" > 
             <header className="p-4 flex items-center justify-between border-b border-stone-300/40 bg-[#ebdcb9]"> 
               <button onClick={() => setView('portal')} className="p-1 text-stone-700"> <ChevronRight size={24} /> </button> 
               <span className="font-bold text-stone-800">{activeList[selectedItem].title}</span> 
@@ -282,12 +253,23 @@ export function HajjPortal() {
 
               <div className="bg-[#ebdcb9] p-4 rounded-2xl flex items-center gap-4 shadow-xs"> 
                 <button onClick={togglePlay} className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md text-emerald-800" > 
-                  {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="translate-x-0.5" />} 
+                  {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-0.5" />} 
                 </button> 
                 <div className="flex-1 relative pt-1"> 
                   <div className="h-2 bg-white rounded-full overflow-hidden"> 
                     <div className="h-full bg-emerald-700 rounded-full" style={{ width: `${audioProgress}%` }} /> 
-                  </div> 
+                  </div>
+                  <p className="text-[10px] mt-1 text-stone-600">
+                    {hasError ? (
+                      <span className="text-red-600 flex items-center gap-1"><AlertCircle size={10}/> تعذر تشغيل الصوت، تأكد من اتصال الإنترنت</span>
+                    ) : isLoading ? (
+                      "جاري الاتصال الآمن بالسيرفر..."
+                    ) : isPlaying ? (
+                      "جاري الاستماع الداخلي الفوري..."
+                    ) : (
+                      "متوقف مؤقتاً"
+                    )}
+                  </p>
                 </div> 
               </div> 
 
@@ -303,6 +285,18 @@ export function HajjPortal() {
               <span className="text-xs font-bold text-stone-600"> {selectedItem + 1} من {activeList.length} </span> 
               <button disabled={selectedItem === activeList.length - 1} onClick={() => setSelectedItem(prev => prev + 1)} className="px-4 py-2 bg-emerald-800 text-white rounded-xl font-bold text-xs disabled:opacity-40" > التالي </button> 
             </footer> 
+
+            <audio 
+              ref={audioRef} 
+              onEnded={() => { setIsPlaying(false); setAudioProgress(0); }} 
+              onCanPlay={() => { setIsLoading(false); setHasError(false); }} 
+              onError={() => { setHasError(true); setIsPlaying(false); }}
+              onTimeUpdate={() => {
+                if (audioRef.current && audioRef.current.duration) {
+                  setAudioProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
+                }
+              }}
+            />
           </motion.div> 
         )} 
 
