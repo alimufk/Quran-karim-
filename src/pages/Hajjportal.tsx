@@ -264,43 +264,30 @@ export function HajjPortal() {
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-          useEffect(() => {
-    if (view === 'player' && activeList[selectedItem]) {
-      // تعديل المسار ليقرأ من مجلد audio بجوار ملفات الأدعية
-      const audioUrl = `/audio/${activeList[selectedItem].audioFile}`;
-      
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-
-      const updateProgress = () => {
-        if (audio.duration) {
-          setAudioProgress((audio.currentTime / audio.duration) * 100);
-        }
-      };
-
-      const handleAudioEnd = () => {
-        setIsPlaying(false);
-        setAudioProgress(0);
-      };
-
-      audio.addEventListener('timeupdate', updateProgress);
-      audio.addEventListener('ended', handleAudioEnd);
-
+            useEffect(() => {
+    if (audioRef.current && currentTrack) {
       if (isPlaying) {
-        audio.play().catch((err) => {
-          console.error("خطأ في تشغيل الصوت من مجلد audio:", err);
-          setIsPlaying(false);
-        });
+        setIsLoading(true);
+        setHasError(false);
+        audioRef.current.crossOrigin = "anonymous";
+        // إذا كان المجلد في الواجهة الرئيسية باسم audio/
+        audioRef.current.src = `/audio/${currentTrack.audioFile}`; 
+        audioRef.current.load();
+        audioRef.current.play()
+          .then(() => {
+            setIsLoading(false);
+          })
+          .catch((err) => {
+            console.error("خطأ تشغيل:", err);
+            setIsPlaying(false);
+            setIsLoading(false);
+            setHasError(true);
+          });
+      } else {
+        audioRef.current.pause();
       }
-
-      return () => {
-        audio.pause();
-        audio.removeEventListener('timeupdate', updateProgress);
-        audio.removeEventListener('ended', handleAudioEnd);
-        setAudioProgress(0);
-      };
     }
-  }, [view, selectedItem, currentSection, isPlaying]);
+  }, [isPlaying, currentTrack]);
   
     const togglePlay = () => {
     if (audioRef.current) {
