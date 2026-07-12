@@ -264,17 +264,12 @@ export function HajjPortal() {
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-      useEffect(() => {
+        useEffect(() => {
     if (view === 'player' && activeList[selectedItem]) {
-      // ضع اسم مستخدم جيت هاب واسم المستودع الخاص بك هنا ليعمل الصوت مباشرة من السيرفر
-      const githubUsername = "alimufk"; 
-      const repoName = "Quran_karim";
-      
-      // هذا الرابط يسحب الملف الصوتي الأصلي مباشرة من جيت هاب ويتجاوز مشاكل الكاش في الهاتف
-      const audioUrl = `https://raw.githubusercontent.com/${githubUsername}/${repoName}/main/${activeList[selectedItem].audioFile}`;
+      // قراءة الملف الصوتي مباشرة من مجلد public المحلي
+      const audioUrl = `/${activeList[selectedItem].audioFile}`;
       
       const audio = new Audio(audioUrl);
-      audio.crossOrigin = "anonymous"; // للسماح بالتشغيل من سيرفر خارجي دون مشاكل أمنية
       audioRef.current = audio;
 
       const updateProgress = () => {
@@ -293,7 +288,7 @@ export function HajjPortal() {
 
       if (isPlaying) {
         audio.play().catch((err) => {
-          console.error("Audio play error:", err);
+          console.error("خطأ في تشغيل الصوت:", err);
           setIsPlaying(false);
         });
       }
@@ -306,7 +301,7 @@ export function HajjPortal() {
       };
     }
   }, [view, selectedItem, currentSection, isPlaying]);
-
+  
   const togglePlay = () => {
     if (audioRef.current) {
       if (isPlaying) {
