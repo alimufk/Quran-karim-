@@ -264,28 +264,41 @@ export function HajjPortal() {
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-              useEffect(() => {
-    // التأكد من وجود عنصر الصوت ومن اختيار عنصر من القائمة
-    if (audioRef.current && activeList && activeList[selectedItem]) {
+                useEffect(() => {
+    // 1. فحص أمني: إذا كانت القائمة غير موجودة أو العنصر المحدد غير موجود، أوقف التنفيذ فوراً دون التسبب في انهيار الشاشة
+    if (!activeList || !activeList[selectedItem]) {
+      return; 
+    }
+
+    // 2. إذا كان عنصر الصوت موجوداً في الواجهة
+    if (audioRef.current) {
       if (isPlaying) {
-        audioRef.current.crossOrigin = "anonymous";
-        
-        // جلب اسم الملف الصوتي مباشرة من القائمة الفعالة
-        const audioFileName = activeList[selectedItem].audioFile;
-        
-        // تركيب المسار بالاعتماد على مجلد audio الموجود بالواجهة الرئيسية
-        audioRef.current.src = `/audio/${audioFileName}`;
-        
-        audioRef.current.load();
-        audioRef.current.play().catch((err) => {
-          console.error("خطأ في تشغيل ملف الصوت من مجلد audio:", err);
-          setIsPlaying(false);
-        });
+        try {
+          audioRef.current.crossOrigin = "anonymous";
+          
+          // جلب اسم الملف بأمان
+          const audioFileName = activeList[selectedItem].audioFile;
+          
+          // إذا كان اسم الملف فارغاً أو غير معرف، لا تفعل شيئاً
+          if (!audioFileName) return;
+
+          // تركيب المسار الصحيح من مجلد audio بالواجهة الرئيسية
+          audioRef.current.src = `/audio/${audioFileName}`;
+          
+          audioRef.current.load();
+          audioRef.current.play().catch((err) => {
+            console.error("تعذر تشغيل ملف الصوت محلياً:", err);
+            setIsPlaying(false);
+          });
+        } catch (error) {
+          console.error("خطأ أثناء إعداد الصوت:", error);
+        }
       } else {
         audioRef.current.pause();
       }
     }
-  }, [isPlaying, selectedItem, view, currentSection]);
+  }, [isPlaying, selectedItem, view, currentSection, activeList]); 
+  // أضفنا activeList هنا في المصفوفة لكي يتحدث المشغل تلقائياً عند الانتقال بين التبويبات
 
   const renderIllustration = (type: 'kaaba-pray' | 'kaaba-man' | 'kaaba-front') => {
     const gradient = currentSection === 'intro' 
