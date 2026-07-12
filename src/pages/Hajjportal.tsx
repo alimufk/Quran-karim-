@@ -25,7 +25,7 @@ export function HajjPortal() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // 1️⃣ قائمة المقدمات (تبويبين مستقلين تماماً)
+  // 1️⃣ قائمة المقدمات
   const introList: ManasikItem[] = [
     {
       id: 'i1',
@@ -55,7 +55,7 @@ export function HajjPortal() {
     }
   ];
 
-  // 2️⃣ مصفوفة مناسك عمرة التمتع (5 تبويبات كاملة فقهياً)
+  // 2️⃣ مصفوفة مناسك عمرة التمتع
   const umrahList: ManasikItem[] = [
     {
       id: 'u1',
@@ -115,7 +115,7 @@ export function HajjPortal() {
     }
   ];
 
-  // 3️⃣ مصفوفة مناسك حج التمتع (13 تبويباً كاملة فقهياً)
+  // 3️⃣ مصفوفة مناسك حج التمتع
   const hajjList: ManasikItem[] = [
     {
       id: 'h1',
@@ -168,7 +168,7 @@ export function HajjPortal() {
       imageType: 'kaaba-pray',
       audioFile: 'hajj-05.mp3',
       content: [
-        "الواجب الخامس بعد الرمي هو ذبح الهدي (شاة، أو بقرة، أو جمل) في المسالخ المعينة in منى خلال يوم العيد.",
+        "الواجب الخامس بعد الرمي هو ذبح الهدي (شاة، أو بقرة، أو جمل) في المسالخ المعينة في منى خلال يوم العيد.",
         "النية: أذبح هذا الهدي لحج التمتع قربة إلى الله تعالى، ويشترط سلامة الهدي من العيوب."
       ]
     },
@@ -264,41 +264,64 @@ export function HajjPortal() {
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-                useEffect(() => {
-    // 1. فحص أمني: إذا كانت القائمة غير موجودة أو العنصر المحدد غير موجود، أوقف التنفيذ فوراً دون التسبب في انهيار الشاشة
-    if (!activeList || !activeList[selectedItem]) {
-      return; 
-    }
+  // تأثير إدارة ومراقبة تحديث الصوت وحساب شريط التقدم
+  useEffect(() => {
+    if (!activeList || !activeList[selectedItem]) return;
 
-    // 2. إذا كان عنصر الصوت موجوداً في الواجهة
-    if (audioRef.current) {
-      if (isPlaying) {
-        try {
-          audioRef.current.crossOrigin = "anonymous";
-          
-          // جلب اسم الملف بأمان
-          const audioFileName = activeList[selectedItem].audioFile;
-          
-          // إذا كان اسم الملف فارغاً أو غير معرف، لا تفعل شيئاً
-          if (!audioFileName) return;
-
-          // تركيب المسار الصحيح من مجلد audio بالواجهة الرئيسية
-          audioRef.current.src = `/audio/${audioFileName}`;
-          
-          audioRef.current.load();
-          audioRef.current.play().catch((err) => {
-            console.error("تعذر تشغيل ملف الصوت محلياً:", err);
-            setIsPlaying(false);
-          });
-        } catch (error) {
-          console.error("خطأ أثناء إعداد الصوت:", error);
+    if (isPlaying) {
+      if (!audioRef.current) {
+        audioRef.current = new Audio();
+      }
+      
+      audioRef.current.crossOrigin = "anonymous";
+      audioRef.current.src = `/audio/${activeList[selectedItem].audioFile}`;
+      audioRef.current.load();
+      
+      const updateProgress = () => {
+        if (audioRef.current && audioRef.current.duration) {
+          setAudioProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
         }
-      } else {
+      };
+
+      const handleAudioEnd = () => {
+        setIsPlaying(false);
+        setAudioProgress(0);
+      };
+
+      audioRef.current.addEventListener('timeupdate', updateProgress);
+      audioRef.current.addEventListener('ended', handleAudioEnd);
+
+      audioRef.current.play().catch((err) => {
+        console.error("تعذر تشغيل الصوت من المجلد المحلي الرئيسي:", err);
+        setIsPlaying(false);
+      });
+
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.removeEventListener('timeupdate', updateProgress);
+          audioRef.current.removeEventListener('ended', handleAudioEnd);
+        }
+      };
+    } else {
+      if (audioRef.current) {
         audioRef.current.pause();
       }
     }
-  }, [isPlaying, selectedItem, view, currentSection, activeList]); 
-  // أضفنا activeList هنا في المصفوفة لكي يتحدث المشغل تلقائياً عند الانتقال بين التبويبات
+  }, [isPlaying, selectedItem, currentSection]);
+
+  // إيقاف الصوت تلقائياً عند تغيير التبويب أو إغلاق المشغل لحماية الأداء
+  useEffect(() => {
+    setIsPlaying(false);
+    setAudioProgress(0);
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+  }, [view, currentSection, selectedItem]);
+
+  // دالة تشغيل وإيقاف الصوت الأساسية المربوطة بالواجهة (تم إعادتها وإصلاح الانهيار)
+  const togglePlay = () => {
+    setIsPlaying(!isPlaying);
+  };
 
   const renderIllustration = (type: 'kaaba-pray' | 'kaaba-man' | 'kaaba-front') => {
     const gradient = currentSection === 'intro' 
@@ -426,10 +449,10 @@ export function HajjPortal() {
         )} 
 
         {/* ================= الواجهة الثانية: مشغل الصوت المحسن ================= */}
-        {view === 'player' && ( 
+        {view === 'player' && activeList[selectedItem] && ( 
           <motion.div key="player" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="flex-1 bg-[#f4ebd0] text-stone-900 flex flex-col justify-between" > 
             <header className="p-4 flex items-center justify-between border-b border-stone-300/40 bg-[#ebdcb9]"> 
-              <button onClick={() => { setView('portal'); setIsPlaying(false); }} className="p-1 text-stone-700 hover:text-stone-900"> 
+              <button onClick={() => setView('portal')} className="p-1 text-stone-700 hover:text-stone-900"> 
                 <ChevronRight size={24} /> 
               </button> 
               <div className="flex items-center gap-1 cursor-pointer font-bold text-stone-800"> 
@@ -464,11 +487,11 @@ export function HajjPortal() {
             </div> 
 
             <footer className="p-4 bg-[#ebdcb9]/60 border-t border-stone-300/40 flex justify-between items-center"> 
-              <button disabled={selectedItem === 0} onClick={() => { setSelectedItem(prev => prev - 1); setIsPlaying(false); }} className="px-4 py-2 bg-white/80 rounded-xl text-stone-700 font-bold text-xs disabled:opacity-40 flex items-center gap-1 shadow-xs" > 
+              <button disabled={selectedItem === 0} onClick={() => setSelectedItem(prev => prev - 1)} className="px-4 py-2 bg-white/80 rounded-xl text-stone-700 font-bold text-xs disabled:opacity-40 flex items-center gap-1 shadow-xs" > 
                 <ChevronRight size={16} /> السابق 
               </button> 
               <span className="text-xs font-bold text-stone-600"> {selectedItem + 1} من {activeList.length} </span> 
-              <button disabled={selectedItem === activeList.length - 1} onClick={() => { setSelectedItem(prev => prev + 1); setIsPlaying(false); }} className="px-4 py-2 bg-emerald-800 text-white rounded-xl font-bold text-xs disabled:opacity-40 flex items-center gap-1 shadow-md" > 
+              <button disabled={selectedItem === activeList.length - 1} onClick={() => setSelectedItem(prev => prev + 1)} className="px-4 py-2 bg-emerald-800 text-white rounded-xl font-bold text-xs disabled:opacity-40 flex items-center gap-1 shadow-md" > 
                 التالي <ChevronLeft size={16} /> 
               </button> 
             </footer> 
