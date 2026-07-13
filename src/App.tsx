@@ -75,6 +75,8 @@ function AppContent() {
           {/* صفحة الدليل والمسابقات */}
           <Route path="/guide" element={<GuideDashboard />} />
           <Route path="/quiz" element={<ReligiousQuiz />} />
+          <Route path="/calendar-converter" element={<CalendarConverter />} />
+          <Route path="/lost-and-found" element={<LostAndFound />} />
           
           {/* سطر النجمة لإعادة التوجيه */}
           <Route path="*" element={<Navigate to="/" replace />} />
