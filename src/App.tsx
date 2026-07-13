@@ -29,7 +29,8 @@ import { usePrayerTimes, PrayerTimesProvider } from './hooks/usePrayerTimes';
 import { useNotifications } from './hooks/useNotifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import GuideDashboard from './pages/GuideDashboard';
-import { ReligiousQuiz } from './components/ReligiousQuiz';
+import { ReligiousQuiz } from './pages/ReligiousQuiz';
+
 
 function AppContent() {
   const { audioRef, resolvedUrl } = usePrayerTimes();
