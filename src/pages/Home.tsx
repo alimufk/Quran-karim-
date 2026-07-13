@@ -199,27 +199,27 @@ export function Home() {
           </div>
           <span className="text-[#f59e0b] font-bold text-lg">←</span>
         </Link>
-          {/* قسم محول التقويم */}
-        <div 
-              onClick={() => navigate('/calendar-converter')} 
-              className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl cursor-pointer hover:border-[#059669]/60 transition-all flex flex-col justify-between"> 
 
-         <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] w-fit">
-         <CalendarDays size={28} />
-       </div>
-       <span className="font-medium text-sm text-[#f0f9ff] mt-2">محول التقويم</span>
-       </div>
+                 {/* قسم محول التقويم المطور - سنتر بالكامل */}
+           <div 
+             onClick={() => navigate('/calendar-converter')} 
+             className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl cursor-pointer hover:border-[#059669]/60 transition-all flex flex-col items-center justify-center text-center gap-3"> 
 
-               {/* قسم إرشاد التائهين */}
-          <div 
-           onClick={() => navigate('/lost-and-found')} 
-           className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl cursor-pointer hover:border-[#059669]/60 transition-all flex flex-col justify-between"> 
-
-          <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] w-fit">
-          <HelpCircle size={28} />
+          <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] flex items-center justify-center">
+          <CalendarDays size={28} />
          </div>
-          <span className="font-medium text-sm text-[#f0f9ff] mt-2">إرشاد التائهين</span>
-        </div>
+         <span className="font-medium text-sm text-[#f0f9ff]">محول التقويم</span>
+       </div>
+                 {/* قسم إرشاد التائهين المطور - سنتر بالكامل */}
+               <div 
+               onClick={() => navigate('/lost-and-found')} 
+               className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl cursor-pointer hover:border-[#059669]/60 transition-all flex flex-col items-center justify-center text-center gap-3"> 
+
+          <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] flex items-center justify-center">
+            <HelpCircle size={28} />
+              </div>
+          <span className="font-medium text-sm text-[#f0f9ff]">إرشاد التائهين</span>
+         </div>
 
           <Link to="/quran" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex flex-col items-center justify-center gap-3 hover:bg-[#059669]/30 transition-all group"> 
             <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform"> 
