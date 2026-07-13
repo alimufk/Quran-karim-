@@ -30,7 +30,8 @@ import { useNotifications } from './hooks/useNotifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import GuideDashboard from './pages/GuideDashboard';
 import { ReligiousQuiz } from './pages/ReligiousQuiz';
-import { HajjPortal } from './pages/ZiyarahPortal.tsx';
+import { CalendarConverter } from './pages/CalendarConverter';
+import { LostAndFound } from './pages/LostAndFound';
 
 function AppContent() {
   const { audioRef, resolvedUrl } = usePrayerTimes();
@@ -74,7 +75,6 @@ function AppContent() {
           {/* صفحة الدليل والمسابقات */}
           <Route path="/guide" element={<GuideDashboard />} />
           <Route path="/quiz" element={<ReligiousQuiz />} />
-          <Route path="/holy-shrines-portal" element={<ZiyarahPortal.tsx />} />
           
           {/* سطر النجمة لإعادة التوجيه */}
           <Route path="*" element={<Navigate to="/" replace />} />
