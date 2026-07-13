@@ -29,13 +29,7 @@ import { usePrayerTimes, PrayerTimesProvider } from './hooks/usePrayerTimes';
 import { useNotifications } from './hooks/useNotifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import GuideDashboard from './pages/GuideDashboard';
-
-// 🌟 استيراد الأقسام الأربعة الجديدة مطابقة لأسماء ملفاتك الحقيقية 🌟
-// 🌟 استيراد الأقسام الأربعة الجديدة بطريقة تضمن تخطي أخطاء التصدير 🌟
-import * as HajjModule from './pages/Hajjportal'; 
-import { Tawaf } from './pages/Tawaf';
-import CalendarConverter from './pages/CalendarConverter';
-import { LostAndFound } from './pages/LostAndFound';
+import { ReligiousQuiz } from './components/ReligiousQuiz';
 
 function AppContent() {
   const { audioRef, resolvedUrl } = usePrayerTimes();
@@ -76,21 +70,16 @@ function AppContent() {
           <Route path="/mosques" element={<Mosques />} />
           <Route path="/notifications" element={<NotificationsSettings />} />
           
-          {/* صفحة الدليل */}
+          {/* صفحة الدليل والمسابقات */}
           <Route path="/guide" element={<GuideDashboard />} />
-          
-          {/* 🌟 مسارات الأقسام الأربعة الجديدة المصححة 🌟 */}
-          <Route path="/hajj" element={HajjModule.HajjPortal ? <HajjModule.HajjPortal /> : <HajjModule.Hajjportal />} />
-          <Route path="/tawaf" element={<Tawaf />} />
-          <Route path="/calendar-converter" element={<CalendarConverter />} />
-          <Route path="/lost-and-found" element={<LostAndFound />} />
+          <Route path="/quiz" element={<ReligiousQuiz />} />
           
           {/* سطر النجمة لإعادة التوجيه */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
       <BottomNav />
-      <audio ref={audioRef} src={resolvedUrl || null} preload="auto" />
+      <audio ref={audioRef} src={resolvedUrl || undefined} preload="auto" />
     </div>
   );
 }
