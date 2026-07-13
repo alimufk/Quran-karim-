@@ -44,17 +44,19 @@ export function ReligiousQuiz() {
     localStorage.setItem('quiz_badges', JSON.stringify(unlockedBadges));
   }, [score, streak, unlockedBadges]);
 
+  // بنك الأسئلة مع إضافة روابط صوتية مختلفة لكل قارئ وسؤال بشكل مستقل
   const questionsDatabase: Question[] = [
     {
       id: '1',
       category: 'prophets',
-      type: 'surah_info',
-      question: 'ما هي السورة التي ذكرت فيها قصة أصحاب الكهف كاملة، وهل هي مكية أم مدنية؟',
-      options: ['سورة الكهف - مكية', 'سورة الكهف - مدنية', 'سورة مريم - مكية', 'سورة الأنبياء - مدنية'],
+      type: 'reciter',
+      question: 'استمع إلى التلاوة العذبة التالية، وتعرف على القارئ صاحب الصوت الحزين الرخيم؟',
+      options: ['الشيخ محمد صديق المنشاوي', 'الشيخ عبد الباسط عبد الصمد', 'الشيخ محمود خليل الحصري', 'الشيخ الشاطري'],
       correctAnswer: 0,
-      points: 10,
-      hint: 'تقرأ مستحبة في يوم الجمعة وتنزلت قبل الهجرة.',
-      explanation: 'سورة الكهف هي سورة مكية بالكامل وترتيبها 18 في المصحف الشريف وعدد آياتها 110 آيات.'
+      points: 15,
+      audioUrl: 'https://server10.mp3quran.net/minsh/001.mp3', // المنشاوي
+      hint: 'من أعلام قراء مصر، تميز بصوته الخاشع والباكي.',
+      explanation: 'القارئ هو الشيخ محمد صديق المنشاوي رحمه الله، تلاوة خاشعة لسورة الفاتحة.'
     },
     {
       id: '2',
@@ -65,45 +67,57 @@ export function ReligiousQuiz() {
       correctAnswer: 1,
       points: 15,
       hint: 'السورة تتحدث عن فتح مكة ودخول قبائل العرب للإسلام جماعات.',
-      explanation: 'التكملة الصحيحة هي ﴿أَفْوَاجًا﴾ وهي سورة النصر، وتسمى أيضاً سورة التوديع لأنها نعت النبي ﷺ.'
+      explanation: 'التكملة الصحيحة هي ﴿أَفْوَاجًا﴾ وهي سورة النصر.'
     },
     {
       id: '3',
       category: 'ramadan',
       type: 'reciter',
-      question: 'استمع للمقطع الصوتي العذب التالي، وتعرف على "من القارئ"؟',
+      question: 'استمع للمقطع الصوتي القصير التالي، وتعرف على "من القارئ الغني عن التعريف"؟',
       options: ['الشيخ عبد الباسط عبد الصمد', 'الشيخ ميثم التمار', 'الشيخ محمود خليل الحصري', 'الشيخ مشاري العفاسي'],
       correctAnswer: 0,
       points: 20,
-      audioUrl: 'https://download.media.islamway.net/quran3/240/001.mp3',
-      hint: 'صاحب الحنجرة الذهبية ومن أشهر قراء مصر والعالم الإسلامي.',
-      explanation: 'القارئ هو الشيخ عبد الباسط عبد الصمد رحمه الله، والتسجيل من روائع التلاوات المجودة.'
+      audioUrl: 'https://download.media.islamway.net/quran3/240/001.mp3', // عبد الباسط
+      hint: 'صاحب الحنجرة الذهبية ومن أشهر قراء العالم الإسلامي في التجويد.',
+      explanation: 'القارئ هو الشيخ عبد الباسط عبد الصمد رحمه الله بالتجويد الفخم.'
     },
     {
       id: '4',
       category: 'ashura',
-      type: 'true_false',
-      question: 'صح أم خطأ: استشهد الإمام الحسين عليه السلام في واقعة الطف بكربلاء في اليوم العاشر من شهر محرم الحرام؟',
-      options: ['خطأ ❌', 'صح  ✅'],
+      type: 'reciter',
+      question: 'استمع إلى هذه التلاوة بالطريقة العراقية المميزة الأصيلة، من هو هذا القارئ البارع؟',
+      options: ['الشيخ مصطفى إسماعيل', 'الشيخ ميثم التمار', 'الشيخ راغب مصطفى غلوش', 'الشيخ عامر الكاظمي'],
       correctAnswer: 1,
-      points: 10,
-      hint: 'يسمى هذا اليوم تاريخياً بيوم عاشوراء.',
-      explanation: 'صحيح، استشهد الإمام الحسين بن علي (ع) وأهل بيته وأصحابه يوم الجمعة 10 محرم سنة 61 هجرية.'
+      points: 20,
+      audioUrl: 'https://server12.mp3quran.net/tammar/001.mp3', // ميثم التمار
+      hint: 'قارئ عراقي شهير يمتاز بالمقام العراقي الحزين الشجي.',
+      explanation: 'القارئ هو الشيخ ميثم التمار، تلاوة فريدة بالأسلوب المقامي التراثي.'
     },
     {
       id: '5',
       category: 'fiqh',
-      type: 'missing_word',
-      question: 'حدد الكلمة الناقصة في النص الفقهي لآية الوضوء: ﴿ يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا قُمْتُمْ إِلَى الصَّلَاةِ فَاغْسِلُوا وُجُوهَكُمْ وَأَيْدِيَكُمْ إِلَى ______ ﴾',
-      options: ['الكعبين', 'الأصابع', 'المَرَافِقِ', 'الكتف'],
-      correctAnswer: 2,
+      type: 'reciter',
+      question: 'استمع إلى تلاوة المصحف المعلم المرتل بضبط الأحكام التام، من هو القارئ؟',
+      options: ['الشيخ محمود خليل الحصري', 'الشيخ علي جابر', 'الشيخ ماهر المعيقلي', 'الشيخ سعود الشريم'],
+      correctAnswer: 0,
       points: 15,
-      hint: 'الحد الواجب في غسل اليدين يبدأ من أطراف الأصابع وينتهي عند هذا مفصل.',
-      explanation: 'الكلمة الناقصة هي ﴿الْمَرَافِقِ﴾. غسل الوجه واليدين إلى المرفقين ركن أساسي في الوضوء عند جميع المسلمين.'
+      audioUrl: 'https://server13.mp3quran.net/husr/001.mp3', // الحصري
+      hint: 'شيخ عموم المقارئ المصرية الأسبق وأول من سجل المصحف المرتل في العالم.',
+      explanation: 'القارئ هو الشيخ محمود خليل الحصري رحمه الله، مدرسة في ضبط التجويد ومخارج الحروف.'
     }
   ];
 
-  const currentQuizList = questionsDatabase;
+  const [currentQuizList, setCurrentQuizList] = useState<Question[]>([]);
+
+  useEffect(() => {
+    if (currentView === 'quiz') {
+      // نختار الأسئلة عشوائياً في كل مرة تبدأ فيها اللعبة
+      const shuffled = [...questionsDatabase]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 5);
+      setCurrentQuizList(shuffled);
+    }
+  }, [currentView, selectedCategory]);
 
   const getLevelInfo = (currentScore: number) => {
     if (currentScore >= 60) return { name: 'المستوى 5: سفير القرآن 👑' };
@@ -115,18 +129,18 @@ export function ReligiousQuiz() {
 
   const toggleAudio = (url: string) => {
     if (!audioRef.current) return;
-    if (isPlaying) {
+    
+    // إذا ضغط على نفس الصوت وهو يعمل، نقوم بإيقافه
+    if (isPlaying && audioRef.current.src === url) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
+      // تشغيل الصوت الجديد للسؤال الحالي مباشرة
       audioRef.current.src = url;
-      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-      setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.pause();
-          setIsPlaying(false);
-        }
-      }, 10000);
+      audioRef.current.load();
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => console.log("خطأ في تشغيل الصوت:", err));
     }
   };
 
@@ -136,7 +150,7 @@ export function ReligiousQuiz() {
     setIsAnswered(true);
     
     const currentQ = currentQuizList[currentQuestionIdx];
-    if (idx === currentQ.correctAnswer) {
+    if (currentQ && idx === currentQ.correctAnswer) {
       setScore(prev => prev + currentQ.points);
       setCorrectCount(prev => prev + 1);
       
@@ -150,7 +164,7 @@ export function ReligiousQuiz() {
     setIsAnswered(false);
     setSelectedAnswer(null);
     setIsPlaying(false);
-    if (audioRef.current) audioRef.current.pause();
+    if (audioRef.current) audioRef.current.pause(); // إيقاف الصوت تلقائياً عند الانتقال للسؤال التالي
 
     if (currentQuestionIdx < currentQuizList.length - 1) {
       setCurrentQuestionIdx(prev => prev + 1);
@@ -164,6 +178,8 @@ export function ReligiousQuiz() {
     setCurrentQuestionIdx(0);
     setIsAnswered(false);
     setSelectedAnswer(null);
+    setIsPlaying(false);
+    if (audioRef.current) audioRef.current.pause();
     setCurrentView('quiz');
   };
 
@@ -205,7 +221,7 @@ export function ReligiousQuiz() {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-xs font-bold text-slate-400 flex items-center gap-1 px-1">🕌 اختر أحد المسابات الدينية:</h3>
+                <h3 className="text-xs font-bold text-slate-400 flex items-center gap-1 px-1">🕌 اختر أحد المسابقات الدينية:</h3>
                 <div className="grid grid-cols-2 gap-2">
                   {(['prophets', 'ahl_bayt', 'companions', 'seerah', 'fiqh', 'ramadan', 'hajj', 'ashura'] as CategoryType[]).map((cat) => {
                     const catLabels: Record<CategoryType, string> = {
@@ -239,7 +255,7 @@ export function ReligiousQuiz() {
             </motion.div>
           )}
 
-          {currentView === 'quiz' && currentQuizList[currentQuestionIdx] && (
+          {currentView === 'quiz' && currentQuizList && currentQuizList[currentQuestionIdx] && (
             <motion.div key="quiz" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
               <div className="flex justify-between items-center text-[11px] bg-slate-900 px-3 py-2 rounded-xl border border-slate-800">
                 <span className="text-amber-400 font-black">نوع التحدي</span>
@@ -249,14 +265,15 @@ export function ReligiousQuiz() {
               <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-center shadow-inner">
                 <p className="text-xs font-black leading-relaxed text-slate-100">{currentQuizList[currentQuestionIdx].question}</p>
                 
-                {currentQuizList[currentQuestionIdx].type === 'reciter' && currentQuizList[currentQuestionIdx].audioUrl && (
+                {/* تشغيل ملف الصوت الخاص بكل سؤال على حدة وبشكل متغير تفاعلي */}
+                {currentQuizList[currentQuestionIdx].audioUrl && (
                   <div className="mt-3 flex justify-center">
                     <button 
                       onClick={() => toggleAudio(currentQuizList[currentQuestionIdx].audioUrl!)}
                       className="px-4 py-2 bg-amber-500 text-slate-950 rounded-xl text-xs font-bold flex items-center gap-1.5 active:scale-95 transition-all shadow-md"
                     >
                       {isPlaying ? <Pause size={14} fill="currentColor"/> : <Play size={14} fill="currentColor"/>}
-                      {isPlaying ? 'إيقاف مؤقت' : 'استمع للمقطع الصوتي 🎧'}
+                      {isPlaying ? 'إيقاف مؤقت' : 'استمع لتلاوة القارئ 🎧'}
                     </button>
                   </div>
                 )}
@@ -291,7 +308,7 @@ export function ReligiousQuiz() {
 
               {isAnswered && (
                 <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-slate-900/80 border border-slate-800 rounded-xl space-y-1">
-                  <h4 className="text-[11px] font-bold text-amber-500">💡 الشرح العلمي:</h4>
+                  <h4 className="text-[11px] font-bold text-amber-500">💡 الشرح والبيان:</h4>
                   <p className="text-[11px] text-slate-300 leading-relaxed">{currentQuizList[currentQuestionIdx].explanation}</p>
                   
                   <button 
