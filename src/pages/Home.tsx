@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'; 
-import { Settings, Bell, BookOpen, Clock, HeartPulse, Bookmark, ListTodo, Star, Sun, Moon, Image, Calendar, MapPin, Sparkles, ArrowUpCircle, X, RotateCcw, Globe, HelpCircle, CalendarDays } from 'lucide-react'; 
+import { Settings, Bell, BookOpen, Clock, HeartPulse, Bookmark, ListTodo, Star, Sun, Moon, Image, Calendar, MapPin, Sparkles, ArrowUpCircle, X, RotateCcw, Globe, HelpCircle, CalendarDays, Trophy } from 'lucide-react'; 
 import { Link, useNavigate } from 'react-router-dom'; 
 import { useState, useEffect } from 'react'; 
 import { useTheme } from '../context/ThemeContext'; 
@@ -186,20 +186,19 @@ export function Home() {
             <span className="text-[#fbbf24] font-bold text-lg">←</span> 
           </button> 
 
-          {/* 🌟 إضافة الأزرار الأربعة الجديدة هنا بالتنسيق مع باقي الأزرار 🌟 */}
-          <Link to="/hajj" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex flex-col items-center justify-center gap-3 hover:bg-[#059669]/30 transition-all group">
-            <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
-              <Globe size={28} />
+        {/* 🏆 مسابقة القرآن الكريم والمسابقات الدينية */}
+        <Link to="/quiz" className="col-span-2 bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl flex items-center justify-between group hover:bg-[#064e3b]/60 transition-all">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-[#f59e0b]/10 rounded-2xl text-[#f59e0b] group-hover:scale-110 transition-transform">
+              <Trophy size={28} />
             </div>
-            <span className="font-medium text-sm text-[#f0f9ff]">بوابة الحج</span>
-          </Link>
-
-          <Link to="/tawaf" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex flex-col items-center justify-center gap-3 hover:bg-[#059669]/30 transition-all group">
-            <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
-              <RotateCcw size={28} />
+            <div className="flex flex-col">
+              <span className="font-bold text-lg text-[#f59e0b]">تحدي المسابقات والقرآن</span>
+              <span className="text-xs text-emerald-100/70">اجمع النقاط، اكسب الأوسمة واختبر معلوماتك</span>
             </div>
-            <span className="font-medium text-sm text-[#f0f9ff]">عداد الطواف</span>
-          </Link>
+          </div>
+          <span className="text-[#f59e0b] font-bold text-lg">←</span>
+        </Link>
 
           <Link to="/calendar-converter" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex flex-col items-center justify-center gap-3 hover:bg-[#059669]/30 transition-all group">
             <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform">
