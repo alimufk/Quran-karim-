@@ -50,6 +50,33 @@ const wallpapersData: Wallpaper[] = [
     description: 'القبتان الذهبيتان المتطابقتان لمرقد الإمامين الكاظم والجواد عليهما السلام تحت سماء الليل المرصعة بالنجوم.'
   },
   {
+    id: 'abbas',
+    title: 'مرقد أبا الفضل العباس (ع)',
+    category: 'shrines',
+    categoryLabel: 'المراقد المقدسة',
+    src: 'https://images.unsplash.com/photo-1590075865003-e48277afd558?q=80&w=600&auto=format&fit=crop',
+    location: 'كربلاء المقدسة',
+    description: 'إطلالة مهيبة على قبة قمر بني هاشم أبا الفضل العباس عليه السلام، تعكس الطمأنينة والجمال المعماري الإسلامي الفريد.'
+  },
+  {
+    id: 'kufa-mosque',
+    title: 'مسجد الكوفة المعظم',
+    category: 'shrines',
+    categoryLabel: 'المراقد المقدسة',
+    src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600&auto=format&fit=crop',
+    location: 'الكوفة العلوية',
+    description: 'الباحة الشريفة لمسجد الكوفة المعظم، مهبط الأنبياء ومصلى أمير المؤمنين عليه السلام تحت هالة من الأنوار الروحانية.'
+  },
+  {
+    id: 'sahla-mosque',
+    title: 'مسجد السهلة المعظم',
+    category: 'shrines',
+    categoryLabel: 'المراقد المقدسة',
+    src: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600&auto=format&fit=crop',
+    location: 'النجف الأشرف',
+    description: 'أنوار مقام الإمام المهدي عجل الله فرجه الشريف في مسجد السهلة المبارك، تجسد أبعاد الشوق والانتظار.'
+  },
+  {
     id: 'calligraphy',
     title: 'مخطوطة لفظ الجلالة (يا الله)',
     category: 'calligraphy',
@@ -75,6 +102,7 @@ export function Wallpapers() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedWallpaper, setSelectedWallpaper] = useState<Wallpaper | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  
   const [favorites, setFavorites] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('wallpaper_favs');
@@ -99,11 +127,9 @@ export function Wallpapers() {
 
   const handleDownload = async (wp: Wallpaper) => {
     try {
-      // Create a virtual safe helper anchor for downloading
       const response = await fetch(wp.src);
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
-      
       const link = document.createElement('a');
       link.href = blobUrl;
       link.download = `${wp.id}_wallpaper.jpg`;
@@ -113,7 +139,6 @@ export function Wallpapers() {
       URL.revokeObjectURL(blobUrl);
     } catch (error) {
       console.warn('Fallback standard download due to restriction:', error);
-      // Fallback
       const link = document.createElement('a');
       link.href = wp.src;
       link.download = `${wp.id}_wallpaper.jpg`;
@@ -168,23 +193,17 @@ export function Wallpapers() {
           <button 
             onClick={() => navigate(-1)} 
             className={`p-2.5 rounded-2xl transition-all active:scale-95 duration-200 shadow-md ${
-              theme === 'light' 
-                ? 'bg-white hover:bg-slate-100 text-[#1e293b]' 
-                : 'bg-[#064e3b] hover:bg-[#059669]/30 text-[#fbbf24] border border-[#059669]/30'
+              theme === 'light' ? 'bg-white hover:bg-slate-100 text-[#1e293b]' : 'bg-[#064e3b] hover:bg-[#059669]/30 text-[#fbbf24] border border-[#059669]/30'
             }`}
           >
             <ArrowRight size={20} />
           </button>
           <div>
-            <h1 className={`text-2xl font-bold tracking-tight ${
-              theme === 'light' ? 'text-slate-800' : 'text-[#fbbf24]'
-            }`}>خلفيات الهاتف</h1>
+            <h1 className={`text-2xl font-bold tracking-tight ${ theme === 'light' ? 'text-slate-800' : 'text-[#fbbf24]' }`}>خلفيات الهاتف</h1>
             <p className="text-[#059669] text-xs mt-0.5">مشاهدة وتحميل خلفيات إسلامية متميزة بجودة عالية</p>
           </div>
         </div>
-        <div className={`p-2.5 rounded-2xl ${
-          theme === 'light' ? 'bg-[#059669]/10 text-[#059669]' : 'bg-[#fbbf24]/10 text-[#fbbf24]'
-        }`}>
+        <div className={`p-2.5 rounded-2xl ${ theme === 'light' ? 'bg-[#059669]/10 text-[#059669]' : 'bg-[#fbbf24]/10 text-[#fbbf24]' }`}>
           <Sparkles size={20} />
         </div>
       </header>
@@ -194,17 +213,13 @@ export function Wallpapers() {
         {categories.map(cat => {
           const isSelected = selectedCategory === cat.id;
           return (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
+            <button 
+              key={cat.id} 
+              onClick={() => setSelectedCategory(cat.id)} 
               className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all duration-300 whitespace-nowrap active:scale-95 ${
-                isSelected
-                  ? (theme === 'light' 
-                      ? 'bg-[#059669] text-white shadow-md shadow-[#059669]/20' 
-                      : 'bg-[#fbbf24] text-[#022c22] shadow-lg shadow-[#fbbf24]/10')
-                  : (theme === 'light'
-                      ? 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-100'
-                      : 'bg-[#064e3b]/40 text-[#f0f9ff]/80 border border-[#059669]/20 hover:bg-[#064e3b]')
+                isSelected 
+                  ? (theme === 'light' ? 'bg-[#059669] text-white shadow-md shadow-[#059669]/20' : 'bg-[#fbbf24] text-[#022c22] shadow-lg shadow-[#fbbf24]/10') 
+                  : (theme === 'light' ? 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-100' : 'bg-[#064e3b]/40 text-[#f0f9ff]/80 border border-[#059669]/20 hover:bg-[#064e3b]')
               }`}
             >
               {cat.label}
@@ -216,22 +231,18 @@ export function Wallpapers() {
       {/* Main Grid Wallpapers */}
       {filteredWallpapers.length === 0 ? (
         <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 10 }} 
+          animate={{ opacity: 1, y: 0 }} 
           className="flex flex-col items-center justify-center p-12 text-center mt-8 relative z-10"
         >
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-            theme === 'light' ? 'bg-[#059669]/5 text-slate-400' : 'bg-[#064e3b]/30 text-[#059669]'
-          }`}>
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${ theme === 'light' ? 'bg-[#059669]/5 text-slate-400' : 'bg-[#064e3b]/30 text-[#059669]' }`}>
             <ImageIcon size={32} />
           </div>
           <h3 className={`text-lg font-bold mb-1 ${theme === 'light' ? 'text-slate-800' : 'text-[#f0f9ff]'}`}>
             {selectedCategory === 'favorites' ? 'لا توجد خلفيات مفضلة بعد' : 'لا تتوفر خلفيات حالياً لهذا القسم'}
           </h3>
           <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
-            {selectedCategory === 'favorites' 
-              ? 'اضغط على أيقونة القلب على أي خلفية لإضافتها إلى قائمتك المفضلة للوصول السريع إليها.'
-              : 'يرجى مراجعة التصنيفات الأخرى لاكتشاف خلفيات دينية مذهلة.'}
+            {selectedCategory === 'favorites' ? 'اضغط على أيقونة القلب على أي خلفية لإضافتها إلى قائمتك المفضلة للوصول السريع إليها.' : 'يرجى مراجعة التصنيفات الأخرى لاكتشاف خلفيات دينية مذهلة.'}
           </p>
         </motion.div>
       ) : (
@@ -239,35 +250,28 @@ export function Wallpapers() {
           {filteredWallpapers.map((wp, idx) => {
             const isFavorite = favorites.includes(wp.id);
             return (
-              <motion.div
-                key={wp.id}
-                initial={{ opacity: 0, scale: 0.95, y: 12 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: idx * 0.05 }}
-                onClick={() => setSelectedWallpaper(wp)}
+              <motion.div 
+                key={wp.id} 
+                initial={{ opacity: 0, scale: 0.95, y: 12 }} 
+                animate={{ opacity: 1, scale: 1, y: 0 }} 
+                transition={{ duration: 0.3, delay: idx * 0.05 }} 
+                onClick={() => setSelectedWallpaper(wp)} 
                 className={`group cursor-pointer overflow-hidden rounded-[24px] border transition-all duration-300 flex flex-col hover:shadow-xl hover:scale-[1.02] ${
-                  theme === 'light' 
-                    ? 'bg-white border-slate-100 shadow-sm' 
-                    : 'bg-[#064e3b]/40 border-[#059669]/20 shadow-lg'
+                  theme === 'light' ? 'bg-white border-slate-100 shadow-sm' : 'bg-[#064e3b]/40 border-[#059669]/20 shadow-lg'
                 }`}
               >
                 {/* Image Container with aspect ratio 9:16 */}
                 <div className="relative aspect-[9/16] overflow-hidden bg-slate-900/5 select-none touch-none">
-                  <img
-                    src={wp.src}
-                    alt={wp.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    referrerPolicy="no-referrer"
-                    loading="lazy"
-                  />
+                  <img src={wp.src} alt={wp.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" referrerPolicy="no-referrer" loading="lazy" />
+                  
                   {/* Category Pill Tag Overlay */}
                   <span className="absolute top-2.5 right-2.5 text-[9px] font-bold bg-black/50 backdrop-blur-md text-white px-2 py-1 rounded-full border border-white/10">
                     {wp.categoryLabel}
                   </span>
 
                   {/* Favorite button overlay */}
-                  <button
-                    onClick={(e) => toggleFavorite(wp.id, e)}
+                  <button 
+                    onClick={(e) => toggleFavorite(wp.id, e)} 
                     className="absolute top-2 left-2 p-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white hover:bg-black/60 transition active:scale-90"
                   >
                     <Heart size={14} className={isFavorite ? 'fill-rose-500 text-rose-500' : 'text-white'} />
@@ -276,13 +280,13 @@ export function Wallpapers() {
                   {/* Quick Action Overlay on bottom */}
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3 pt-8 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <button 
-                      onClick={(e) => { e.stopPropagation(); handleDownload(wp); }}
+                      onClick={(e) => { e.stopPropagation(); handleDownload(wp); }} 
                       className="p-1.5 rounded-full bg-[#fbbf24] text-[#022c22] hover:bg-white transition-colors"
                     >
                       <Download size={13} />
                     </button>
                     <button 
-                      onClick={(e) => handleShare(wp, e)}
+                      onClick={(e) => handleShare(wp, e)} 
                       className="p-1.5 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors"
                     >
                       {copiedId === wp.id ? <Check size={13} className="text-emerald-400" /> : <Share2 size={13} />}
@@ -292,9 +296,7 @@ export function Wallpapers() {
 
                 {/* Sub-text information */}
                 <div className="p-3 flex-1 flex flex-col justify-between">
-                  <h3 className={`text-xs font-bold line-clamp-1 ${
-                    theme === 'light' ? 'text-slate-800' : 'text-[#f0f9ff]'
-                  }`}>
+                  <h3 className={`text-xs font-bold line-clamp-1 ${ theme === 'light' ? 'text-slate-800' : 'text-[#f0f9ff]' }`}>
                     {wp.title}
                   </h3>
                   {wp.location && (
@@ -313,35 +315,31 @@ export function Wallpapers() {
       {/* Lightbox Preview Modal overlay */}
       <AnimatePresence>
         {selectedWallpaper && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/95 backdrop-blur-lg z-50 flex flex-col justify-between p-6 overflow-y-auto"
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 bg-black/95 backdrop-blur-lg z-50 flex flex-col justify-between p-6 overflow-y-auto" 
             dir="rtl"
           >
             {/* Modal TOP bar */}
             <div className="flex items-center justify-between">
-              <button
-                onClick={() => setSelectedWallpaper(null)}
-                className="px-4 py-2 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/10 transition-colors"
+              <button 
+                onClick={() => setSelectedWallpaper(null)} 
+                className="px-4 py-2 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/10 transition-colors" 
                 id="close-lightbox"
               >
                 رجوع
               </button>
-              
               <div className="flex gap-2">
-                <button
-                  onClick={(e) => toggleFavorite(selectedWallpaper.id, e)}
+                <button 
+                  onClick={(e) => toggleFavorite(selectedWallpaper.id, e)} 
                   className="p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-colors active:scale-95"
                 >
-                  <Heart 
-                    size={20} 
-                    className={favorites.includes(selectedWallpaper.id) ? 'fill-rose-500 text-rose-500' : 'text-white'} 
-                  />
+                  <Heart size={20} className={favorites.includes(selectedWallpaper.id) ? 'fill-rose-500 text-rose-500' : 'text-white'} />
                 </button>
-                <button
-                  onClick={(e) => handleShare(selectedWallpaper, e)}
+                <button 
+                  onClick={(e) => handleShare(selectedWallpaper, e)} 
                   className="p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-colors active:scale-95"
                 >
                   {copiedId === selectedWallpaper.id ? (
@@ -356,17 +354,12 @@ export function Wallpapers() {
             {/* Middle Big Preview Image Aspect-[9/16] matching mobile perfectly */}
             <div className="my-auto py-4 flex justify-center items-center">
               <motion.div 
-                initial={{ scale: 0.9, y: 15 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 15 }}
+                initial={{ scale: 0.9, y: 15 }} 
+                animate={{ scale: 1, y: 0 }} 
+                exit={{ scale: 0.9, y: 15 }} 
                 className="relative aspect-[9/16] max-h-[60vh] md:max-h-[50vh] rounded-[28px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.8)] border border-white/10 bg-slate-900 select-none touch-none"
               >
-                <img
-                  src={selectedWallpaper.src}
-                  alt={selectedWallpaper.title}
-                  className="w-full h-full object-cover pointer-events-none"
-                  referrerPolicy="no-referrer"
-                />
+                <img src={selectedWallpaper.src} alt={selectedWallpaper.title} className="w-full h-full object-cover pointer-events-none" referrerPolicy="no-referrer" />
                 
                 {/* Category absolute Pill */}
                 <span className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-[#fbbf24] text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/10">
@@ -388,19 +381,17 @@ export function Wallpapers() {
               </div>
 
               {/* DOWNLOAD button */}
-              <button
-                onClick={() => handleDownload(selectedWallpaper)}
+              <button 
+                onClick={() => handleDownload(selectedWallpaper)} 
                 className="w-full bg-[#fbbf24] hover:bg-[#fbbf24]/90 text-[#022c22] py-4 rounded-[20px] font-bold transition flex items-center justify-center gap-2.5 shadow-xl shadow-[#fbbf24]/10 active:scale-95 duration-200"
               >
                 <Download size={18} />
                 <span>تحميل الخلفية بجودة عالية</span>
               </button>
-              
               <p className="text-[10px] text-center text-slate-500">
                 ملاحظة: سيتم تنزيل الصورة مباشرةً إلى مجلد التحميلات الخاص بجهازك بجودة فائقة.
               </p>
             </div>
-
           </motion.div>
         )}
       </AnimatePresence>
