@@ -201,16 +201,16 @@ export function Home() {
         </Link>
           {/* قسم محول التقويم */}
         <div 
-       onClick={() => navigate('/calendar-converter')} 
-       className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl cursor-pointer hover:border-[#059669]/60 transition-all flex flex-col justify-between"> 
+              onClick={() => navigate('/calendar-converter')} 
+              className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl cursor-pointer hover:border-[#059669]/60 transition-all flex flex-col justify-between"> 
 
-  <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] w-fit">
-    <CalendarDays size={28} />
-  </div>
-  <span className="font-medium text-sm text-[#f0f9ff] mt-2">محول التقويم</span>
-</div>
+         <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] w-fit">
+         <CalendarDays size={28} />
+       </div>
+       <span className="font-medium text-sm text-[#f0f9ff] mt-2">محول التقويم</span>
+       </div>
 
-{/* قسم إرشاد التائهين */}
+               {/* قسم إرشاد التائهين */}
           <div 
            onClick={() => navigate('/lost-and-found')} 
            className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl cursor-pointer hover:border-[#059669]/60 transition-all flex flex-col justify-between"> 
