@@ -26,14 +26,14 @@ export function HajjPortal() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // تم تحويل الروابط إلى روابط الخام المباشرة (Raw) مع إضافة عشوائية لمنع الكاش الوهمي للأندرويد
+  // المسارات تشير الآن إلى مجلد public مباشرة دون أي مجلدات فرعية
   const introList: ManasikItem[] = [
     {
       id: 'i1',
       title: 'مقدمة عن الحج وفضله',
       subtitle: 'أهمية وفريضة الحج في الإسلام',
       imageType: 'kaaba-man',
-      audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/intro-hajj.mp3',
+      audioUrl: '/intro-hajj.mp3', // مباشرة من public
       content: [
         "الحج: هو أحد أركان الدين ومن أوكد فرائض المسلمين قال الله تعالى (وَلِلَّهِ عَلَى النَّاسِ حِجُّ الْبَيْتِ مَنِ اسْتَطَاعَ إِلَيْهِ سَبِيلًا).",
         "فالحج فريضة الإسلام وركن الإيمان ومن أعظم العبادات والقربات ..",
@@ -46,7 +46,7 @@ export function HajjPortal() {
       title: 'مقدمة عن أحكام الإحرام',
       subtitle: 'النية، التلبية، ومحرمات الإحرام',
       imageType: 'kaaba-front',
-      audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/intro-ihram.mp3',
+      audioUrl: '/intro-ihram.mp3', // مباشرة من public
       content: [
         "الإحرام: نيته أن أحرم لحج التمتع حجة الإسلام لوجوبه قربة إلى الله تعالى. ويقول: \"لبيك اللهم لبيك، لبيك لا شريك لك لبيك\".",
         "ويستحب إضافة: \"إن الحمد والنعمة لك والملك، لا شريك لك\". ويكون ميقات حج التمتع مكة المكرمة.",
@@ -57,22 +57,21 @@ export function HajjPortal() {
   ];
 
   const umrahList: ManasikItem[] = [
-    { id: 'u1', title: '1. الإحرام من الميقات', subtitle: 'أولى خطوات عمرة التمتع', imageType: 'kaaba-man', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/umrah-01.mp3', content: ["الإحرام هو نية الدخول في النسك مقروناً بعمل من أعماله كالتلبية أو الإشعار.", "الواجب فيه: النية، ولبس ثوبي الإحرام (للرجال)، والتلبية بصوت مسموع."] },
-    { id: 'u2', title: '2. الطواف حول الكعبة', subtitle: 'سبعة أشواط بالبيت العتيق', imageType: 'kaaba-pray', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/umrah-02.mp3', content: ["الطواف هو الدوران حول الكعبة المشرفة سبعة أشواط متتالية بدءاً من الحجر الأسود وانتهاءً به."] },
-    { id: 'u3', title: '3. صلاة ركعتي الطواف', subtitle: 'خلف مقام إبراهيم عليه السلام', imageType: 'kaaba-front', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/umrah-03.mp3', content: ["بعد الفراغ من الطواف مباشرة، تجب صلاة ركعتين كصلاة الصبح خلف مقام إبراهيم."] },
-    { id: 'u4', title: '4. السعي بين الصفا والمروة', subtitle: 'سبعة أشواط بين الجبلين', imageType: 'kaaba-man', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/umrah-04.mp3', content: ["السعي هو المشي بين جبلي الصفا والمروة سبع مرات، يبدأ الشوط الأول من الصفا وينتهي بالمروة."] },
-    { id: 'u5', title: '5. التقصير', subtitle: 'خاتمة أعمال عمرة التمتع', imageType: 'kaaba-front', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/umrah-05.mp3', content: ["الالتقصير هو أخذ شيء من شعر الرأس أو اللحية أو الشارب أو قَصّ ظفر للتخلص من الإحرام."] }
+    { id: 'u1', title: '1. الإحرام من الميقات', subtitle: 'أولى خطوات عمرة التمتع', imageType: 'kaaba-man', audioUrl: '/umrah-01.mp3', content: ["الإحرام هو نية الدخول في النسك مقروناً بعمل من أعماله كالتلبية أو الإشعار.", "الواجب فيه: النية، ولبس ثوبي الإحرام (للرجال)، والتلبية بصوت مسموع."] },
+    { id: 'u2', title: '2. الطواف حول الكعبة', subtitle: 'سبعة أشواط بالبيت العتيق', imageType: 'kaaba-pray', audioUrl: '/umrah-02.mp3', content: ["الطواف هو الدوران حول الكعبة المشرفة سبعة أشواط متتالية بدءاً من الحجر الأسود وانتهاءً به."] },
+    { id: 'u3', title: '3. صلاة ركعتي الطواف', subtitle: 'خلف مقام إبراهيم عليه السلام', imageType: 'kaaba-front', audioUrl: '/umrah-03.mp3', content: ["بعد الفراغ من الطواف مباشرة، تجب صلاة ركعتين كصلاة الصبح خلف مقام إبراهيم."] },
+    { id: 'u4', title: '4. السعي بين الصفا والمروة', subtitle: 'سبعة أشواط بين الجبلين', imageType: 'kaaba-man', audioUrl: '/umrah-04.mp3', content: ["السعي هو المشي بين جبلي الصفا والمروة سبع مرات، يبدأ الشوط الأول من الصفا وينتهي بالمروة."] },
+    { id: 'u5', title: '5. التقصير', subtitle: 'خاتمة أعمال عمرة التمتع', imageType: 'kaaba-front', audioUrl: '/umrah-05.mp3', content: ["الالتقصير هو أخذ شيء من شعر الرأس أو اللحية أو الشارب أو قَصّ ظفر للتخلص من الإحرام."] }
   ];
 
   const hajjList: ManasikItem[] = [
-    { id: 'h1', title: '1. الإحرام للحج من مكة', subtitle: 'يوم التروية (8 ذو الحجة)', imageType: 'kaaba-man', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-01.mp3', content: ["العمل الأول من أعمال الحج هو الإحرام، وأفضل أوقاته يوم التروية."] },
-    { id: 'h2', title: '2. الوقوف في عرفات', subtitle: 'يوم عرفة (9 ذو الحجة)', imageType: 'kaaba-pray', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-02.mp3', content: ["يجب الحضور والوقوف في أرض عرفات في اليوم التاسع من ذي الحجة."] },
-    { id: 'h3', title: '3. الوقوف في المشعر الحرام', subtitle: 'ليلة وفجر (10 ذو الحجة)', imageType: 'kaaba-front', audioUrl: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hajj-03.mp3', content: ["بعد الغروب من يوم عرفة يتوجه الحاج إلى المزدلفة (المشعر الحرام)."] }
+    { id: 'h1', title: '1. الإحرام للحج من مكة', subtitle: 'يوم التروية (8 ذو الحجة)', imageType: 'kaaba-man', audioUrl: '/hajj-01.mp3', content: ["العمل الأول من أعمال الحج هو الإحرام، وأفضل أوقاته يوم التروية."] },
+    { id: 'h2', title: '2. الوقوف في عرفات', subtitle: 'يوم عرفة (9 ذو الحجة)', imageType: 'kaaba-pray', audioUrl: '/hajj-02.mp3', content: ["يجب الحضور والوقوف في أرض عرفات في اليوم التاسع من ذي الحجة."] },
+    { id: 'h3', title: '3. الوقوف في المشعر الحرام', subtitle: 'ليلة وفجر (10 ذو الحجة)', imageType: 'kaaba-front', audioUrl: '/hajj-03.mp3', content: ["بعد الغروب من يوم عرفة يتوجه الحاج إلى المزدلفة (المشعر الحرام)."] }
   ];
 
   const activeList = currentSection === 'intro' ? introList : currentSection === 'umrah' ? umrahList : hajjList;
 
-  // إعادة ضبط المشغل تماماً عند تغيير العنصر لتجنب الأخطاء الوهمية
   useEffect(() => {
     setIsPlaying(false);
     setAudioProgress(0);
@@ -97,16 +96,10 @@ export function HajjPortal() {
       setHasError(false);
 
       try {
-        // حيلة كسر الكاش (Cache Busting) لضمان عدم قراءة المتصفح لملف قديم معطل
-        // بإضافة توقيت زمني مجهول بنهاية الرابط لإنعاش الطلب الفوري للأندرويد
-        const cleanUrl = activeList[selectedItem].audioUrl;
-        const freshUrl = `${cleanUrl}?cb=${new Date().getTime()}`;
-
-        audioRef.current.crossOrigin = "anonymous"; 
-        audioRef.current.src = freshUrl;
+        const localUrl = activeList[selectedItem].audioUrl;
+        audioRef.current.src = localUrl;
         audioRef.current.load();
 
-        // بدء التشغيل الفوري بعد التحميل المستقر
         const playPromise = audioRef.current.play();
         
         if (playPromise !== undefined) {
@@ -116,7 +109,7 @@ export function HajjPortal() {
               setIsPlaying(true);
             })
             .catch((err) => {
-              console.error("Playback error:", err);
+              console.error("Local playback error:", err);
               setIsLoading(false);
               setIsPlaying(false);
               setHasError(true);
@@ -161,7 +154,7 @@ export function HajjPortal() {
                 <button onClick={() => navigate(-1)} className="p-2 bg-white/10 rounded-full"> <ArrowRight size={20} /> </button> 
                 <div> 
                   <h1 className="text-xl font-black text-[#ffcc29]">بوابة الحج والعمرة</h1> 
-                  <p className="text-xs text-emerald-400">الدليل التفاعلي الصوتي المباشر</p> 
+                  <p className="text-xs text-emerald-400">الدليل التفاعلي الصوتي المحلي</p> 
                 </div> 
               </div> 
             </div> 
@@ -217,11 +210,11 @@ export function HajjPortal() {
                   </div>
                   <p className="text-[10px] mt-1 text-stone-600">
                     {hasError ? (
-                      <span className="text-red-600 flex items-center gap-1"><AlertCircle size={12}/> تعذر تشغيل هذا الملف، يرجى التحقق من مساره المرفوع</span>
+                      <span className="text-red-600 flex items-center gap-1"><AlertCircle size={12}/> تعذر تشغيل الملف الصوتي، تأكد من وجوده داخل مجلد public مباشرة بنفس الاسم تماماً</span>
                     ) : isLoading ? (
-                      "جاري بث الملف الصوتي الفوري..."
+                      "جاري قراءة الملف..."
                     ) : isPlaying ? (
-                      "جاري الاستماع الداخلي الفوري..."
+                      "جاري الاستماع للملف الصوتي المحلي..."
                     ) : (
                       "جاهز للتشغيل"
                     )}
