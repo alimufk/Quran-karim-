@@ -10,6 +10,14 @@ import wallKadhimiya from './assets/images/wall_kadhimiya_1781726376523.jpg';
 import wallCalligraphy from './assets/images/wall_calligraphy_1781726389493.jpg';
 import wallNajaf from './assets/images/wall_najaf_1781726405702.jpg';
 import wallOccasion from './assets/images/wall_occasion_1781726420418.jpg';
+import wallNewShrine from './assets/images/Zaynab-al-Hawra.jpg';
+import wallNewShrine from './assets/images/Shrine of Al-Hussein';
+import wallNewShrine from './assets/images/Imam Ali.jpg';
+
+
+
+
+
 
 interface Wallpaper {
   id: string;
@@ -54,7 +62,7 @@ const wallpapersData: Wallpaper[] = [
     title: 'مرقد أبا الفضل العباس (ع)',
     category: 'shrines',
     categoryLabel: 'المراقد المقدسة',
-    src: 'Shrine of Al-Hussein.jpg',
+    src: Shrine of Al-Hussein , 
     location: 'كربلاء المقدسة',
     description: 'إطلالة مهيبة على قبة قمر بني هاشم أبا الفضل العباس عليه السلام، تعكس الطمأنينة والجمال المعماري الإسلامي الفريد.'
   },
@@ -63,7 +71,7 @@ const wallpapersData: Wallpaper[] = [
     title: 'مسجد الكوفة المعظم',
     category: 'shrines',
     categoryLabel: 'المراقد المقدسة',
-    src: 'Zaynab-al-Hawra.jpg',
+    src:  Zaynab-al-Hawra ,
     location: 'الكوفة العلوية',
     description: 'الباحة الشريفة لمسجد الكوفة المعظم، مهبط الأنبياء ومصلى أمير المؤمنين عليه السلام تحت هالة من الأنوار الروحانية.'
   },
@@ -72,7 +80,7 @@ const wallpapersData: Wallpaper[] = [
     title: 'مسجد السهلة المعظم',
     category: 'shrines',
     categoryLabel: 'المراقد المقدسة',
-    src: 'Imam Ali.jpg',
+    src:  Imam Ali ,
     location: 'النجف الأشرف',
     description: 'أنوار مقام الإمام المهدي عجل الله فرجه الشريف في مسجد السهلة المبارك، تجسد أبعاد الشوق والانتظار.'
   },
