@@ -132,7 +132,7 @@ const wallpapersData: Wallpaper[] = [
   {
     id: 'happy holiday',
     title: 'عيدكم مبارك',
-    category: 'occasions',
+    category: 'shrines',
     categoryLabel: 'المناسبات الإسلامية',
     src: 'https://a.top4top.io/p_3847jr77s0.jpg',
     location: 'ليالي المناسبات المباركة',
@@ -141,7 +141,7 @@ const wallpapersData: Wallpaper[] = [
   {
     id: 'Eid Mubarak',
     title: 'عيد الاضحى',
-    category: 'occasions',
+    category: 'shrines',
     categoryLabel: 'المناسبات الإسلامية',
     src:  'https://d.top4top.io/p_38472189e0.jpg',
     location: 'ليالي المناسبات المباركة',
@@ -150,7 +150,7 @@ const wallpapersData: Wallpaper[] = [
   {
     id: 'Eid Mubarak to you',
     title: 'عيدكم مبارك عليكم',
-    category: 'occasions',
+    category: 'shrines',
     categoryLabel: 'المناسبات الإسلامية',
     src:  'https://a.top4top.io/p_3847uci1e0.jpg',
     location: 'ليالي المناسبات المباركة',
@@ -159,7 +159,7 @@ const wallpapersData: Wallpaper[] = [
   {
     id: 'AL Madinah AL Munawwarah',
     title: 'المدينة المنورة ',
-    category: 'occasions',
+    category: 'shrines',
     categoryLabel: 'المناسبات الإسلامية',
     src:  'https://h.top4top.io/p_3847sz4cp0.jpg',
     location: 'ليالي المناسبات المباركة',
@@ -168,7 +168,7 @@ const wallpapersData: Wallpaper[] = [
   {
     id: 'jumeat mubaraka',
     title: 'جمعة مباركة ',
-    category: 'occasions',
+    category: 'shrines',
     categoryLabel: 'المناسبات الإسلامية',
     src:  'https://j.top4top.io/p_3847lb1da0.jpg',
     location: 'ليالي المناسبات المباركة',
@@ -177,16 +177,16 @@ const wallpapersData: Wallpaper[] = [
   {
     id: 'kazim alghayz',
     title: 'كاظم الغيظ',
-    category: 'occasions',
+    category: 'shrines',
     categoryLabel: 'المناسبات الإسلامية',
     src:  'https://d.top4top.io/p_384707rj00.jpg',
     location: 'النجف الاشرف',
     description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
   }, 
   {
-    id: 'The month of Sha'ban',
+    id: 'The month of Shaban',
     title: 'شعبان',
-    category: 'occasions',
+    category: 'shrines',
     categoryLabel: 'المناسبات الإسلامية',
     src:  'https://b.top4top.io/p_3847xt4ta0.jpg',
     location: 'ليالي المناسبات المباركة',
@@ -195,7 +195,7 @@ const wallpapersData: Wallpaper[] = [
   {
     id: 'ramadan shahr alkhayr',
     title: 'رمضان شهر الخير',
-    category: 'occasions',
+    category: 'shrines',
     categoryLabel: 'المناسبات الإسلامية',
     src:  'https://l.top4top.io/p_3847bohcd0.jpg',
     location: 'ليالي المناسبات المباركة',
