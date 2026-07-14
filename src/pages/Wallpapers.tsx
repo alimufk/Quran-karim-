@@ -87,7 +87,7 @@ const wallpapersData: Wallpaper[] = [
   {
     id: 'calligraphy',
     title: 'مخطوطة لفظ الجلالة (يا الله)',
-    category: 'calligraphy',
+    category: 'occasions',
     categoryLabel: 'الخط العربي والزخارف',
     src: wallCalligraphy,
     location: 'فن إسلامي حديث',
@@ -101,8 +101,107 @@ const wallpapersData: Wallpaper[] = [
     src: wallOccasion,
     location: 'ليالي المناسبات المباركة',
     description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
-  }
-];
+  }, 
+  {
+    id: 'The Holy Kaaba',
+    title: 'الكعبة الشريفة',
+    category: 'shrines',
+    categoryLabel: 'المناسبات الإسلامية',
+    src: 'https://k.top4top.io/p_3847h873y0.jpg',
+    location: 'ليالي المناسبات المباركة',
+    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+  }, 
+  {
+    id: 'Ramadan Kareem',
+    title: 'رمضان كريم ',
+    category: 'shrines',
+    categoryLabel: 'المناسبات الإسلامية',
+    src: 'https://k.top4top.io/p_384798ey00.jpg',
+    location: 'ليالي المناسبات المباركة',
+    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+  }, 
+  {
+    id: 'The month of Rajab',
+    title: 'شهر رجب',
+    category: 'shrines',
+    categoryLabel: 'المناسبات الإسلامية',
+    src: 'https://i.top4top.io/p_3847me7170.jpg',
+    location: 'ليالي المناسبات المباركة',
+    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+  }, 
+  {
+    id: 'happy holiday',
+    title: 'عيدكم مبارك',
+    category: 'occasions',
+    categoryLabel: 'المناسبات الإسلامية',
+    src: 'https://a.top4top.io/p_3847jr77s0.jpg',
+    location: 'ليالي المناسبات المباركة',
+    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+  }, 
+  {
+    id: 'Eid Mubarak',
+    title: 'عيد الاضحى',
+    category: 'occasions',
+    categoryLabel: 'المناسبات الإسلامية',
+    src:  'https://d.top4top.io/p_38472189e0.jpg',
+    location: 'ليالي المناسبات المباركة',
+    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+  }, 
+  {
+    id: 'Eid Mubarak to you',
+    title: 'عيدكم مبارك عليكم',
+    category: 'occasions',
+    categoryLabel: 'المناسبات الإسلامية',
+    src:  'https://a.top4top.io/p_3847uci1e0.jpg',
+    location: 'ليالي المناسبات المباركة',
+    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+  }, 
+  {
+    id: 'AL Madinah AL Munawwarah',
+    title: 'المدينة المنورة ',
+    category: 'occasions',
+    categoryLabel: 'المناسبات الإسلامية',
+    src:  'https://h.top4top.io/p_3847sz4cp0.jpg',
+    location: 'ليالي المناسبات المباركة',
+    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+  }, 
+  {
+    id: 'jumeat mubaraka',
+    title: 'جمعة مباركة ',
+    category: 'occasions',
+    categoryLabel: 'المناسبات الإسلامية',
+    src:  'https://j.top4top.io/p_3847lb1da0.jpg',
+    location: 'ليالي المناسبات المباركة',
+    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+  }, 
+  {
+    id: 'kazim alghayz',
+    title: 'كاظم الغيظ',
+    category: 'occasions',
+    categoryLabel: 'المناسبات الإسلامية',
+    src:  'https://d.top4top.io/p_384707rj00.jpg',
+    location: 'النجف الاشرف',
+    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+  }, 
+  {
+    id: 'The month of Sha'ban',
+    title: 'شهر شعبان ',
+    category: 'occasions',
+    categoryLabel: 'المناسبات الإسلامية',
+    src:  'https://b.top4top.io/p_3847xt4ta0.jpg',
+    location: 'ليالي المناسبات المباركة',
+    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+  }, 
+  {
+    id: 'ramadan shahr alkhayr',
+    title: 'رمضان شهر الخير',
+    category: 'occasions',
+    categoryLabel: 'المناسبات الإسلامية',
+    src:  'https://l.top4top.io/p_3847bohcd0.jpg',
+    location: 'ليالي المناسبات المباركة',
+    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+}
+  ];
 
 export function Wallpapers() {
   const navigate = useNavigate();
