@@ -62,7 +62,7 @@ const wallpapersData: Wallpaper[] = [
     title: 'مرقد أبا الفضل العباس (ع)',
     category: 'shrines',
     categoryLabel: 'المراقد المقدسة',
-    src: Shrine of Al-Hussein , 
+    src: 'Shrine of Al-Hussein', 
     location: 'كربلاء المقدسة',
     description: 'إطلالة مهيبة على قبة قمر بني هاشم أبا الفضل العباس عليه السلام، تعكس الطمأنينة والجمال المعماري الإسلامي الفريد.'
   },
@@ -71,7 +71,7 @@ const wallpapersData: Wallpaper[] = [
     title: 'مسجد الكوفة المعظم',
     category: 'shrines',
     categoryLabel: 'المراقد المقدسة',
-    src:  Zaynab-al-Hawra ,
+    src: 'Zaynab-al-Hawra',
     location: 'الكوفة العلوية',
     description: 'الباحة الشريفة لمسجد الكوفة المعظم، مهبط الأنبياء ومصلى أمير المؤمنين عليه السلام تحت هالة من الأنوار الروحانية.'
   },
@@ -80,7 +80,7 @@ const wallpapersData: Wallpaper[] = [
     title: 'مسجد السهلة المعظم',
     category: 'shrines',
     categoryLabel: 'المراقد المقدسة',
-    src:  Imam Ali ,
+    src: 'Imam Ali',
     location: 'النجف الأشرف',
     description: 'أنوار مقام الإمام المهدي عجل الله فرجه الشريف في مسجد السهلة المبارك، تجسد أبعاد الشوق والانتظار.'
   },
