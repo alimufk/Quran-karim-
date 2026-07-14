@@ -185,7 +185,7 @@ const wallpapersData: Wallpaper[] = [
   }, 
   {
     id: 'The month of Sha'ban',
-    title: 'شهر شعبان ',
+    title: 'شعبان',
     category: 'occasions',
     categoryLabel: 'المناسبات الإسلامية',
     src:  'https://b.top4top.io/p_3847xt4ta0.jpg',
