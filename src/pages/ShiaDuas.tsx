@@ -31,7 +31,10 @@ const latmiyatList = [
   { id: 'latmia-10', name: 'قصيدة الله ياحامي الشريعة - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/allah_yahami.mp3' }, 
   { id: 'latmia-11', name: 'قصيدة هاي المنزلة - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Al-Mazlou.mp3' }, 
   { id: 'latmia-12', name: 'قصيدة أنشأ الله - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/an-allah.mp3' }, 
-  { id: 'latmia-13', name: 'قصيدة هاذا الغريب منين - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hadha_algharib.mp3' }
+  { id: 'latmia-13', name: 'قصيدة هاذا الغريب منين - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hadha_algharib.mp3' },
+  { id: 'latmia-14', name: 'قصيدة هضموني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hadmuniun.mp3' },
+  { id: 'latmia-15', name: 'قصيدة انت الرزق   - ملا جليل', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/anta_alrizq.mp3' }, 
+  { id: 'latmia-16', name: 'قصيدة ماحسبت هالكثر   - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/mahsabat_halkuthr.mp3' }
 ];
 
 export function ShiaDuas() { 
