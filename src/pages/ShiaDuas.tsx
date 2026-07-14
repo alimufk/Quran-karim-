@@ -34,8 +34,23 @@ const latmiyatList = [
   { id: 'latmia-13', name: 'قصيدة هاذا الغريب منين - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hadha_algharib.mp3' },
   { id: 'latmia-14', name: 'قصيدة هضموني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hadmuniun.mp3' },
   { id: 'latmia-15', name: 'قصيدة انت الرزق   - ملا جليل', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/anta_alrizq.mp3' }, 
-  { id: 'latmia-16', name: 'قصيدة ماحسبت هالكثر   - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/mahsabat_halkuthr.mp3' }
-];
+  { id: 'latmia-16', name: 'قصيدة ماحسبت هالكثر - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/mahsabat_halkuthr.mp3' }, 
+  { id: 'latmia-17', name: 'قصيدة طفلة وشفت بالنوم - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/ya_tiflat_taniny.mp3' },
+  { id: 'latmia-18', name: 'قصيدة شيعت علي منصورة - سيد سلام', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/shieat_eali_mansura.mp3' },
+  { id: 'latmia-19', name: 'قصيدة  ابا عبد الله - سيد سلام', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Abu_Abdallah.mp3' },
+  { id: 'latmia-20', name: 'قصيدة اخاف امن اعوفك - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/akhaf_aman_aeufuk.mp3' }, 
+  { id: 'latmia-21', name: 'قصيدة الهي رد رغيب - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/alhi_radun_gharib.mp3' }, 
+  { id: 'latmia-22', name: 'قصيدة اوتار التكبير - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/awtar_altakbir.mp3' }, 
+  { id: 'latmia-23', name: 'قصيدة بارض الطفوف - سيد سلام', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/barid_altufuf.mp3' },
+  { id: 'latmia-24', name: 'قصيدة حيهم صاح حيهم - حسين المرياني', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hihim_sah.mp3' }, 
+  { id: 'latmia-25', name: 'قصيدة هوى الديرة - حسين المرياني', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/hawaa_aldiyra.mp3' }, 
+  { id: 'latmia-26', name: 'قصيدة لا ترد ماضل اثر - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/latard.mp3' }, 
+  { id: 'latmia-27', name: 'قصيدة لا ترحلي - عباس عجيد العامري', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/latarhaly.mp3' }, 
+  { id: 'latmia-28', name: 'قصيدة ما يحاجيها - حيدر البياتي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/mayhajiha.mp3' }, 
+  { id: 'latmia-29', name: 'قصيدة اخاف امن اعوفك - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/akhaf_aman_aeufuk.mp3' },
+  { id: 'latmia-30', name: 'قصيدة االبدوية - حسين المرياني ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/albadawia.mp3' },
+  { id: 'latmia-31', name: 'قصيدة سيناء الغيرة - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/sayna_alghayra.mp3' } 
+  ];
 
 export function ShiaDuas() { 
   const navigate = useNavigate(); 
