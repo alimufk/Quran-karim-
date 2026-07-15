@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion'; // تم تصحيح المكتبة هنا بالكامل!
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ArrowRight, Bell, Volume2, Clock, MapPin, Calendar, Globe, Moon, Sun, 
+  ArrowRight, Bell, Volume2, Clock, MapPin, Calendar, Globe, Moon, 
   User, Share2, Star, Info, Search, Check, ChevronLeft, Plus, Minus,
-  Mail, Lock, Eye, EyeOff
+  Mail, Lock, Eye, EyeOff, UserPlus, LogIn
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAppLanguage, Language } from '../context/LanguageContext';
@@ -25,25 +25,23 @@ export function Settings() {
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const { language, setLanguage, t } = useAppLanguage();
 
-  // 1. الموقع
+  // --- حالات الإعدادات المحفوظة ---
   const [location, setLocation] = useState(() => localStorage.getItem('set_location') || 'العراق، بغداد');
   const [searchCity, setSearchCity] = useState('');
-
-  // 2. التاريخ الهجري والمظهر
   const [hijriCorrection, setHijriCorrection] = useState(() => localStorage.getItem('set_hijri') || 'تصحيح تلقائي');
   const [appTheme, setAppTheme] = useState(() => localStorage.getItem('set_theme') || 'الوضع المظلم');
 
-  // 3. الإشعارات
+  // الإشعارات
   const [notifDailyDua, setNotifDailyDua] = useState(() => localStorage.getItem('notif_daily_dua') !== 'false');
   const [notifGeneralDua, setNotifGeneralDua] = useState(() => localStorage.getItem('notif_general_dua') !== 'false');
   const [notifQuranAyah, setNotifQuranAyah] = useState(() => localStorage.getItem('notif_quran_ayah') !== 'false');
   const [notifFixedPrayer, setNotifFixedPrayer] = useState(() => localStorage.getItem('notif_fixed_prayer') !== 'false');
   const [notifImsak, setNotifImsak] = useState(() => localStorage.getItem('notif_imsak') !== 'false');
 
-  // 4. الأذان
-  const [azanAlarmType, setAzanAlarmType] = useState(() => localStorage.getItem('azan_alarm_type') || 'إستخدام صوت المنبه');
+  // الأذان
+  const [azanAlarmType, setAzanAlarmType] = useState(() => localStorage.getItem('azan_alarm_type') || 'استخدام صوت المنبه');
 
-  // 5. حساب أوقات الصلاة وتعديل الدقائق
+  // أوقات الصلاة وتعديل الدقائق
   const [dst, setDst] = useState(() => localStorage.getItem('prayer_dst') || 'تلقائي');
   const [prayerCalc, setPrayerCalc] = useState(() => localStorage.getItem('prayer_calc') || 'المذهب الجعفري');
   const [midnightCalc, setMidnightCalc] = useState(() => localStorage.getItem('prayer_midnight') || 'من الغروب إلى الفجر');
@@ -53,10 +51,11 @@ export function Settings() {
     return saved ? JSON.parse(saved) : { sobh: 0, zohr: 0, asr: 0 };
   });
 
-  // الحساب
+  // حالة "حسابي" (تسجيل دخول أو إنشاء حساب)
   const [accountTab, setAccountTab] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const cities = [
@@ -70,7 +69,7 @@ export function Settings() {
     city.name.includes(searchCity) || city.country.includes(searchCity)
   );
 
-  // حفظ الإعدادات تلقائياً عند تغييرها
+  // حفظ التغييرات في الذاكرة المحلية
   useEffect(() => { localStorage.setItem('set_location', location); }, [location]);
   useEffect(() => { localStorage.setItem('set_hijri', hijriCorrection); }, [hijriCorrection]);
   useEffect(() => { localStorage.setItem('set_theme', appTheme); }, [appTheme]);
@@ -108,7 +107,7 @@ export function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121214] text-zinc-100 p-4 pb-24 font-sans select-none" dir={language === 'en' ? 'ltr' : 'rtl'}>
+    <div className="min-h-screen bg-[#121214] text-zinc-100 p-4 pb-32 font-sans select-none" dir={language === 'en' ? 'ltr' : 'rtl'}>
       
       {/* الهيدر */}
       <header className="flex items-center gap-4 mb-6">
@@ -246,7 +245,7 @@ export function Settings() {
         </div>
       </div>
 
-      {/* ==================== المودالز المنبثقة التفاعلية ==================== */}
+      {/* ==================== المودالز المنبثقة التفاعلية مع حل مشكلة الشريط السفلي ==================== */}
       <AnimatePresence>
         {activeModal && (
           <motion.div 
@@ -255,11 +254,12 @@ export function Settings() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex flex-col justify-end"
           >
+            {/* تم حل المشكلة هنا: المودال يبدأ من فوق شريط الأيقونات السفلي تماماً (bottom-[68px] أو pb-24) لمنع الحجب */}
             <motion.div 
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              className="bg-[#121214] border-t border-zinc-800 rounded-t-[32px] max-h-[92vh] overflow-y-auto flex flex-col"
+              className="bg-[#121214] border-t border-zinc-800 rounded-t-[32px] max-h-[80vh] overflow-y-auto flex flex-col pb-24 shadow-[0_-8px_30px_rgb(0,0,0,0.5)]"
             >
               
               <div className="sticky top-0 bg-[#121214] z-10 px-6 py-5 border-b border-zinc-800/50 flex justify-between items-center">
@@ -310,7 +310,7 @@ export function Settings() {
                   </div>
                 )}
 
-                {/* 2. اختيار لغة التطبيق */}
+                {/* 2. اللغات */}
                 {activeModal === 'language' && (
                   <div className="bg-[#1c1c1e] rounded-[24px] overflow-hidden border border-zinc-800 divide-y divide-zinc-800/60">
                     {[
@@ -333,7 +333,95 @@ export function Settings() {
                   </div>
                 )}
 
-                {/* 3. واجهة الموقع */}
+                {/* 3. شاشة "حسابي" الاحترافية (تسجيل دخول / إنشاء حساب) */}
+                {activeModal === 'account' && (
+                  <div className="space-y-6">
+                    {/* التبويب العلوي */}
+                    <div className="flex p-1 bg-zinc-900 rounded-xl border border-zinc-800">
+                      <button 
+                        onClick={() => setAccountTab('login')}
+                        className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${accountTab === 'login' ? 'bg-[#10b981] text-[#121214]' : 'text-zinc-400 hover:text-white'}`}
+                      >
+                        <LogIn size={16} />
+                        تسجيل الدخول
+                      </button>
+                      <button 
+                        onClick={() => setAccountTab('signup')}
+                        className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${accountTab === 'signup' ? 'bg-[#10b981] text-[#121214]' : 'text-zinc-400 hover:text-white'}`}
+                      >
+                        <UserPlus size={16} />
+                        إنشاء حساب
+                      </button>
+                    </div>
+
+                    {/* الحقول والبيانات */}
+                    <div className="space-y-4">
+                      {/* حقل البريد الإلكتروني */}
+                      <div className="space-y-2">
+                        <label className="text-xs text-zinc-400 font-semibold block text-right">البريد الإلكتروني</label>
+                        <div className="relative">
+                          <Mail className="absolute right-4 top-3.5 text-zinc-500 ltr:right-auto ltr:left-4" size={18} />
+                          <input 
+                            type="email" 
+                            placeholder="example@mail.com" 
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full bg-[#1c1c1e] text-zinc-100 placeholder-zinc-600 pr-12 pl-4 ltr:pl-12 ltr:pr-4 py-3.5 rounded-2xl border border-zinc-800 outline-none text-sm focus:border-[#10b981]/50 transition text-right ltr:text-left"
+                          />
+                        </div>
+                      </div>
+
+                      {/* حقل كلمة المرور */}
+                      <div className="space-y-2">
+                        <label className="text-xs text-zinc-400 font-semibold block text-right">كلمة المرور</label>
+                        <div className="relative">
+                          <Lock className="absolute right-4 top-3.5 text-zinc-500 ltr:right-auto ltr:left-4" size={18} />
+                          <input 
+                            type={showPassword ? 'text' : 'password'} 
+                            placeholder="••••••••" 
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full bg-[#1c1c1e] text-zinc-100 placeholder-zinc-600 pr-12 pl-12 py-3.5 rounded-2xl border border-zinc-800 outline-none text-sm focus:border-[#10b981]/50 transition text-right"
+                          />
+                          <button 
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute left-4 top-3.5 text-zinc-500 hover:text-zinc-300 ltr:left-auto ltr:right-4"
+                          >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* حقل تأكيد كلمة المرور لإنشاء الحساب */}
+                      {accountTab === 'signup' && (
+                        <div className="space-y-2">
+                          <label className="text-xs text-zinc-400 font-semibold block text-right">تأكيد كلمة المرور</label>
+                          <div className="relative">
+                            <Lock className="absolute right-4 top-3.5 text-zinc-500 ltr:right-auto ltr:left-4" size={18} />
+                            <input 
+                              type={showPassword ? 'text' : 'password'} 
+                              placeholder="••••••••" 
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              className="w-full bg-[#1c1c1e] text-zinc-100 placeholder-zinc-600 pr-12 pl-12 py-3.5 rounded-2xl border border-zinc-800 outline-none text-sm focus:border-[#10b981]/50 transition text-right"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* زر الإرسال التفاعلي */}
+                      <button 
+                        onClick={() => alert(accountTab === 'login' ? 'تم تسجيل الدخول بنجاح!' : 'تم إنشاء الحساب بنجاح!')}
+                        className="w-full bg-[#10b981] hover:bg-[#0ea573] text-[#121214] font-black py-4 rounded-2xl text-sm transition mt-2 shadow-lg shadow-[#10b981]/10"
+                      >
+                        {accountTab === 'login' ? 'تسجيل دخول الحساب' : 'إنشاء حساب جديد'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. واجهة الموقع */}
                 {activeModal === 'location' && (
                   <div className="space-y-4">
                     <div className="relative">
@@ -346,7 +434,7 @@ export function Settings() {
                         className="w-full bg-[#1c1c1e] text-zinc-100 placeholder-zinc-500 pr-11 pl-4 ltr:pl-11 ltr:pr-4 py-3 rounded-2xl border border-zinc-800 outline-none text-sm"
                       />
                     </div>
-                    <div className="bg-[#1c1c1e] rounded-[24px] max-h-[35vh] overflow-y-auto border border-zinc-800 divide-y divide-zinc-800/60">
+                    <div className="bg-[#1c1c1e] rounded-[24px] max-h-[30vh] overflow-y-auto border border-zinc-800 divide-y divide-zinc-800/60">
                       {filteredCities.map((city) => (
                         <button 
                           key={city.name}
@@ -370,7 +458,7 @@ export function Settings() {
                   </div>
                 )}
 
-                {/* 4. عن التطبيق */}
+                {/* 5. عن التطبيق */}
                 {activeModal === 'about' && (
                   <div className="space-y-4 text-center">
                     <div className="w-16 h-16 bg-[#10b981] rounded-2xl mx-auto flex items-center justify-center text-white font-bold text-2xl">
