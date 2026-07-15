@@ -49,7 +49,21 @@ const latmiyatList = [
   { id: 'latmia-28', name: 'قصيدة ما يحاجيها - حيدر البياتي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/mayhajiha.mp3' }, 
   { id: 'latmia-29', name: 'قصيدة اخاف امن اعوفك - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/akhaf_aman_aeufuk.mp3' },
   { id: 'latmia-30', name: 'قصيدة االبدوية - حسين المرياني ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/albadawia.mp3' },
-  { id: 'latmia-31', name: 'قصيدة سيناء الغيرة - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/sayna_alghayra.mp3' } 
+  { id: 'latmia-31', name: 'قصيدة سيناء الغيرة - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/sayna_alghayra.mp3' }, 
+  { id: 'latmia-32', name: 'قصيدة زلزل  - حيدر بوحمد', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/zalzal_haydr_buhamd.mp3' },
+  { id: 'latmia-33', name: 'قصيدة ودعت الحسين - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/wadaeti_alhsin_basim_alkarbilayiy.mp3' },
+  { id: 'latmia-34', name: 'قصيدة  شخبار اهلنة - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/shakhbari_ahlanah_mihamadi_aljanami.mp3' },
+  { id: 'latmia-35', name: 'قصيدة سادة العشرة - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/sadatu_aleashra_mihamadi_aljanami.mp3' }, 
+  { id: 'latmia-36', name: 'قصيدة قتلني فلان وفلان - حيدر البياتي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/qutilini_flan_wflan-Haidar Al-Bayati.mp3' }, 
+  { id: 'latmia-37', name: 'قصيدة نذرت الحب - باسم الكربلائي ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/nadharti_alhub_basim_alkarbilayiy.mp3' }, 
+  { id: 'latmia-38', name: 'قصيدة من اربع جهاتي - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/mun_arbaea_jahati_mihamadi_aljanami.mp3' },
+  { id: 'latmia-39', name: 'قصيدة ملكة صغيرة  - حيدر البياتي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/malikati_saghira-Haidar Al-Bayati.mp3' }, 
+  { id: 'latmia-40', name: 'قصيدة اخرج الينا - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/akhruji_alina_mihamadi_aljanami.mp3' }, 
+  { id: 'latmia-41', name: 'قصيدة حضرة السند  - علي الساعدي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/3hadratu_alsand_ali_alsaaeidi.mp3' }, 
+  { id: 'latmia-42', name: 'قصيدة اجيبوني - علي الساعدي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/2ajybwny_ali_alsaaeidi.mp3' }, 
+  { id: 'latmia-43', name: 'قصيدة راية عباس - علي الساعدي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/1rayat_abbas_ali_alsaaeidi.mp3' }, 
+  { id: 'latmia-44', name: 'قصيدة انكسار - حيدر البياتي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/1Inkisar-Haidar Al-Bayati.mp3' }
+  }, 
   ];
 
 export function ShiaDuas() { 
