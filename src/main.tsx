@@ -1,11 +1,14 @@
-import {StrictMode} from 'react';
-import {createRoot} from 'react-dom/client';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
+import { LanguageProvider } from './context/LanguageContext.tsx'; // استيراد نظام اللغة المطور
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <LanguageProvider>
+      <App />
+    </LanguageProvider>
   </StrictMode>,
 );
 
@@ -22,4 +25,3 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
-
