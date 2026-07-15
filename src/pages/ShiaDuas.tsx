@@ -63,7 +63,6 @@ const latmiyatList = [
   { id: 'latmia-42', name: 'قصيدة اجيبوني - علي الساعدي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/2ajybwny_ali_alsaaeidi.mp3' }, 
   { id: 'latmia-43', name: 'قصيدة راية عباس - علي الساعدي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/1rayat_abbas_ali_alsaaeidi.mp3' }, 
   { id: 'latmia-44', name: 'قصيدة انكسار - حيدر البياتي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/1Inkisar-Haidar Al-Bayati.mp3' }
-  }, 
   ];
 
 export function ShiaDuas() { 
