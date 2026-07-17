@@ -29,7 +29,6 @@ import { usePrayerTimes, PrayerTimesProvider } from './hooks/usePrayerTimes';
 import { useNotifications } from './hooks/useNotifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import GuideDashboard from './pages/GuideDashboard';
-import { ReligiousQuiz } from './pages/ReligiousQuiz';
 import { CalendarConverter } from './pages/CalendarConverter';
 import { LostAndFound } from './pages/LostAndFound';
 import { Settings } from './pages/Settings'; // تأكد من صحة مسار الملف بالنسبة لـ App.tsx
@@ -75,7 +74,6 @@ function AppContent() {
           
           {/* صفحة الدليل والمسابقات */}
           <Route path="/guide" element={<GuideDashboard />} />
-          <Route path="/quiz" element={<ReligiousQuiz />} />
           <Route path="/calendar-converter" element={<CalendarConverter />} />
           <Route path="/lost-and-found" element={<LostAndFound />} />
           <Route path="/settings" element={<Settings />} />
