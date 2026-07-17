@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Bell, Volume2, MapPin, Search, Check, ChevronLeft, Clock, VolumeX, ShieldCheck, FileText } from 'lucide-react';
+import { ArrowRight, Bell, Volume2, MapPin, Search, Check, ChevronLeft, Clock, VolumeX, ShieldCheck, FileText, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 type ActiveModal = null | 'notifications' | 'azan_settings' | 'location';
@@ -78,19 +78,36 @@ export function Settings() {
     setAzanSettings((prev: any) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // دالة مشارعة التطبيق الذكية للـ Mobile والأجهزة الأخرى
+  const handleShareApp = async () => {
+    const shareData = {
+      title: 'تطبيق القرآن الكريم',
+      text: 'حمل الآن تطبيق القرآن الكريم الشامل (أوقات الصلاة، الأذكار، دليل الزائرين ومساعد الذكاء الاصطناعي) بتطوير المبرمج علاوي النعيمي.',
+      url: 'https://alimufk.github.io/saeesaee1985/'
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (error) {
+        console.log('تم إلغاء المشاركة أو حدث خطأ', error);
+      }
+    } else {
+      // حل بديل في حال كان المتصفح لا يدعم نظام مشاركة الهاتف المدمج
+      navigator.clipboard.writeText(shareData.url);
+      alert('تم نسخ رابط التطبيق بنجاح، يمكنك مشاركته الآن مع أصدقائك!');
+    }
+  };
+
   const filteredCities = locationsList.filter(item =>
     item.name.includes(searchCity) || item.country.includes(searchCity)
   );
 
   return (
     <div className="min-h-screen bg-[#0c0c0e] text-zinc-100 p-4 pb-32 font-sans select-none" dir="rtl">
-      
       {/* الهيدر الأنيق */}
       <header className="flex items-center gap-4 mb-8">
-        <button 
-          onClick={() => navigate(-1)} 
-          className="p-2.5 bg-zinc-900 hover:bg-zinc-800 rounded-full text-[#fbbf24] transition-all"
-        >
+        <button onClick={() => navigate(-1)} className="p-2.5 bg-zinc-900 hover:bg-zinc-800 rounded-full text-[#fbbf24] transition-all" >
           <ArrowRight size={22} />
         </button>
         <div>
@@ -113,16 +130,10 @@ export function Settings() {
           {/* جدول أوقات الصلاة التفاعلي */}
           <div className="grid grid-cols-5 gap-2">
             {prayerTimes.map((prayer) => (
-              <div 
-                key={prayer.name} 
-                className="bg-zinc-900/60 border border-zinc-800/50 rounded-2xl p-2.5 text-center flex flex-col items-center justify-between min-h-[90px]"
-              >
+              <div key={prayer.name} className="bg-zinc-900/60 border border-zinc-800/50 rounded-2xl p-2.5 text-center flex flex-col items-center justify-between min-h-[90px]" >
                 <span className="text-xs text-zinc-400 font-bold">{prayer.name}</span>
                 <span className="text-sm font-black text-white my-1.5 font-mono">{prayer.time}</span>
-                <button 
-                  onClick={() => toggleAzan(prayer.key)} 
-                  className={`p-1 rounded-full transition-all ${prayer.active ? 'bg-[#10b981]/20 text-[#10b981]' : 'bg-zinc-800 text-zinc-600'}`}
-                >
+                <button onClick={() => toggleAzan(prayer.key)} className={`p-1 rounded-full transition-all ${prayer.active ? 'bg-[#10b981]/20 text-[#10b981]' : 'bg-zinc-800 text-zinc-600'}`} >
                   {prayer.active ? <Volume2 size={13} /> : <VolumeX size={13} />}
                 </button>
               </div>
@@ -131,15 +142,12 @@ export function Settings() {
         </div>
       </section>
 
-      {/* ================= قسم 2: خيارات الإعدادات الرئيسية والسياسات ================= */}
+      {/* ================= قسم 2: خيارات الإعدادات الرئيسية والسياسات المضافة ================= */}
       <main className="space-y-4">
         <div className="bg-[#141416] rounded-[24px] overflow-hidden border border-zinc-800/80 divide-y divide-zinc-800/40">
           
           {/* خيار الإشعارات */}
-          <button 
-            onClick={() => setActiveModal('notifications')} 
-            className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all"
-          >
+          <button onClick={() => setActiveModal('notifications')} className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all" >
             <div className="flex items-center gap-4">
               <span className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-2xl"><Bell size={20} /></span>
               <div>
@@ -151,10 +159,7 @@ export function Settings() {
           </button>
 
           {/* خيار التحكم بصوت الأذان */}
-          <button 
-            onClick={() => setActiveModal('azan_settings')} 
-            className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all"
-          >
+          <button onClick={() => setActiveModal('azan_settings')} className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all" >
             <div className="flex items-center gap-4">
               <span className="p-2.5 bg-amber-500/10 text-amber-400 rounded-2xl"><Volume2 size={20} /></span>
               <div>
@@ -166,10 +171,7 @@ export function Settings() {
           </button>
 
           {/* خيار الموقع الجغرافي */}
-          <button 
-            onClick={() => setActiveModal('location')} 
-            className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all"
-          >
+          <button onClick={() => setActiveModal('location')} className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all" >
             <div className="flex items-center gap-4">
               <span className="p-2.5 bg-teal-500/10 text-teal-400 rounded-2xl"><MapPin size={20} /></span>
               <div>
@@ -181,61 +183,69 @@ export function Settings() {
           </button>
         </div>
 
-        {/* 📋 قسم السياسات والخصوصية المدمج حديثاً */}
-        <div className="bg-[#141416] rounded-[24px] overflow-hidden border border-zinc-800/80 divide-y divide-zinc-800/40">
+        {/* 🌟 القسم الجديد القانوني والمشاركة مدمج بانسيابية 🌟 */}
+        <div className="bg-[#141416] rounded-[24px] overflow-hidden border border-zinc-800/80 divide-y divide-zinc-800/40 mt-4">
           
-          {/* رابط سياسة الخصوصية */}
+          {/* زر مشاركة التطبيق */}
+          <button onClick={handleShareApp} className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all" >
+            <div className="flex items-center gap-4">
+              <span className="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-2xl"><Share2 size={20} /></span>
+              <div>
+                <span className="font-bold text-[15px] block">مشاركة التطبيق</span>
+                <span className="text-xs text-zinc-500 mt-0.5 block">انشر التطبيق لتنال الأجر والثواب الإلهي</span>
+              </div>
+            </div>
+            <ChevronLeft size={16} className="text-zinc-600" />
+          </button>
+
+          {/* زر سياسة الخصوصية */}
           <a 
-            href="https://alimufk.github.io/saeesaee1985/privacy.html"
-            target="_blank"
+            href="https://alimufk.github.io/saeesaee1985/privacy.html" 
+            target="_blank" 
             rel="noopener noreferrer"
             className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all block"
           >
             <div className="flex items-center gap-4">
-              <span className="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-2xl"><ShieldCheck size={20} /></span>
+              <span className="p-2.5 bg-zinc-800 text-[#fbbf24] rounded-2xl"><ShieldCheck size={20} /></span>
               <div>
                 <span className="font-bold text-[15px] block">سياسة الخصوصية</span>
-                <span className="text-xs text-zinc-500 mt-0.5 block">كيفية حماية بياناتك ومعلوماتك التقنية</span>
+                <span className="text-xs text-zinc-500 mt-0.5 block">كيفية الحفاظ على سلامة بياناتك وتفضيلاتك</span>
               </div>
             </div>
             <ChevronLeft size={16} className="text-zinc-600" />
           </a>
 
-          {/* رابط شروط الاستخدام */}
+          {/* زر شروط الاستخدام (Terms of Use) */}
           <a 
-            href="https://alimufk.github.io/saeesaee1985/terms.html"
-            target="_blank"
+            href="https://alimufk.github.io/saeesaee1985/terms.html" 
+            target="_blank" 
             rel="noopener noreferrer"
             className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all block"
           >
             <div className="flex items-center gap-4">
-              <span className="p-2.5 bg-orange-500/10 text-orange-400 rounded-2xl"><FileText size={20} /></span>
+              <span className="p-2.5 bg-zinc-800 text-zinc-300 rounded-2xl"><FileText size={20} /></span>
               <div>
-                <span className="font-bold text-[15px] block">شروط الاستخدام</span>
-                <span className="text-xs text-zinc-500 mt-0.5 block">Terms of Use والاتفاقية التنظيمية</span>
+                <span className="font-bold text-[15px] block">Terms of Use</span>
+                <span className="text-xs text-zinc-500 mt-0.5 block">شروط وأحكام استخدام وتصفح التطبيق</span>
               </div>
             </div>
             <ChevronLeft size={16} className="text-zinc-600" />
           </a>
 
         </div>
+
+        {/* حقوق التطوير للمبرمج علاوي النعيمي */}
+        <div className="pt-4 text-center">
+          <p className="text-[11px] text-zinc-600 font-medium">تطبيق القرآن الكريم v1.0.0</p>
+          <p className="text-[11px] text-zinc-500 mt-0.5">تطوير المبرمج <span className="text-[#fbbf24] font-bold">علاوي النعيمي</span></p>
+        </div>
       </main>
 
       {/* ==================== النوافذ المنبثقة التفاعلية ==================== */}
       <AnimatePresence>
         {activeModal && (
-          <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
-            className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex flex-col justify-end"
-          >
-            <motion.div 
-              initial={{ y: "100%" }} 
-              animate={{ y: 0 }} 
-              exit={{ y: "100%" }} 
-              className="bg-[#0e0e10] border-t border-zinc-800 rounded-t-[32px] max-h-[80vh] flex flex-col pb-12"
-            >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex flex-col justify-end" >
+            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="bg-[#0e0e10] border-t border-zinc-800 rounded-t-[32px] max-h-[80vh] flex flex-col pb-12" >
               {/* ترويسة النافذة */}
               <div className="sticky top-0 bg-[#0e0e10] z-10 px-6 py-5 border-b border-zinc-800/40 flex justify-between items-center">
                 <span className="text-base font-black text-[#fbbf24]">
@@ -243,10 +253,7 @@ export function Settings() {
                   {activeModal === 'azan_settings' && 'أصوات الأذان والتنبيهات'}
                   {activeModal === 'location' && 'تغيير الموقع الجغرافي'}
                 </span>
-                <button 
-                  onClick={() => setActiveModal(null)} 
-                  className="px-4 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-bold rounded-full transition-all"
-                >
+                <button onClick={() => setActiveModal(null)} className="px-4 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-bold rounded-full transition-all" >
                   إغلاق
                 </button>
               </div>
@@ -289,10 +296,7 @@ export function Settings() {
                             <span className="text-xs text-zinc-500 mt-0.5 block">صوت المؤذن التلقائي</span>
                           </div>
                         </div>
-                        <button 
-                          onClick={() => toggleAzan(p.key)} 
-                          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${p.active ? 'bg-[#10b981]/20 text-[#10b981]' : 'bg-zinc-800 text-zinc-400'}`}
-                        >
+                        <button onClick={() => toggleAzan(p.key)} className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${p.active ? 'bg-[#10b981]/20 text-[#10b981]' : 'bg-zinc-800 text-zinc-400'}`} >
                           {p.active ? 'مفعّل' : 'صامت'}
                         </button>
                       </div>
@@ -300,32 +304,17 @@ export function Settings() {
                   </div>
                 )}
 
-                {/* window: تغيير الموقع الجغرافي */}
+                {/* نافذة: تغيير الموقع الجغرافي */}
                 {activeModal === 'location' && (
                   <div className="space-y-4">
                     <div className="relative">
                       <Search className="absolute right-4 top-3.5 text-zinc-500" size={18} />
-                      <input 
-                        type="text" 
-                        placeholder="ابحث عن محافظتك أو دولتك..." 
-                        value={searchCity} 
-                        onChange={(e) => setSearchCity(e.target.value)} 
-                        className="w-full bg-zinc-900/80 text-zinc-100 placeholder-zinc-500 pr-11 pl-4 py-3.5 rounded-2xl border border-zinc-800 outline-none text-sm text-start" 
-                      />
+                      <input type="text" placeholder="ابحث عن محافظتك أو دولتك..." value={searchCity} onChange={(e) => setSearchCity(e.target.value)} className="w-full bg-zinc-900/80 text-zinc-100 placeholder-zinc-500 pr-11 pl-4 py-3.5 rounded-2xl border border-zinc-800 outline-none text-sm text-start" />
                     </div>
-                    
                     <div className="bg-zinc-900/40 rounded-[24px] max-h-[30vh] overflow-y-auto border border-zinc-800/60 divide-y divide-zinc-800/50">
                       {filteredCities.length > 0 ? (
                         filteredCities.map((item, idx) => (
-                          <button 
-                            key={idx} 
-                            onClick={() => {
-                              setLocation(`${item.country}، ${item.name}`);
-                              setActiveModal(null);
-                              setSearchCity('');
-                            }} 
-                            className="w-full px-5 py-4 flex items-center justify-between hover:bg-zinc-800/30 text-start transition-all"
-                          >
+                          <button key={idx} onClick={() => { setLocation(`${item.country}، ${item.name}`); setActiveModal(null); setSearchCity(''); }} className="w-full px-5 py-4 flex items-center justify-between hover:bg-zinc-800/30 text-start transition-all" >
                             <div>
                               <p className="font-bold text-[14px]">{item.name}</p>
                               <p className="text-xs text-zinc-500 mt-0.5">{item.country}</p>
@@ -339,16 +328,8 @@ export function Settings() {
                         </div>
                       )}
                     </div>
-                    
-                    <button 
-                      onClick={() => {
-                        setLocation('العراق، بغداد');
-                        setActiveModal(null);
-                        setSearchCity('');
-                      }} 
-                      className="w-full bg-[#10b981] hover:bg-[#0da06f] text-[#0c0c0e] font-black py-4 rounded-2xl text-sm transition-all shadow-lg shadow-emerald-950/20"
-                    >
-                      تحديد تلقائي للموقع (بغداد) 
+                    <button onClick={() => { setLocation('العراق، بغداد'); setActiveModal(null); setSearchCity(''); }} className="w-full bg-[#10b981] hover:bg-[#0da06f] text-[#0c0c0e] font-black py-4 rounded-2xl text-sm transition-all shadow-lg shadow-emerald-950/20" >
+                      تحديد تلقائي للموقع (بغداد)
                     </button>
                   </div>
                 )}
