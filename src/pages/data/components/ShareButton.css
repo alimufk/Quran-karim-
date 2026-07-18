@@ -1,0 +1,49 @@
+/* الألوان المتوافقة مع الوضعين الليلي والنهاري تلقائياً */
+:root {
+  --primary-emerald: #0c4a34;
+  --secondary-gold: #d4af37;
+  --text-white: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-emerald: #1b6347;
+    --secondary-gold: #f3cf65;
+  }
+}
+
+.share-btn-emerald {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background-color: var(--primary-emerald);
+  color: var(--text-white);
+  border: 2px solid var(--secondary-gold);
+  border-radius: 50px; /* شكل دائري انسيابي */
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(12, 74, 52, 0.2);
+  transition: all 0.3s ease;
+  direction: rtl; /* لترتيب الأيقونة والنص باللغة العربية */
+}
+
+.share-btn-emerald svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* تأثيرات تفاعلية حركية عند اللمس أو التمرير */
+.share-btn-emerald:hover {
+  background-color: var(--secondary-gold);
+  color: #0c4a34;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.3);
+}
+
+.share-btn-emerald:active {
+  transform: translateY(1px);
+}
