@@ -79,30 +79,25 @@ export function Settings() {
   };
 
   // دالة مشارعة التطبيق الذكية للـ Mobile والأجهزة الأخرى
-  const handleShareApp = () => { 
-        if (navigator.share) { 
-            navigator.share({ 
-                title: 'تطبيق القرآن الكريم', 
-                text: 'حمل الآن تطبيق القرآن الكريم الشامل (أوقات الصلاة، الأذكار، دليل الزائرين ومساعد الذكاء الاصطناعي).', 
-                url: 'https://alimufk.github.io/saeesaee1985/' 
-            }).catch(console.error); 
-        } else { 
-            navigator.clipboard.writeText('https://alimufk.github.io/saeesaee1985/'); 
-            alert('تم نسخ الرابط للحافظة!'); 
-        } 
-    }; 
-    
-    const handleRateApp = () => {
-        const packageName = "com.example.alquran";
-        const playStoreUrl = `market://details?id=${packageName}`;
-        const webUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
-        try {
-            window.location.href = playStoreUrl;
-            setTimeout(() => {
-                window.open(webUrl, "_blank");
-            }, 1500);
-        } catch {
-            window.open(webUrl, "_blank");
+  const handleShareApp = async () => {
+    const shareData = {
+      title: 'تطبيق القرآن الكريم',
+      text: 'حمل الآن تطبيق القرآن الكريم الشامل (أوقات الصلاة، الأذكار، دليل الزائرين ومساعد الذكاء الاصطناعي) بتطوير المبرمج علاوي النعيمي.',
+      url: 'https://alimufk.github.io/saeesaee1985/'
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (error) {
+        console.log('تم إلغاء المشاركة أو حدث خطأ', error);
+      }
+    } else {
+      // حل بديل في حال كان المتصفح لا يدعم نظام مشاركة الهاتف المدمج
+      navigator.clipboard.writeText(shareData.url);
+      alert('تم نسخ رابط التطبيق بنجاح، يمكنك مشاركته الآن مع أصدقائك!');
+    }
+  };
 
   const filteredCities = locationsList.filter(item =>
     item.name.includes(searchCity) || item.country.includes(searchCity)
@@ -202,28 +197,6 @@ export function Settings() {
             </div>
             <ChevronLeft size={16} className="text-zinc-600" />
           </button>
-          <button
-          onClick={handleRateApp}
-          className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all"> 
-
-          <div className="flex items-center gap-4">
-          <span className="p-2.5 bg-yellow-500/10 text-yellow-400 rounded-2xl border border-yellow-500/20">
-            <Star size={20} />
-        </span>
-
-        <div>
-            <span className="font-bold text-[15px] block text-yellow-400">
-                قيّم التطبيق
-            </span>
-
-            <span className="text-xs text-zinc-500 mt-0.5 block">
-                ساعدنا بتقييم التطبيق على متجر Google Play
-            </span>
-        </div>
-    </div>
-
-    <ChevronLeft size={16} className="text-zinc-600" />
-    </button>
 
           {/* زر سياسة الخصوصية */}
           <a 
