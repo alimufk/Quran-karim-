@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Bell, Volume2, MapPin, Search, Check, ChevronLeft, Clock, VolumeX, ShieldCheck, FileText, Share2 } from 'lucide-react';
+import { ArrowRight, Bell, Volume2, MapPin, Search, Check, ChevronLeft, Clock, VolumeX, ShieldCheck, FileText, Share2, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 type ActiveModal = null | 'notifications' | 'azan_settings' | 'location';
@@ -12,6 +12,16 @@ export function Settings() {
   // --- الحالات المحفوظة للإعدادات ---
   const [location, setLocation] = useState(() => localStorage.getItem('set_location') || 'العراق، بغداد');
   const [searchCity, setSearchCity] = useState('');
+  const [loadingPrayers, setLoadingPrayers] = useState(false);
+
+  // مواقيت الصلاة الحقيقية (يتم تحديثها من الإنترنت)
+  const [realTimes, setRealTimes] = useState({
+    fajr: '04:12 ص',
+    dhuhr: '12:20 م',
+    asr: '03:55 م',
+    maghrib: '07:15 م',
+    isha: '08:45 м'
+  });
 
   // إعدادات كتم وتفعيل الأذان لكل صلاة
   const [azanSettings, setAzanSettings] = useState(() => {
@@ -30,33 +40,72 @@ export function Settings() {
   const [notifQuranAyah, setNotifQuranAyah] = useState(() => localStorage.getItem('notif_quran_ayah') !== 'false');
   const [notifImsak, setNotifImsak] = useState(() => localStorage.getItem('notif_imsak') !== 'false');
 
-  // قاعدة بيانات المحافظات والمدن
+  // قاعدة بيانات المحافظات والمدن المحدثة لتتوافق مع الـ API العالمي
   const locationsList = [
-    { name: 'بغداد', country: 'العراق' },
-    { name: 'كربلاء المقدسة', country: 'العراق' },
-    { name: 'النجف الأشرف', country: 'العراق' },
-    { name: 'البصرة', country: 'العراق' },
-    { name: 'الموصل', country: 'العراق' },
-    { name: 'أربيل', country: 'العراق' },
-    { name: 'بابل', country: 'العراق' },
-    { name: 'الناصرية', country: 'العراق' },
-    { name: 'مكة المكرمة', country: 'السعودية' },
-    { name: 'المدينة المنورة', country: 'السعودية' },
-    { name: 'القدس الشريف', country: 'فلسطين' },
+    { name: 'Baghdad', arName: 'بغداد', country: 'Iraq', arCountry: 'العراق' },
+    { name: 'Karbala', arName: 'كربلاء المقدسة', country: 'Iraq', arCountry: 'العراق' },
+    { name: 'Najaf', arName: 'النجف الأشرف', country: 'Iraq', arCountry: 'العراق' },
+    { name: 'Basra', arName: 'البصرة', country: 'Iraq', arCountry: 'العراق' },
+    { name: 'Mosul', arName: 'الموصل', country: 'Iraq', arCountry: 'العراق' },
+    { name: 'Erbil', arName: 'أربيل', country: 'Iraq', arCountry: 'العراق' },
+    { name: 'Babylon', arName: 'بابل', country: 'Iraq', arCountry: 'العراق' },
+    { name: 'Nasiriyah', arName: 'الناصرية', country: 'Iraq', arCountry: 'العراق' },
+    { name: 'Mecca', arName: 'مكة المكرمة', country: 'Saudi Arabia', arCountry: 'السعودية' },
+    { name: 'Medina', arName: 'المدينة المنورة', country: 'Saudi Arabia', arCountry: 'السعودية' },
+    { name: 'Jerusalem', arName: 'القدس الشريف', country: 'Palestine', arCountry: 'فلسطين' },
   ];
 
-  // مواقيت الصلاة الحالية لعرضها بشكل احترافي داخل الصفحة (محاكاة تفاعلية ذكية)
-  const prayerTimes = [
-    { name: 'الفجر', time: '04:12 ص', active: azanSettings.fajr, key: 'fajr' },
-    { name: 'الظهر', time: '12:20 م', active: azanSettings.dhuhr, key: 'dhuhr' },
-    { name: 'العصر', time: '03:55 م', active: azanSettings.asr, key: 'asr' },
-    { name: 'المغرب', time: '07:15 م', active: azanSettings.maghrib, key: 'maghrib' },
-    { name: 'العشاء', time: '08:45 م', active: azanSettings.isha, key: 'isha' },
-  ];
+  // دالة تحويل الوقت من نظام 24 ساعة إلى 12 ساعة مع إضافة (ص/م)
+  const formatTime12 = (time24: string) => {
+    if (!time24) return '--:--';
+    const [hrs, mins] = time24.split(':');
+    let hours = parseInt(hrs, 10);
+    const ampm = hours >= 12 ? 'م' : 'ص';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // الساعة 0 تصبح 12
+    return `${String(hours).padStart(2, '0')}:${mins} ${ampm}`;
+  };
 
+  // جلب مواقيت الصلاة الحقيقية بناءً على المدينة المحددة
+  const fetchPrayerTimes = async (cityName: string, countryName: string) => {
+    setLoadingPrayers(true);
+    try {
+      // نستخدم طريقة الحساب الشيعية (المذهب الجعفري/مؤسسة لوا) رقم 4، أو يمكنك تغيير طريقة الحساب (method)
+      const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${cityName}&country=${countryName}&method=4`);
+      const data = await res.json();
+      if (data && data.data && data.data.timings) {
+        const t = data.data.timings;
+        setRealTimes({
+          fajr: formatTime12(t.Fajr),
+          dhuhr: formatTime12(t.Dhuhr),
+          asr: formatTime12(t.Asr),
+          maghrib: formatTime12(t.Maghrib),
+          isha: formatTime12(t.Isha)
+        });
+      }
+    } catch (error) {
+      console.error("خطأ في جلب مواقيت الصلاة الحقيقية:", error);
+    } finally {
+      setLoadingPrayers(false);
+    }
+  };
+
+  // جلب الأوقات عند تحميل الصفحة أو عند تغيير الموقع الجغرافي
   useEffect(() => {
     localStorage.setItem('set_location', location);
+    
+    // استخراج اسم المدينة والدولة بالإنجليزية لإرسالها للـ API
+    const currentLoc = locationsList.find(item => location.includes(item.arName)) || locationsList[0];
+    fetchPrayerTimes(currentLoc.name, currentLoc.country);
   }, [location]);
+
+  const prayerTimes = [
+    { name: 'الفجر', time: realTimes.fajr, active: azanSettings.fajr, key: 'fajr' },
+    { name: 'الظهر', time: realTimes.dhuhr, active: azanSettings.dhuhr, key: 'dhuhr' },
+    { name: 'العصر', time: realTimes.asr, active: azanSettings.asr, key: 'asr' },
+    { name: 'المغرب', time: realTimes.maghrib, active: azanSettings.maghrib, key: 'maghrib' },
+    { name: 'العشاء', time: realTimes.isha, active: azanSettings.isha, key: 'isha' },
+  ];
 
   useEffect(() => {
     localStorage.setItem('azan_settings', JSON.stringify(azanSettings));
@@ -78,29 +127,45 @@ export function Settings() {
     setAzanSettings((prev: any) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // دالة مشارعة التطبيق الذكية للـ Mobile والأجهزة الأخرى
   const handleShareApp = async () => {
-    const shareData = {
-      title: 'تطبيق القرآن الكريم',
-      text: 'حمل الآن تطبيق القرآن الكريم الشامل (أوقات الصلاة، الأذكار، دليل الزائرين ومساعد الذكاء الاصطناعي) بتطوير المبرمج علاوي النعيمي.',
-      url: 'https://alimufk.github.io/saeesaee1985/'
-    };
+    const shareUrl = 'https://alimufk.github.io/saeesaee1985/';
+    const shareTitle = 'تطبيق القرآن الكريم';
+    const shareText = 'حمل الآن تطبيق القرآن الكريم الشامل (أوقات الصلاة الحقيقية، الأذكار، ومساعد الذكاء الاصطناعي) بتطوير علاوي النعيمي.';
 
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (error) {
-        console.log('تم إلغاء المشاركة أو حدث خطأ', error);
+    try {
+      const response = await fetch('https://alimufk.github.io/saeesaee1985/logo.png');
+      const blob = await response.blob();
+      const file = new File([blob], 'quran_app.png', { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: shareTitle,
+          text: `${shareText}\n\nرابط التطبيق:\n${shareUrl}`,
+          files: [file]
+        });
+      } else {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl
+        });
       }
-    } else {
-      // حل بديل في حال كان المتصفح لا يدعم نظام مشاركة الهاتف المدمج
-      navigator.clipboard.writeText(shareData.url);
-      alert('تم نسخ رابط التطبيق بنجاح، يمكنك مشاركته الآن مع أصدقائك!');
+    } catch (error) {
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: shareTitle, text: shareText, url: shareUrl });
+        } catch (e) {
+          navigator.clipboard.writeText(shareUrl);
+        }
+      } else {
+        navigator.clipboard.writeText(shareUrl);
+        alert('تم نسخ رابط التطبيق بنجاح!');
+      }
     }
   };
 
   const filteredCities = locationsList.filter(item =>
-    item.name.includes(searchCity) || item.country.includes(searchCity)
+    item.arName.includes(searchCity) || item.arCountry.includes(searchCity)
   );
 
   return (
@@ -116,23 +181,30 @@ export function Settings() {
         </div>
       </header>
 
-      {/* ================= قسم 1: بطاقة مواقيت الصلاة الاحترافية ================= */}
+      {/* ================= قسم 1: بطاقة مواقيت الصلاة الحقيقية ================= */}
       <section className="mb-6">
-        <div className="bg-gradient-to-br from-[#16161a] to-[#111113] border border-zinc-800/80 rounded-[28px] p-5 shadow-xl">
+        <div className="bg-gradient-to-br from-[#16161a] to-[#111113] border border-zinc-800/80 rounded-[28px] p-5 shadow-xl relative overflow-hidden">
+          
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
               <span className="p-1.5 bg-emerald-500/10 text-[#10b981] rounded-lg"><Clock size={16} /></span>
-              <h2 className="text-[14px] font-bold text-zinc-300">مواقيت الصلاة لليوم</h2>
+              <h2 className="text-[14px] font-bold text-zinc-300">مواقيت الصلاة لليوم ({location.split('، ')[1]})</h2>
             </div>
-            <span className="text-[11px] bg-emerald-500/10 text-[#10b981] px-2.5 py-1 rounded-full font-bold">نشط حالياً</span>
+            {loadingPrayers ? (
+              <span className="flex items-center gap-1 text-[11px] bg-amber-500/10 text-[#fbbf24] px-2.5 py-1 rounded-full font-bold animate-pulse">
+                <Loader2 size={12} className="animate-spin" /> جاري التحديث...
+              </span>
+            ) : (
+              <span className="text-[11px] bg-emerald-500/10 text-[#10b981] px-2.5 py-1 rounded-full font-bold">تحديث حيّ</span>
+            )}
           </div>
 
-          {/* جدول أوقات الصلاة التفاعلي */}
+          {/* جدول أوقات الصلاة التفاعلي الحقيقي */}
           <div className="grid grid-cols-5 gap-2">
             {prayerTimes.map((prayer) => (
               <div key={prayer.name} className="bg-zinc-900/60 border border-zinc-800/50 rounded-2xl p-2.5 text-center flex flex-col items-center justify-between min-h-[90px]" >
                 <span className="text-xs text-zinc-400 font-bold">{prayer.name}</span>
-                <span className="text-sm font-black text-white my-1.5 font-mono">{prayer.time}</span>
+                <span className="text-xs font-black text-white my-1.5 font-mono">{prayer.time}</span>
                 <button onClick={() => toggleAzan(prayer.key)} className={`p-1 rounded-full transition-all ${prayer.active ? 'bg-[#10b981]/20 text-[#10b981]' : 'bg-zinc-800 text-zinc-600'}`} >
                   {prayer.active ? <Volume2 size={13} /> : <VolumeX size={13} />}
                 </button>
@@ -142,11 +214,10 @@ export function Settings() {
         </div>
       </section>
 
-      {/* ================= قسم 2: خيارات الإعدادات الرئيسية والسياسات المضافة ================= */}
+      {/* ================= قسم 2: خيارات الإعدادات الرئيسية ================= */}
       <main className="space-y-4">
         <div className="bg-[#141416] rounded-[24px] overflow-hidden border border-zinc-800/80 divide-y divide-zinc-800/40">
           
-          {/* خيار الإشعارات */}
           <button onClick={() => setActiveModal('notifications')} className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all" >
             <div className="flex items-center gap-4">
               <span className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-2xl"><Bell size={20} /></span>
@@ -158,7 +229,6 @@ export function Settings() {
             <ChevronLeft size={16} className="text-zinc-600" />
           </button>
 
-          {/* خيار التحكم بصوت الأذان */}
           <button onClick={() => setActiveModal('azan_settings')} className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all" >
             <div className="flex items-center gap-4">
               <span className="p-2.5 bg-amber-500/10 text-amber-400 rounded-2xl"><Volume2 size={20} /></span>
@@ -170,7 +240,6 @@ export function Settings() {
             <ChevronLeft size={16} className="text-zinc-600" />
           </button>
 
-          {/* خيار الموقع الجغرافي */}
           <button onClick={() => setActiveModal('location')} className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all" >
             <div className="flex items-center gap-4">
               <span className="p-2.5 bg-teal-500/10 text-teal-400 rounded-2xl"><MapPin size={20} /></span>
@@ -183,10 +252,9 @@ export function Settings() {
           </button>
         </div>
 
-        {/* 🌟 القسم الجديد القانوني والمشاركة مدمج بانسيابية 🌟 */}
+        {/* روابط السياسات والمشاركة */}
         <div className="bg-[#141416] rounded-[24px] overflow-hidden border border-zinc-800/80 divide-y divide-zinc-800/40 mt-4">
           
-          {/* زر مشاركة التطبيق */}
           <button onClick={handleShareApp} className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all" >
             <div className="flex items-center gap-4">
               <span className="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-2xl"><Share2 size={20} /></span>
@@ -198,13 +266,7 @@ export function Settings() {
             <ChevronLeft size={16} className="text-zinc-600" />
           </button>
 
-          {/* زر سياسة الخصوصية */}
-          <a 
-            href="https://alimufk.github.io/saeesaee1985/privacy.html" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all block"
-          >
+          <a href="https://alimufk.github.io/saeesaee1985/privacy.html" target="_blank" rel="noopener noreferrer" className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all block" >
             <div className="flex items-center gap-4">
               <span className="p-2.5 bg-zinc-800 text-[#fbbf24] rounded-2xl"><ShieldCheck size={20} /></span>
               <div>
@@ -215,13 +277,7 @@ export function Settings() {
             <ChevronLeft size={16} className="text-zinc-600" />
           </a>
 
-          {/* زر شروط الاستخدام (Terms of Use) */}
-          <a 
-            href="https://alimufk.github.io/saeesaee1985/terms.html" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all block"
-          >
+          <a href="https://alimufk.github.io/saeesaee1985/terms.html" target="_blank" rel="noopener noreferrer" className="w-full px-5 py-4.5 flex items-center justify-between hover:bg-zinc-800/20 text-start transition-all block" >
             <div className="flex items-center gap-4">
               <span className="p-2.5 bg-zinc-800 text-zinc-300 rounded-2xl"><FileText size={20} /></span>
               <div>
@@ -231,10 +287,8 @@ export function Settings() {
             </div>
             <ChevronLeft size={16} className="text-zinc-600" />
           </a>
-
         </div>
 
-        {/* حقوق التطوير للمبرمج علاوي النعيمي */}
         <div className="pt-4 text-center">
           <p className="text-[11px] text-zinc-600 font-medium">تطبيق القرآن الكريم v1.0.0</p>
           <p className="text-[11px] text-zinc-500 mt-0.5">تطوير المبرمج <span className="text-[#fbbf24] font-bold">علاوي النعيمي</span></p>
@@ -246,7 +300,6 @@ export function Settings() {
         {activeModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex flex-col justify-end" >
             <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="bg-[#0e0e10] border-t border-zinc-800 rounded-t-[32px] max-h-[80vh] flex flex-col pb-12" >
-              {/* ترويسة النافذة */}
               <div className="sticky top-0 bg-[#0e0e10] z-10 px-6 py-5 border-b border-zinc-800/40 flex justify-between items-center">
                 <span className="text-base font-black text-[#fbbf24]">
                   {activeModal === 'notifications' && 'إعدادات الإشعارات'}
@@ -259,7 +312,6 @@ export function Settings() {
               </div>
 
               <div className="p-6 overflow-y-auto">
-                {/* نافذة: الإشعارات */}
                 {activeModal === 'notifications' && (
                   <div className="space-y-4">
                     {[
@@ -281,7 +333,6 @@ export function Settings() {
                   </div>
                 )}
 
-                {/* نافذة: أصوات الأذان وتخصيص التنبيهات لكل صلاة */}
                 {activeModal === 'azan_settings' && (
                   <div className="space-y-3">
                     <p className="text-xs text-zinc-500 mb-2">قم بتفعيل الأذان لكل صلاة بشكل مستقل لضمان تنبيهك بصوت المؤذن المختار.</p>
@@ -304,7 +355,6 @@ export function Settings() {
                   </div>
                 )}
 
-                {/* نافذة: تغيير الموقع الجغرافي */}
                 {activeModal === 'location' && (
                   <div className="space-y-4">
                     <div className="relative">
@@ -314,12 +364,12 @@ export function Settings() {
                     <div className="bg-zinc-900/40 rounded-[24px] max-h-[30vh] overflow-y-auto border border-zinc-800/60 divide-y divide-zinc-800/50">
                       {filteredCities.length > 0 ? (
                         filteredCities.map((item, idx) => (
-                          <button key={idx} onClick={() => { setLocation(`${item.country}، ${item.name}`); setActiveModal(null); setSearchCity(''); }} className="w-full px-5 py-4 flex items-center justify-between hover:bg-zinc-800/30 text-start transition-all" >
+                          <button key={idx} onClick={() => { setLocation(`${item.arCountry}، ${item.arName}`); setActiveModal(null); setSearchCity(''); }} className="w-full px-5 py-4 flex items-center justify-between hover:bg-zinc-800/30 text-start transition-all" >
                             <div>
-                              <p className="font-bold text-[14px]">{item.name}</p>
-                              <p className="text-xs text-zinc-500 mt-0.5">{item.country}</p>
+                              <p className="font-bold text-[14px]">{item.arName}</p>
+                              <p className="text-xs text-zinc-500 mt-0.5">{item.arCountry}</p>
                             </div>
-                            {location.includes(item.name) && <Check size={18} className="text-[#10b981]" />}
+                            {location.includes(item.arName) && <Check size={18} className="text-[#10b981]" />}
                           </button>
                         ))
                       ) : (
