@@ -79,45 +79,30 @@ export function Settings() {
   };
 
   // دالة مشارعة التطبيق الذكية للـ Mobile والأجهزة الأخرى
-  const handleShareApp = async () => {
-    const shareData = {
-      title: 'تطبيق القرآن الكريم',
-      text: 'حمل الآن تطبيق القرآن الكريم الشامل (أوقات الصلاة، الأذكار، دليل الزائرين ومساعد الذكاء الاصطناعي) بتطوير المبرمج علاوي النعيمي.',
-      url: 'https://alimufk.github.io/saeesaee1985/'
-    };
-
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (error) {
-        console.log('تم إلغاء المشاركة أو حدث خطأ', error);
-      }
-    } else {
-      // حل بديل في حال كان المتصفح لا يدعم نظام مشاركة الهاتف المدمج
-      navigator.clipboard.writeText(shareData.url);
-      alert('تم نسخ رابط التطبيق بنجاح، يمكنك مشاركته الآن مع أصدقائك!');
-    }
-  };
-
-  const handleRateApp = () => {
-    const packageName = "com.Al Quran.alquran";
-
-    const playStoreUrl =
-        `market://details?id=${packageName}`;
-
-    const webUrl =
-        `https://play.google.com/store/apps/details?id=${packageName}`;
-
-    try {
-        window.location.href = playStoreUrl;
-
-        setTimeout(() => {
+  const handleShareApp = () => { 
+        if (navigator.share) { 
+            navigator.share({ 
+                title: 'تطبيق القرآن الكريم', 
+                text: 'حمل الآن تطبيق القرآن الكريم الشامل (أوقات الصلاة، الأذكار، دليل الزائرين ومساعد الذكاء الاصطناعي).', 
+                url: 'https://alimufk.github.io/saeesaee1985/' 
+            }).catch(console.error); 
+        } else { 
+            navigator.clipboard.writeText('https://alimufk.github.io/saeesaee1985/'); 
+            alert('تم نسخ الرابط للحافظة!'); 
+        } 
+    }; 
+    
+    const handleRateApp = () => {
+        const packageName = "com.example.alquran";
+        const playStoreUrl = `market://details?id=${packageName}`;
+        const webUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
+        try {
+            window.location.href = playStoreUrl;
+            setTimeout(() => {
+                window.open(webUrl, "_blank");
+            }, 1500);
+        } catch {
             window.open(webUrl, "_blank");
-        }, 1500);
-    } catch {
-        window.open(webUrl, "_blank");
-    }
-};
 
   const filteredCities = locationsList.filter(item =>
     item.name.includes(searchCity) || item.country.includes(searchCity)
