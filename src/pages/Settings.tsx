@@ -100,7 +100,7 @@ export function Settings() {
   };
 
   const handleRateApp = () => {
-    const packageName = "com.example.alquran";
+    const packageName = "com.Al Quran.alquran";
 
     const playStoreUrl =
         `market://details?id=${packageName}`;
