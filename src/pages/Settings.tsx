@@ -139,12 +139,12 @@ export function Settings() {
           maghrib: formatTime12(t.Maghrib),
           isha: formatTime12(t.Isha)
         });
-      }
     } catch (error) {
       console.error("خطأ في جلب مواقيت الصلاة:", error);
-    } finaly {
+    } finally { // إضافة حرف l الثاني هنا
       setLoadingPrayers(false);
     }
+
   };
 
   useEffect(() => {
