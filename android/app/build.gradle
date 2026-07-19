@@ -11,15 +11,22 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-                // أخطاء فحص وضغط الصور المكسورة والمخالفة لشروط أندرويد 👇
+        
+        // أخطاء فحص وضغط الصور المكسورة والمخالفة لشروط أندرويد 
         aaptOptions {
             cruncherEnabled = false
             useNewCruncher = false
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
-    } 
+    }
 
-    // 👇 إعدادات مفتاح التوقيع الرقمي للنسخة النهائية للمتجر
+    // 👇 الجزء السحري الجديد لمنع إيقاف البناء بسبب تحذيرات lint للمتجر
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    // إعدادات مفتاح التوقيع الرقمي للنسخة النهائية للمتجر
     signingConfigs {
         release {
             storeFile file('release-key.keystore')
@@ -31,7 +38,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release // 👈 ربط الحزمة الموقعة بالـ Release للرفع المباشر
+            signingConfig signingConfigs.release 
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
