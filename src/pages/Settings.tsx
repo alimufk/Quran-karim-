@@ -139,11 +139,14 @@ export function Settings() {
           asr: formatTime12(t.Asr),
           maghrib: formatTime12(t.Maghrib),
           isha: formatTime12(t.Isha)
-        }; 
+        }); 
+      }
     } catch (error) {
       console.error("خطأ في جلب مواقيت الصلاة الحقيقية:", error);
     } finally {
       setLoadingPrayers(false);
+      } 
+    }; 
 
   useEffect(() => {
     localStorage.setItem('set_location', location);
