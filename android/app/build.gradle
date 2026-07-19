@@ -11,12 +11,17 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        // 👇 الأسطر السحرية لتخطي أخطاء فحص وضغط الصور المكسورة والمخالفة لشروط أندرويد
+        aaptOptions.cruncherEnabled = false
+        aaptOptions.useNewCruncher = false
+
         aaptOptions {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
 
-    // 👇 إعدادات مفتاح التوقيع التي سيستخدمها جيتهاب تلقائياً
+    // 👇 إعدادات مفتاح التوقيع الرقمي للنسخة النهائية للمتجر
     signingConfigs {
         release {
             storeFile file('release-key.keystore')
@@ -28,7 +33,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release // 👈 ربط التوقيع بنسخة المتجر
+            signingConfig signingConfigs.release // 👈 ربط الحزمة الموقعة بالـ Release للرفع المباشر
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
