@@ -127,7 +127,8 @@ export function Settings() {
 
   const fetchPrayerTimes = async (cityName: string, countryName: string) => {
     setLoadingPrayers(true);
-    try {
+    try{
+      // نستخدم طريقة الحساب الشيعية (المذهب الجعفري/مؤسسة لوا) رقم 4، أو يمكنك تغيير طريقة الحساب (method)
       const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${cityName}&country=${countryName}&method=4`);
       const data = await res.json();
       if (data && data.data && data.data.timings) {
@@ -138,14 +139,11 @@ export function Settings() {
           asr: formatTime12(t.Asr),
           maghrib: formatTime12(t.Maghrib),
           isha: formatTime12(t.Isha)
-        });
+        
     } catch (error) {
-      console.error("خطأ في جلب مواقيت الصلاة:", error);
-    } finally { // إضافة حرف l الثاني هنا
+      console.error("خطأ في جلب مواقيت الصلاة الحقيقية:", error);
+    } finally {
       setLoadingPrayers(false);
-    }
-
-  };
 
   useEffect(() => {
     localStorage.setItem('set_location', location);
