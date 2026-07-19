@@ -50,11 +50,12 @@ jobs:
         run: |
           keytool -genkey -v -keystore android/app/release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass 12345678 -keypass 12345678 -dname "CN=Alawi, OU=Production, O=AlquranApp, L=Baghdad, S=Baghdad, C=IQ"
 
-      # 👇 تعديل أمر البناء لإنتاج حزمة المتجر الرسمية AAB
+      #👇 البناء بعد تنظيف الموارد وتوليد الحزمة الرسمية للمتجر AAB
       - name: Build Production AAB
         run: |
           cd android
-          gradle bundleRelease --stacktrace --no-daemon -x lint -x test
+          gradle clean bundleRelease --stacktrace --no-daemon -x lint -x test
+
 
       # 👇 رفع الحزمة الموقعة لتتمكن من تحميلها من هاتفك مباشرة
       - name: Upload AAB Artifact
