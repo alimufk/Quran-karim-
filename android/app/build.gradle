@@ -17,6 +17,7 @@ android {
             useNewCruncher = false
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
+    } 
 
     // 👇 إعدادات مفتاح التوقيع الرقمي للنسخة النهائية للمتجر
     signingConfigs {
