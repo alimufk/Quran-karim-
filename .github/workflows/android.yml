@@ -45,19 +45,27 @@ jobs:
         with:
           gradle-version: '8.13'
 
-      # 👇 خطوة سرية: إنشاء مفتاح توقيع مدمج وآمن داخل السيرفر أثناء البناء
+      # خطوة سرية: إنشاء مفتاح توقيع مدمج وآمن داخل السيرفر أثناء البناء
       - name: Generate Production Keystore
         run: |
           keytool -genkey -v -keystore android/app/release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass 12345678 -keypass 12345678 -dname "CN=Alawi, OU=Production, O=AlquranApp, L=Baghdad, S=Baghdad, C=IQ"
 
-      #👇 البناء بعد تنظيف الموارد وتوليد الحزمة الرسمية للمتجر AAB
+      # البناء النظيف وتوليد الحزمة الرسمية للمتجر AAB
       - name: Build Production AAB
         run: |
           cd android
-          gradle clean bundleRelease --stacktrace --no-daemon -x lint -x test
+          gradle clean bundleRelease --no-daemon -x lint -x test
 
+      # 🚀 خطوة ذكية: البحث التلقائي عن ملف الـ AAB ونسخه لمكان مضمون
+      - name: Locate and Prepare AAB File
+        run: |
+          mkdir -p output_app
+          find android/ -name "*.aab" -exec cp {} output_app/app-release.aab \;
+          echo "تم العثور على الملف وتجهيزه بنجاح!"
+
+      # رفع الملف المجهز مباشرة لكي تقوم بتحميله من الهاتف
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: android/app/build/outputs/bundle/release/*.aab
+          path: output_app/app-release.aab
