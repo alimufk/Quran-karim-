@@ -1,30 +1,21 @@
-import tailwindcss from '@tailwindcss/vite';
+Import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import path from 'path';
+import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
-        // نربط مسار node:path بمسار وهمي متوافق مع المتصفح لمنع الخطأ نهائياً
-        'node:path': 'path-browserify',
-        'path': 'path-browserify',
+        '@': path.resolve(__dirname, '.'),
       },
     },
-    build: {
-      rollupOptions: {
-        // نترك الإضافات الخارجية للسيرفر والملفات التي لا يحتاجها الهاتف
-        external: [
-          'fsevents',
-          'fs',
-          'fs/promises',
-          'express'
-        ]
-      }
-    },
     server: {
+      // HMR is disabled in AI Studio via DISABLE_HMR env var.
+      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
+      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };
