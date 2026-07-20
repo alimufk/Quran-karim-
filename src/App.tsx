@@ -13,7 +13,6 @@ import { Tasbeeh } from './pages/Tasbeeh';
 import { NamesOfAllah } from './pages/NamesOfAllah';
 import { Radios } from './pages/Radios';
 import { About } from './pages/About';
-import { AiAssistant } from './pages/AiAssistant';
 import { Favorites } from './pages/Favorites';
 import { Khatmah } from './pages/Khatmah';
 import { RakatCounter } from './pages/RakatCounter';
@@ -48,7 +47,6 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
-          <Route path="/ai-assistant" element={<AiAssistant />} />
           <Route path="/quran" element={<Quran />} />
           <Route path="/quran/:surahId" element={<Surah />} />
           <Route path="/reciters" element={<Reciters />} />
