@@ -5,15 +5,20 @@ import { defineConfig } from 'vite';
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
+    resolve: {
+      alias: {
+        // نربط مسار node:path بمسار وهمي متوافق مع المتصفح لمنع الخطأ نهائياً
+        'node:path': 'path-browserify',
+        'path': 'path-browserify',
+      },
+    },
     build: {
       rollupOptions: {
+        // نترك الإضافات الخارجية للسيرفر والملفات التي لا يحتاجها الهاتف
         external: [
           'fsevents',
-          'path',
           'fs',
           'fs/promises',
-          'node:process',
-          'node:perf_hooks',
           'express'
         ]
       }
