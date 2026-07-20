@@ -50,7 +50,7 @@ function AppContent() {
           <Route path="/about" element={<About />} />
           <Route path="/quran" element={<Quran />} />
           <Route path="/quran/:surahId" element={<Surah />} />
-          <Route path="/Istikara" element={<Istikhara />} />
+          <Route path="/Istikhara" element={<Istikhara />} />
           <Route path="/reciters" element={<Reciters />} />
           <Route path="/listen/:reciterId" element={<Listen />} />
           <Route path="/azkar" element={<Azkar />} />
