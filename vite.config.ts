@@ -13,13 +13,15 @@ export default defineConfig(() => {
     },
     build: {
       rollupOptions: {
-        // الحل القاطع: تخطي حزم النود وحزم التحليل المسبق مثل fdir و fsevents بالكامل لمنع كسر البناء
+        // الحل النهائي: تجاهل حزم الباك إند والتحليل المسبق بالكامل لمنع كسر البناء للهاتف
         external: (id) => {
           return (
             id.includes('fsevents') || 
             id.includes('fdir') || 
+            id.includes('tinyglobby') || 
+            id.includes('picomatch') || 
             id.startsWith('node:') || 
-            ['path', 'fs', 'express', 'module'].includes(id)
+            ['path', 'fs', 'express', 'module', 'url'].includes(id)
           );
         }
       }
