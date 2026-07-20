@@ -190,8 +190,8 @@ export function Home() {
           </div>
         )}
 
-        {/* AI Assistant Banner */}
-        <Link to="/ai-assistant" className="block mt-4 bg-gradient-to-r from-[#064e3b] to-[#022c22] p-6 rounded-[28px] border border-[#059669]/40 relative overflow-hidden shadow-xl hover:scale-[1.01] transition-all group">
+        {/* Istikhara Banner */}
+        <Link to="Istikhara" className="block mt-4 bg-gradient-to-r from-[#064e3b] to-[#022c22] p-6 rounded-[28px] border border-[#059669]/40 relative overflow-hidden shadow-xl hover:scale-[1.01] transition-all group">
           <div className="absolute -left-6 -top-6 w-24 h-24 bg-[#fbbf24]/10 rounded-full blur-[25px]" />
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -203,8 +203,8 @@ export function Home() {
                   <span>جديد</span>
                   <span className="w-1.5 h-1.5 bg-[#fbbf24] rounded-full" />
                 </p>
-                <h3 className="text-lg font-black text-[#f0f9ff]">مساعد الذكاء الاصطناعي</h3>
-                <p className="text-emerald-100/70 text-xs mt-0.5 font-medium">اطرح أي سؤال حول معالم الكوفة، تفسير الآيات والأدعية</p>
+                <h3 className="text-lg font-black text-[#f0f9ff]">استخارة من القرآنالكريم</h3>
+                <p className="text-emerald-100/70 text-xs mt-0.5 font-medium">ليطمئن قبلك</p>
               </div>
             </div>
             <span className="text-[#fbbf24] text-xl font-bold">←</span>
