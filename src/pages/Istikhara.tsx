@@ -102,59 +102,58 @@ const trueIstikharaDatabase = [
 
 export function Istikhara() {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState("");
+  const [result, setResult] = useState<any>(null);
   const [niya, setNiya] = useState("");
 
   const handleGetIstikhara = () => {
     setLoading(true);
-    setResult("");
+    setResult(null);
     
     setTimeout(() => {
       const randomIndex = Math.floor(Math.random() * trueIstikharaDatabase.length);
-      const item = trueIstikharaDatabase[randomIndex];
-
-      const textResponse = `### 🔮 نتيجة الاستخارة الإلكترونية بالقرآن الكريم 🔮\n\n` +
-                           `✨ **الآية الكريمة المفتوح عليها**: \n` +
-                           `> "${item.ayahText}"\n\n` +
-                           `📖 **الموقع في المصحف**: سورة **${item.surah}** | الآية رقم: **${item.ayahNumber}** | الصفحة: **${item.page}**\n\n` +
-                           `📊 **حكم الخيرة الحقيقي**: **${item.result}**\n\n` +
-                           `📝 **البيان والتدبر الإرشادي**: \n${item.explanation}\n\n` +
-                           `*ملاحظة: ينصح بالصلاة على محمد وآل محمد الطيبين الطاهرين وقراءة سورة الإخلاص ثلاثاً قبل طلب الاستخارة لراحة القلب.*`;
-
-      setResult(textResponse);
+      setResult(trueIstikharaDatabase[randomIndex]);
       setLoading(false);
     }, 1200);
   };
 
   return (
-    <div style={{ padding: "16px", backgroundColor: "#022e1f", minHeight: "100vh", color: "#fff", direction: "rtl" }}>
-      <div style={{ textAlign: "center", marginBottom: "24px" }}>
-        <h2 style={{ color: "#d4af37", fontSize: "24px", fontWeight: "bold" }}>📖 الاستخارة الإلكترونية بالقرآن الكريم</h2>
+    <div style={{ padding: "16px", backgroundColor: "#022e1f", minHeight: "100vh", color: "#fff", direction: "rtl", fontFamily: "sans-serif" }}>
+      <div style={{ textAlign: "center", marginBottom: "24px", marginTop: "20px" }}>
+        <h2 style={{ color: "#d4af37", fontSize: "24px", fontWeight: "bold" }}>🔮 الاستخارة بالقرآن الكريم</h2>
         <p style={{ color: "#a3c0b5", fontSize: "14px" }}>انْوِ في صدرك ثم اضغط على زر طلب الاستخارة المباركة</p>
       </div>
 
-      <div style={{ backgroundColor: "#03422e", padding: "16px", borderRadius: "12px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)", marginBottom: "20px" }}>
+      <div style={{ backgroundColor: "#03422e", padding: "16px", borderRadius: "12px", marginBottom: "20px", border: "1px solid #045c40" }}>
         <label style={{ display: "block", marginBottom: "8px", color: "#d4af37", fontWeight: "bold" }}>موضوع الاستخارة (اختياري):</label>
         <input
           type="text"
           value={niya}
           onChange={(e) => setNiya(e.target.value)}
-          placeholder="مثال: شراء بيت، سفر، عمل جديد..."
+          placeholder="مثال: شراء حاجة، سفر، عمل جديد..."
           style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #045c40", backgroundColor: "#022e1f", color: "#fff", marginBottom: "16px", boxSizing: "border-box" }}
         />
 
         <button
           onClick={handleGetIstikhara}
           disabled={loading}
-          style={{ width: "100%", padding: "14px", backgroundColor: "#d4af37", color: "#022e1f", border: "none", borderRadius: "8px", fontWeight: "bold", fontSize: "16px", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center" }}
+          style={{ width: "100%", padding: "14px", backgroundColor: "#d4af37", color: "#022e1f", border: "none", borderRadius: "8px", fontWeight: "bold", fontSize: "16px", cursor: "pointer" }}
         >
-          {loading ? "جاري سحب الآية المباركة... 🔮" : "🔮 اطلب الاستخارة بالقرآن الكريم"}
+          {loading ? "جاري سحب الآية المباركة... 🔮" : "🔮 اطلب الاستخارة"}
         </button>
       </div>
 
       {result && (
-        <div style={{ backgroundColor: "#03422e", padding: "20px", borderRadius: "12px", border: "1px solid #d4af37", lineHeight: "1.8", whiteSpace: "pre-line" }}>
-          {result}
+        <div style={{ backgroundColor: "#03422e", padding: "20px", borderRadius: "12px", border: "1px solid #d4af37", lineHeight: "1.8" }}>
+          <h3 style={{ color: "#d4af37", borderBottom: "1px solid #045c40", paddingBottom: "8px", marginBottom: "12px", textAlign: "center" }}>🔮 نتيجة الاستخارة المباركة</h3>
+          <p style={{ fontSize: "18px", fontWeight: "bold", textAlign: "center", color: "#fff", backgroundColor: "#022e1f", padding: "12px", borderRadius: "8px", margin: "12px 0" }}>
+            " {result.ayahText} "
+          </p>
+          <p style={{ color: "#a3c0b5", fontSize: "14px" }}>📖 <b>الموقع:</b> سورة {result.surah} | الآية: {result.ayahNumber} | الصفحة: {result.page}</p>
+          <p style={{ fontSize: "16px", fontWeight: "bold", margin: "10px 0" }}>📊 <b>الحكم:</b> {result.result}</p>
+          <p style={{ color: "#e2ece9" }}>📝 <b>التفسير والتدبر:</b> {result.explanation}</p>
+          <p style={{ fontSize: "12px", color: "#a3c0b5", textAlign: "center", marginTop: "15px", fontStyle: "italic" }}>
+            * ينصح بالصلاة على محمد وآل محمد وقراءة سورة الإخلاص ثلاثاً *
+          </p>
         </div>
       )}
     </div>
