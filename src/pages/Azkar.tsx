@@ -13,12 +13,12 @@ export function Azkar() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
   const tabs = [
-    { id: 'monajat', name: '15 من المناجاة' },
-    { id: 'tasbehat', name: '7 تسبيحات' },
+    { id: 'monajat', name: ' من المناجاة' },
+    { id: 'tasbehat', name: ' تسبيحات' },
     { id: 'taqebat', name: 'تعقيبات الصلاة' },
-    { id: 'weekDuas', name: 'أدعية الأيام' },
+    { id: 'weekDuas', name: 'أدعية الايام' },
     { id: 'generalDuas', name: 'أدعية عامة' },
-    { id: 'hujaj', name: 'الصلاة على الحجج' }
+    { id: 'hujaj', name: 'الصلاة على الحجج الطاهرين ' }
   ];
 
   const getTabContent = () => {
