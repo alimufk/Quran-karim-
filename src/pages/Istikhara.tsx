@@ -153,6 +153,7 @@ export function Istikhara() {
           <p style={{ color: "#e2ece9" }}>📝 <b>التفسير والتدبر:</b> {result.explanation}</p>
           <p style={{ fontSize: "12px", color: "#a3c0b5", textAlign: "center", marginTop: "15px", fontStyle: "italic" }}>
             * ينصح بالصلاة على محمد وآل محمد وقراءة سورة الإخلاص ثلاثاً *
+      export default Istikhara;
           </p>
         </div>
       )}
