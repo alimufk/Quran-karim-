@@ -195,7 +195,7 @@ async function startServer() {
 
   // Initialize GoogleGenAI client dynamically on each call (to pick up runtime key updates and avoid caching stale client)
   function getGeminiClient() {
-    const key = "AQ..AbRn6JFJQJD3HdXOF96cmfvQM7EBN8onoq9W4chtsyU44wGw";
+    const key = "Ab8RN6JFQJQD3XHdxOF96cmfvQM7EBN8onoq9W4chtsyU44wGw";
 
     if (!key) {
       throw new Error("GEMINI_API_KEY environment variable is required.");
