@@ -13,8 +13,15 @@ export default defineConfig(() => {
     },
     build: {
       rollupOptions: {
-        // الحل القاطع: إجبار الرول اب على معاملة fsevents وحزم النود كملفات خارجية وتخطيها
-        external: (id) => id.includes('fsevents') || id.startsWith('node:') || ['path', 'fs', 'express'].includes(id)
+        // الحل القاطع: تخطي حزم النود وحزم التحليل المسبق مثل fdir و fsevents بالكامل لمنع كسر البناء
+        external: (id) => {
+          return (
+            id.includes('fsevents') || 
+            id.includes('fdir') || 
+            id.startsWith('node:') || 
+            ['path', 'fs', 'express', 'module'].includes(id)
+          );
+        }
       }
     },
     server: {
