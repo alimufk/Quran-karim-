@@ -48,13 +48,13 @@ export const taqebatList: ZikrItem[] = [
 ];
 
 export const weekDuas: ZikrItem[] = [
-  { id: 1, title: "دعاء يوم السبت", text: `بِسْمِ اللهِ كَلِمَةِ الْمُعْتَصِمِينَ، وَمَقَالَةِ الْمُتَحَرِّزِينَ...`, audioUrl: "/audio/dua_sat.mp3" },
-  { id: 2, title: "دعاء يوم الأحد", text: `بِسْمِ اللهِ الَّذِي لا أَرْجُو إِلا فَضْلَهُ، وَلا أَخْشَى إِلا عَدْلَهُ...`, audioUrl: "/audio/dua_sun.mp3" },
-  { id: 3, title: "دعاء يوم الاثنين", text: `الْحَمْدُ للهِ الَّذِي لَمْ يُشْهِدْ أَحَداً حِينَ فَطَرَ السَّمَاوَاتِ وَالأَرْضَ...`, audioUrl: "/audio/dua_mon.mp3" },
-  { id: 4, title: "دعاء يوم الثلاثاء", text: `الْحَمْدُ للهِ وَالْحَمْدُ حَقُّهُ كَمَا يَسْتَحِقُّهُ حَمْداً كَثِيراً...`, audioUrl: "/audio/dua_tue.mp3" },
-  { id: 5, title: "دعاء يوم الأربعاء", text: `الْحَمْدُ للهِ الَّذِي جَعَلَ اللَّيْلَ لِبَاساً، وَالنَّوْمَ سُباتاً...`, audioUrl: "/audio/dua_wed.mp3" },
-  { id: 6, title: "دعاء يوم الخميس", text: `الْحَمْدُ للهِ الَّذِي أَذْهَبَ اللَّيْلَ مُظْلِماً بِقُدْرَتِهِ، وَجَاءَ بِالنَّهَارِ مُبْصِراً بِرَحْمَتِهِ...`, audioUrl: "/audio/dua_thu.mp3" },
-  { id: 7, title: "دعاء يوم الجمعة", text: `الْحَمْدُ للهِ الأَوَّلِ قَبْلَ الإِنْشَاءِ وَالإِحْيَاءِ، وَالآخِرِ بَعْدَ فَنَاءِ الأَشْيَاءِ...`, audioUrl: "/audio/dua_fri.mp3" }
+  { id: 1, title: "كتاب السقيفة", text: `علي مع الخلفاء...`, audioUrl: "https://b.top4top.io/m_3854mgkhn0.mp3" },
+  { id: 2, title: "كتاب السقيفة", text: `تأثير دخول المهاجرين في اجتماع الانصار ...`, audioUrl: "https://g.top4top.io/m_3854jkr5a0.mp3" },
+  { id: 3, title: "كتاب السقيفة", text: `الدوافع لاجتماع السقيفة...`, audioUrl: "https://e.top4top.io/m_38547eovk0.mp3" },
+  { id: 4, title: "كتاب السقيفة", text: `تدبير النبي لمنع الخلاف ...`, audioUrl: "https://g.top4top.io/m_3854v2azl0.mp3" },
+  { id: 5, title: "كتاب السقيفة", text: `موقف النبي اتجاه امر الخلافة...`, audioUrl: "https://a.top4top.io/m_3854denou0.mp3" },
+  { id: 6, title: "كتاب السقيفة", text: `تأثير العقيدة على المؤلف واضطراب التاريخ...`, audioUrl: "https://g.top4top.io/m_3854agzml0.mp3" },
+  { id: 7, title: "كتاب السقيفة", text: `الْحَمْدُ للهِ الأَوَّلِ قَبْلَ الإِنْشَاءِ وَالإِحْيَاءِ، وَالآخِرِ بَعْدَ فَنَاءِ الأَشْيَاءِ...`, audioUrl: "/audio/dua_fri.mp3" }
 ];
 
 export const generalDuas: ZikrItem[] = [
@@ -90,8 +90,8 @@ export const azkarData: Record<string, ZikrSection> = {
     items: taqebatList
   },
   weekDuas: {
-    title: "أدعية الأيام",
-    subtitle: "الأدعية المخصصة لكل يوم من أيام الأسبوع",
+    title: "كتاب السقيفة",
+    subtitle: "الخطب المخصصة لكتاب السقيفة ",
     items: weekDuas
   },
   generalDuas: {
