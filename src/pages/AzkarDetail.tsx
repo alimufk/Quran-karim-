@@ -14,7 +14,7 @@ import {
   Check 
 } from 'lucide-react';
 
-export default function AzkarDetail() {
+  export function AzkarDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
