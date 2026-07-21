@@ -16,27 +16,27 @@ export const monajatList: ZikrItem[] = [
     id: 1, 
     title: "المناجاة الأولى: مناجاة التائبين", 
     text: "إِلَهِي أَلْبَسَتْنِي الْخَطَايَا ثَوْبَ مَذَلَّتِي...",
-    audioUrl: "/audio/monajat_01.mp3" // مثال لملف الصوت
+    audioUrl: "https://d.top4top.io/m_385457vx30.mp3" // مثال لملف الصوت
   },
   { 
     id: 2, 
     title: "المناجاة الثانية: مناجاة الشاكين", 
     text: "إِلَهِي إِلَيْكَ أَشْكُو نَفْساً بِالسُّوءِ أَمَّارَةً...",
-    audioUrl: "/audio/monajat_02.mp3"
+    audioUrl: "https://a.top4top.io/m_3854m3zl90.mp3"
   },
-  { id: 3, title: "المناجاة الثالثة: مناجاة الخائفين", text: "إِلَهِي أَتَرَاكَ...", audioUrl: "/audio/monajat_03.mp3" },
-  { id: 4, title: "المناجاة الرابعة: مناجاة الراجين", text: "يَا مَنْ إِذَا سَأَلَهُ...", audioUrl: "/audio/monajat_04.mp3" },
-  { id: 5, title: "المناجاة الخامسة: مناجاة الراغبين", text: "إِلَهِي إِنْ كَانَ قَلَّ زَادِي...", audioUrl: "/audio/monajat_05.mp3" },
-  { id: 6, title: "المناجاة السادسة: مناجاة الشاكرين", text: "إِلَهِي أَذْهَلَنِي...", audioUrl: "/audio/monajat_06.mp3" },
-  { id: 7, title: "المناجاة السابعة: مناجاة المطيعين", text: "اللَّهُمَّ أَلْهِمْنَا طَاعَتَكَ...", audioUrl: "/audio/monajat_07.mp3" },
-  { id: 8, title: "المناجاة الثامنة: مناجاة المريدين", text: "سُبْحَانَكَ مَا أَضْيَقَ...", audioUrl: "/audio/monajat_08.mp3" },
-  { id: 9, title: "المناجاة التاسعة: مناجاة المحبين", text: "إِلَهِي مَنْ ذَا الَّذِي ذَاقَ...", audioUrl: "/audio/monajat_09.mp3" },
-  { id: 10, title: "المناجاة العاشرة: مناجاة المتوسلين", text: "إِلَهِي لَيْسَ لِي وَسِيلَةٌ...", audioUrl: "/audio/monajat_10.mp3" },
-  { id: 11, title: "المناجاة الحادية عشرة: مناجاة Mفتقرين", text: "إِلَهِي كَسْرِي لا يَجْبُرُهُ...", audioUrl: "/audio/monajat_11.mp3" },
-  { id: 12, title: "المناجاة الثانية عشرة: مناجاة العارفين", text: "إِلَهِي فَاجْعَلْنَا...", audioUrl: "/audio/monajat_12.mp3" },
-  { id: 13, title: "المناجاة الثالثة عشرة: مناجاة الذاكرين", text: "إِلَهِي لَوْلا الْوَاجِبُ...", audioUrl: "/audio/monajat_13.mp3" },
-  { id: 14, title: "المناجاة الرابعة عشرة: مناجاة المعتصمين", text: "اللَّهُمَّ يَا مَلاذَ اللائِذِينَ...", audioUrl: "/audio/monajat_14.mp3" },
-  { id: 15, title: "المناجاة الخامسة عشرة: مناجاة الزاهدين", text: "إِلَهِي أَسْكَنْتَنَا دَاراً...", audioUrl: "/audio/monajat_15.mp3" }
+  { id: 3, title: "المناجاة الثالثة: مناجاة الخائفين", text: "إِلَهِي أَتَرَاكَ...", audioUrl: "https://i.top4top.io/m_3854wpbkn0.mp3" },
+  { id: 4, title: "المناجاة الرابعة: مناجاة الراجين", text: "يَا مَنْ إِذَا سَأَلَهُ...", audioUrl: "https://e.top4top.io/m_3854pmo4q0.mp3" },
+  { id: 5, title: "المناجاة الخامسة: مناجاة الراغبين", text: "إِلَهِي إِنْ كَانَ قَلَّ زَادِي...", audioUrl: "https://i.top4top.io/m_3854w37540.mp3" },
+  { id: 6, title: "المناجاة السادسة: مناجاة الشاكرين", text: "إِلَهِي أَذْهَلَنِي...", audioUrl: "https://d.top4top.io/m_3854ntzuh0.mp3" },
+  { id: 7, title: "المناجاة السابعة: مناجاة المطيعين", text: "اللَّهُمَّ أَلْهِمْنَا طَاعَتَكَ...", audioUrl: "https://k.top4top.io/m_3854soc0z0.mp3" },
+  { id: 8, title: "المناجاة الثامنة: مناجاة المريدين", text: "سُبْحَانَكَ مَا أَضْيَقَ...", audioUrl: "https://d.top4top.io/m_3854o6xq60.mp3" },
+  { id: 9, title: "المناجاة التاسعة: مناجاة المحبين", text: "إِلَهِي مَنْ ذَا الَّذِي ذَاقَ...", audioUrl: "https://k.top4top.io/m_3854hchmy0.mp3" },
+  { id: 10, title: "المناجاة العاشرة: مناجاة المتوسلين", text: "إِلَهِي لَيْسَ لِي وَسِيلَةٌ...", audioUrl: "https://e.top4top.io/m_3854gu5xp0.mp3" },
+  { id: 11, title: "المناجاة الحادية عشرة: مناجاة Mفتقرين", text: "إِلَهِي كَسْرِي لا يَجْبُرُهُ...", audioUrl: "https://i.top4top.io/m_3854b02my0.mp3" },
+  { id: 12, title: "المناجاة الثانية عشرة: مناجاة العارفين", text: "إِلَهِي فَاجْعَلْنَا...", audioUrl: "https://d.top4top.io/m_3854eqqtp0.mp3" },
+  { id: 13, title: "المناجاة الثالثة عشرة: مناجاة الذاكرين", text: "إِلَهِي لَوْلا الْوَاجِبُ...", audioUrl: "https://h.top4top.io/m_3854u8ogx0.mp3" },
+  { id: 14, title: "المناجاة الرابعة عشرة: مناجاة المعتصمين", text: "اللَّهُمَّ يَا مَلاذَ اللائِذِينَ...", audioUrl: "https://l.top4top.io/m_38543it0z0.mp3" },
+  { id: 15, title: "المناجاة الخامسة عشرة: مناجاة الزاهدين", text: "إِلَهِي أَسْكَنْتَنَا دَاراً...", audioUrl: "https://b.top4top.io/m_3854x53qi0.mp3" }
 ];
 
 export const tasbehatList: ZikrItem[] = [
@@ -50,11 +50,11 @@ export const tasbehatList: ZikrItem[] = [
 ];
 
 export const taqebatList: ZikrItem[] = [
-  { id: 1, title: "تعقيب صلاة الفجر", text: "أَصْبَحْتُ فِي أَمَانِ اللهِ...", audioUrl: "/audio/taqeb_fajr.mp3" },
-  { id: 2, title: "تعقيب صلاة الظهر", text: "لا إِلَهَ إِلا اللهُ الْعَظِيمُ...", audioUrl: "/audio/taqeb_dhuhr.mp3" },
-  { id: 3, title: "تعقيب صلاة العصر", text: "أَسْتَغْفِرُ اللهَ الَّذِي...", audioUrl: "/audio/taqeb_asr.mp3" },
-  { id: 4, title: "تعقيب صلاة المغرب", text: "إِنَّ اللهَ وَمَلائِكَتَهُ...", audioUrl: "/audio/taqeb_maghrib.mp3" },
-  { id: 5, title: "تعقيب صلاة العشاء", text: "اللَّهُمَّ إِنَّهُ لَيْسَ لِي عِلْمٌ...", audioUrl: "/audio/taqeb_isha.mp3" }
+  { id: 1, title: "تعقيب صلاة الفجر", text: "أَصْبَحْتُ فِي أَمَانِ اللهِ...", audioUrl: "https://g.top4top.io/m_3854zueod0.mp3" },
+  { id: 2, title: "تعقيب صلاة الظهر", text: "لا إِلَهَ إِلا اللهُ الْعَظِيمُ...", audioUrl: "https://j.top4top.io/m_3854n43jd0.mp3" },
+  { id: 3, title: "تعقيب صلاة العصر", text: "أَسْتَغْفِرُ اللهَ الَّذِي...", audioUrl: "https://c.top4top.io/m_3854kj2160.mp3" },
+  { id: 4, title: "تعقيب صلاة المغرب", text: "إِنَّ اللهَ وَمَلائِكَتَهُ...", audioUrl: "https://a.top4top.io/m_3854mjb5n0.mp3" },
+  { id: 5, title: "تعقيب صلاة العشاء", text: "اللَّهُمَّ إِنَّهُ لَيْسَ لِي عِلْمٌ...", audioUrl: "https://e.top4top.io/m_3854pq7lf0.mp3" }
 ];
 
 export const weekDuas: ZikrItem[] = [
