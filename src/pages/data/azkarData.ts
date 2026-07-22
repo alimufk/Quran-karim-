@@ -128,7 +128,12 @@ export const HujajPrayers: ZikrItem[] = [
   { id: 4, title: "4. الصلاة على الإمامين الحسن والحسين (ع)", text: `اللَّهُمَّ صَلِّ عَلَى الْحَسَنِ وَالْحُسَيْنِ سَيِّدَيْ شَبَابِ أَهْلِ الْجَنَّةِ...`, audioUrl: "/audio/pr_hasan_hussain.mp3" },
   { id: 5, title: "5. الصلاة على بقية الأئمة الأطهار والحجة القائم (عج)", text: `اللَّهُمَّ صَلِّ عَلَى حُجَّتِكَ وَوَلِيِّ أَمْرِكَ الْقَائِمِ الْمُنْتَظَرِ...`, audioUrl: "/audio/pr_mahdi.mp3" }
 ];
-
+export const adeiatalianbia: zikrItem[]=[
+  { id: 1, title: " ", text: ` `, audioUrl:" "}, 
+  { id: 2, title: " ", text: ``, audioUrl:" "}, 
+  { id: 3, title: " ", text: ``, audioUrl:" "}, 
+  { id: 4, title: " ", text: ``, audioUrl:" "} 
+  ]; 
 export const azkarData: Record<string, ZikrSection> = {
   monajat: {
     title: "15 من المناجاة",
@@ -159,5 +164,10 @@ export const azkarData: Record<string, ZikrSection> = {
     title: "الصلاة على الحجج",
     subtitle: "الصلوات المأثورة على النبي والأئمة الأطهار (ع)",
     items: HujajPrayers
-  }
+  }, 
+  adeiat: {
+    title: " ادعية الانبياء(ع) ", 
+    subtitle: " الادعية المأثورة للانبياء الاكرام (ع) ", 
+    items: adeiatAlianbia
+  } 
 };
