@@ -99,13 +99,13 @@ export const weekDuas: ZikrItem[] = [
 ];
 
 export const generalDuas: ZikrItem[] = [
-  { id: 1, title: "1. خطب نهج البلاغة", text: ` `, audioUrl: " " },
-  { id: 2, title: "2. خطب نهج البلاغة", text: ` `, audioUrl:" "}, 
-  { id: 3, title: "3. خطب نهج البلاغة", text: `  `, audioUrl: " " },
-  { id: 4, title: "4. خطب نهج البلاغة", text: ` `, audioUrl: " " },
-  { id: 5, title: "5. خطب نهج البلاغة", text: ` `, audioUrl: " " }, 
-  { id: 6, title: "6. خطب نهج البلاغة", text: ` `, audioUrl: " " },
-  { id: 7, title: "7. خطب نهج البلاغة", text: ` `, audioUrl:" "}, 
+  { id: 1, title: "1. خطب نهج البلاغة", text: ` `, audioUrl: "https://h.top4top.io/m_3855ewx130.mp3" },
+  { id: 2, title: "2. خطب نهج البلاغة", text: ` `, audioUrl:"https://j.top4top.io/m_38557j4iy0.mp3"}, 
+  { id: 3, title: "3. خطب نهج البلاغة", text: `  `, audioUrl: "https://d.top4top.io/m_3855s52d70.mp3" },
+  { id: 4, title: "4. خطب نهج البلاغة", text: ` `, audioUrl: "https://i.top4top.io/m_3855vrjxt0.mp3" },
+  { id: 5, title: "5. خطب نهج البلاغة", text: ` `, audioUrl: "https://l.top4top.io/m_3855gqbto0.mp3" }, 
+  { id: 6, title: "6. خطب نهج البلاغة", text: ` `, audioUrl: "https://c.top4top.io/m_3855tlzr70.mp3" },
+  { id: 7, title: "7. خطب نهج البلاغة", text: ` `, audioUrl:"https://h.top4top.io/m_3855qb88j0.mp3"}, 
   { id: 8, title: "8. خطب نهج البلاغة", text: `  `, audioUrl: " " },
   { id: 9, title: "9. خطب نهج البلاغة", text: ` `, audioUrl: " " },
   { id: 10, title: "10. خطب نهج البلاغة", text: ` `, audioUrl: " " }, 
@@ -113,7 +113,7 @@ export const generalDuas: ZikrItem[] = [
   { id: 12, title: "12. خطب نهج البلاغة", text: ` `, audioUrl:" "}, 
   { id: 13, title: "13. خطب نهج البلاغة", text: `  `, audioUrl: " " },
   { id: 14, title: "14. خطب نهج البلاغة", text: ` `, audioUrl: " " },
-  { id: 15, title: "15. خطب نهج البلاغة", text: ` `, audioUrl: " " }
+  { id: 15, title: "15. خطب نهج البلاغة", text: ` `, audioUrl: " " }, 
   { id: 16, title: "16. خطب نهج البلاغة", text: `... `, audioUrl: " " },
   { id: 17, title: "17. خطب نهج البلاغة", text: ` `, audioUrl: "gghhjj"}, 
   { id: 18, title: "18. خطب نهج البلاغة", text: `  `, audioUrl: " " },
