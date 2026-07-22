@@ -211,13 +211,14 @@ const wallpapersData: Wallpaper[] = [
     description: 'الخطوط العربية الحديثة',
   }, 
   {
-    id:'', 
-    title:'', 
-    category:'', 
-    categoryLabel:'', 
-    src:'', 
-    location:'', 
-    description:'',
+    id: 'A Quranic Image', 
+    title: 'بسم الله الرحمن الرحيم ', 
+    category: 'shrines', 
+    categoryLabel: 'الخط العربي والزخارف', 
+    src:  'https://g.top4top.io/p_3855z6c310.jpg', 
+    location: 'فن اسلامي حديث', 
+    description: 'مخطوطات جميلة',
+  } 
   ];
 
 export function Wallpapers() {
