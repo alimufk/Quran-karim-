@@ -110,15 +110,15 @@ export const generalDuas: ZikrItem[] = [
   { id: 9, title: "9. خطب نهج البلاغة", text: ` في الاستعداد للموت وفي المبادرة الى صالح الاعمال...`, audioUrl: "https://g.top4top.io/m_38552zvy40.mp3" },
   { id: 10, title: "10. خطب نهج البلاغة", text: ` كتاب له علية السلام الى االى عثمان ابن حنيف...`, audioUrl: "https://c.top4top.io/m_38553c5pb0.mp3" }, 
   { id: 11, title: "11. خطب نهج البلاغة", text: ` عهد له (ع) الى محمد ابن ابي بكر حين قلده مصر...`, audioUrl: "https://l.top4top.io/m_3855sf0v70.mp3" },
-  { id: 12, title: "12. خطب نهج البلاغة", text: ` `, audioUrl:"https://i.top4top.io/m_385500e3g0.mp3"}, 
-  { id: 13, title: "13. خطب نهج البلاغة", text: `  `, audioUrl: "https://l.top4top.io/m_38552s69b0.mp3" },
-  { id: 14, title: "14. خطب نهج البلاغة", text: ` `, audioUrl: "https://a.top4top.io/m_3855mn32z0.mp3" },
-  { id: 15, title: "15. خطب نهج البلاغة", text: ` `, audioUrl: "https://f.top4top.io/m_3855lomk50.mp3" }, 
-  { id: 16, title: "16. خطب نهج البلاغة", text: `... `, audioUrl: "https://a.top4top.io/m_3855tj3ar0.mp3" },
-  { id: 17, title: "17. خطب نهج البلاغة", text: ` `, audioUrl: "https://e.top4top.io/m_3855bsdl00.mp3"}, 
-  { id: 18, title: "18. خطب نهج البلاغة", text: `  `, audioUrl: "https://i.top4top.io/m_3855gai9d0.mp3" },
-  { id: 19, title: "19. خطب نهج البلاغة", text: ` `, audioUrl: "https://c.top4top.io/m_3855xrbh00.mp3" },
-  { id: 20, title: "20. خطب نهج البلاغة", text: ` `, audioUrl: "https://e.top4top.io/m_3855t130b0.mp3" }
+  { id: 12, title: "12. خطب نهج البلاغة", text: ` خطبة الامام علي علية السلام يبين فيها فضله وعلمه خطبها بعد النهروان...`, audioUrl:"https://i.top4top.io/m_385500e3g0.mp3"}, 
+  { id: 13, title: "13. خطب نهج البلاغة", text: `  خطبة الامام علي علية السلام في المعروفة في الوسيلة...`, audioUrl: "https://l.top4top.io/m_38552s69b0.mp3" },
+  { id: 14, title: "14. خطب نهج البلاغة", text: ` خطبة الامام علي علية السلام في ذم ابليس على استكباره...`, audioUrl: "https://a.top4top.io/m_3855mn32z0.mp3" },
+  { id: 15, title: "15. خطب نهج البلاغة", text: ` خطبة الامام علي علية السلام في قدرة الله...`, audioUrl: "https://f.top4top.io/m_3855lomk50.mp3" }, 
+  { id: 16, title: "16. خطب نهج البلاغة", text: `خطبة الامام علي علية السلام في اول جمعة على بيعته...`, audioUrl: "https://a.top4top.io/m_3855tj3ar0.mp3" },
+  { id: 17, title: "17. خطب نهج البلاغة", text: ` خطبة الامام علي علية السلام في التوحيد...`, audioUrl: "https://e.top4top.io/m_3855bsdl00.mp3"}, 
+  { id: 18, title: "18. خطب نهج البلاغة", text:  `اللالئ المنثورة من كلام امير المؤمنين علية السلام...`, audioUrl: "https://i.top4top.io/m_3855gai9d0.mp3" },
+  { id: 19, title: "19. خطب نهج البلاغة", text: ` الاربمعائة الوصية الجزء الثاني...`, audioUrl: "https://c.top4top.io/m_3855xrbh00.mp3" },
+  { id: 20, title: "20. خطب نهج البلاغة", text: ` الاربمعائة الوصية الجزء الاول...`, audioUrl: "https://e.top4top.io/m_3855t130b0.mp3" }
 ];
 
 export const HujajPrayers: ZikrItem[] = [
