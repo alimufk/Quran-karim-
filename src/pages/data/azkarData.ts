@@ -128,12 +128,14 @@ export const HujajPrayers: ZikrItem[] = [
   { id: 4, title: "4. الصلاة على الإمامين الحسن والحسين (ع)", text: `اللَّهُمَّ صَلِّ عَلَى الْحَسَنِ وَالْحُسَيْنِ سَيِّدَيْ شَبَابِ أَهْلِ الْجَنَّةِ...`, audioUrl: "/audio/pr_hasan_hussain.mp3" },
   { id: 5, title: "5. الصلاة على بقية الأئمة الأطهار والحجة القائم (عج)", text: `اللَّهُمَّ صَلِّ عَلَى حُجَّتِكَ وَوَلِيِّ أَمْرِكَ الْقَائِمِ الْمُنْتَظَرِ...`, audioUrl: "/audio/pr_mahdi.mp3" }
 ];
-export const adeiatalianbia: zikrItem[]=[
-  { id: 1, title: " ", text: ` `, audioUrl:" "}, 
-  { id: 2, title: " ", text: ``, audioUrl:" "}, 
-  { id: 3, title: " ", text: ``, audioUrl:" "}, 
-  { id: 4, title: " ", text: ``, audioUrl:" "} 
-  ]; 
+
+export const adeiatalianbia: zikrItem[]= [
+  { id: 1, title: "1.دعاء الخضر (ع)", text: ` `, audioUrl:"https://b.top4top.io/m_385579iup0.mp3"}, 
+  { id: 2, title: "2.دعاء النبي ادم (ع)", text: ``, audioUrl:" https://d.top4top.io/m_3855vuefr0.mp3"}, 
+  { id: 3, title: "3. دعاء النبي إبراهيم (ع) ", text: ``, audioUrl:"https://i.top4top.io/m_3855chsfk0.mp3"}, 
+  { id: 4, title: "4. ", text: ``, audioUrl:" "} 
+  ];
+
 export const azkarData: Record<string, ZikrSection> = {
   monajat: {
     title: "15 من المناجاة",
