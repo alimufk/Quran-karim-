@@ -144,7 +144,7 @@ export const adeiatalianbia: zikrItem[]= [
   { id: 4, title: "12. دعاء النبي يعقوب (ع) ", text: ``, audioUrl:" https://a.top4top.io/m_3855tii2u0.mp3"}, 
   { id: 1, title: "13.دعاء النبي يوسف (ع)", text: ` `, audioUrl:"https://j.top4top.io/m_3855fpety9.mp3"}, 
   { id: 2, title: "14.دعاء النبي يونس (ع)", text: ``, audioUrl:" https://g.top4top.io/m_3855rqsps0.mp3"}, 
-  { id: 3, title: "15. دعاء النبي يوشع بن نون (ع) ", text: ``, audioUrl:"https://c.top4top.io/m_3855qs6qr0.mp3"}, 
+  { id: 3, title: "15. دعاء النبي يوشع بن نون (ع) ", text: ``, audioUrl:"https://c.top4top.io/m_3855qs6qr0.mp3"}
   ];
 
 export const azkarData: Record<string, ZikrSection> = {
