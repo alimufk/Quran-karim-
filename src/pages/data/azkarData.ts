@@ -99,26 +99,26 @@ export const weekDuas: ZikrItem[] = [
 ];
 
 export const generalDuas: ZikrItem[] = [
-  { id: 1, title: "1. خطب نهج البلاغة", text: ` `, audioUrl: "https://h.top4top.io/m_3855ewx130.mp3" },
-  { id: 2, title: "2. خطب نهج البلاغة", text: ` `, audioUrl:"https://j.top4top.io/m_38557j4iy0.mp3"}, 
-  { id: 3, title: "3. خطب نهج البلاغة", text: `  `, audioUrl: "https://d.top4top.io/m_3855s52d70.mp3" },
-  { id: 4, title: "4. خطب نهج البلاغة", text: ` `, audioUrl: "https://i.top4top.io/m_3855vrjxt0.mp3" },
-  { id: 5, title: "5. خطب نهج البلاغة", text: ` `, audioUrl: "https://l.top4top.io/m_3855gqbto0.mp3" }, 
-  { id: 6, title: "6. خطب نهج البلاغة", text: ` `, audioUrl: "https://c.top4top.io/m_3855tlzr70.mp3" },
-  { id: 7, title: "7. خطب نهج البلاغة", text: ` `, audioUrl:"https://h.top4top.io/m_3855qb88j0.mp3"}, 
-  { id: 8, title: "8. خطب نهج البلاغة", text: `  `, audioUrl: " " },
-  { id: 9, title: "9. خطب نهج البلاغة", text: ` `, audioUrl: " " },
-  { id: 10, title: "10. خطب نهج البلاغة", text: ` `, audioUrl: " " }, 
-  { id: 11, title: "11. خطب نهج البلاغة", text: ` `, audioUrl: " " },
-  { id: 12, title: "12. خطب نهج البلاغة", text: ` `, audioUrl:" "}, 
-  { id: 13, title: "13. خطب نهج البلاغة", text: `  `, audioUrl: " " },
-  { id: 14, title: "14. خطب نهج البلاغة", text: ` `, audioUrl: " " },
-  { id: 15, title: "15. خطب نهج البلاغة", text: ` `, audioUrl: " " }, 
-  { id: 16, title: "16. خطب نهج البلاغة", text: `... `, audioUrl: " " },
-  { id: 17, title: "17. خطب نهج البلاغة", text: ` `, audioUrl: "gghhjj"}, 
-  { id: 18, title: "18. خطب نهج البلاغة", text: `  `, audioUrl: " " },
-  { id: 19, title: "19. خطب نهج البلاغة", text: ` `, audioUrl: " " },
-  { id: 20, title: "20. خطب نهج البلاغة", text: ` `, audioUrl: " " }
+  { id: 1, title: "1. خطب نهج البلاغة", text: `يذكر فيها ابتداء من خلق السموات والارض وخلق ادم...`, audioUrl: "https://h.top4top.io/m_3855ewx130.mp3" },
+  { id: 2, title: "2. خطب نهج البلاغة", text: ` لما قبض رسول الله (ع) وخاطبه العباس وابو سفيان...`, audioUrl:"https://j.top4top.io/m_38557j4iy0.mp3"}, 
+  { id: 3, title: "3. خطب نهج البلاغة", text: `  لابنه محمد ابن الحنفية لما اعطاه الراية يوم الجمل...`, audioUrl: "https://d.top4top.io/m_3855s52d70.mp3" },
+  { id: 4, title: "4. خطب نهج البلاغة", text: `في يوم صفين امر الناس بالصلح...`, audioUrl: "https://i.top4top.io/m_3855vrjxt0.mp3" },
+  { id: 5, title: "5. خطب نهج البلاغة", text: ` في صفت خلق ادم...`, audioUrl: "https://l.top4top.io/m_3855gqbto0.mp3" }, 
+  { id: 6, title: "6. خطب نهج البلاغة", text: ` في صفت خلق الدنيا...`, audioUrl: "https://c.top4top.io/m_3855tlzr70.mp3" },
+  { id: 7, title: "7. خطب نهج البلاغة", text: ` في صفات اخ في الله...`, audioUrl:"https://h.top4top.io/m_3855qb88j0.mp3"}, 
+  { id: 8, title: "8. خطب نهج البلاغة", text: `  في ذمة اختلاف الذين يدعون العلم...`, audioUrl: "https://e.top4top.io/m_38553ui649.mp3" },
+  { id: 9, title: "9. خطب نهج البلاغة", text: ` في الاستعداد للموت وفي المبادرة الى صالح الاعمال...`, audioUrl: "https://g.top4top.io/m_38552zvy40.mp3" },
+  { id: 10, title: "10. خطب نهج البلاغة", text: ` كتاب له علية السلام الى االى عثمان ابن حنيف...`, audioUrl: "https://c.top4top.io/m_38553c5pb0.mp3" }, 
+  { id: 11, title: "11. خطب نهج البلاغة", text: ` عهد له (ع) الى محمد ابن ابي بكر حين قلده مصر...`, audioUrl: "https://l.top4top.io/m_3855sf0v70.mp3" },
+  { id: 12, title: "12. خطب نهج البلاغة", text: ` `, audioUrl:"https://i.top4top.io/m_385500e3g0.mp3"}, 
+  { id: 13, title: "13. خطب نهج البلاغة", text: `  `, audioUrl: "https://l.top4top.io/m_38552s69b0.mp3" },
+  { id: 14, title: "14. خطب نهج البلاغة", text: ` `, audioUrl: "https://a.top4top.io/m_3855mn32z0.mp3" },
+  { id: 15, title: "15. خطب نهج البلاغة", text: ` `, audioUrl: "https://f.top4top.io/m_3855lomk50.mp3" }, 
+  { id: 16, title: "16. خطب نهج البلاغة", text: `... `, audioUrl: "https://a.top4top.io/m_3855tj3ar0.mp3" },
+  { id: 17, title: "17. خطب نهج البلاغة", text: ` `, audioUrl: "https://e.top4top.io/m_3855bsdl00.mp3"}, 
+  { id: 18, title: "18. خطب نهج البلاغة", text: `  `, audioUrl: "https://i.top4top.io/m_3855gai9d0.mp3" },
+  { id: 19, title: "19. خطب نهج البلاغة", text: ` `, audioUrl: "https://c.top4top.io/m_3855xrbh00.mp3" },
+  { id: 20, title: "20. خطب نهج البلاغة", text: ` `, audioUrl: "https://e.top4top.io/m_3855t130b0.mp3" }
 ];
 
 export const HujajPrayers: ZikrItem[] = [
