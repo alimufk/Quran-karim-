@@ -133,7 +133,18 @@ export const adeiatalianbia: zikrItem[]= [
   { id: 1, title: "1.دعاء الخضر (ع)", text: ` `, audioUrl:"https://b.top4top.io/m_385579iup0.mp3"}, 
   { id: 2, title: "2.دعاء النبي ادم (ع)", text: ``, audioUrl:" https://d.top4top.io/m_3855vuefr0.mp3"}, 
   { id: 3, title: "3. دعاء النبي إبراهيم (ع) ", text: ``, audioUrl:"https://i.top4top.io/m_3855chsfk0.mp3"}, 
-  { id: 4, title: "4. ", text: ``, audioUrl:" "} 
+  { id: 4, title: "4. دعاء النبي ادريس(ع) ", text: ``, audioUrl:" https://h.top4top.io/m_3855ximv59.mp3"}, 
+  { id: 1, title: "5.دعاء النبي ايوب (ع)", text: ` `, audioUrl:"https://i.top4top.io/m_3855jw5i69.mp3"}, 
+  { id: 2, title: "6.دعاء النبي داود (ع)", text: ``, audioUrl:" https://b.top4top.io/m_3855ee11j0.mp3"}, 
+  { id: 3, title: "7. دعاء النبي عيسى (ع) ", text: ``, audioUrl:"https://g.top4top.io/m_3855bd9hi0.mp3"}, 
+  { id: 4, title: "8. دعاء النبي محمد1(ع) ", text: ``, audioUrl:" https://a.top4top.io/m_3855hxf8b0.mp3"},
+  { id: 5, title: "9.دعاء محمد2 (ع)", text: ` `, audioUrl:"https://i.top4top.io/m_3855gcc830.mp3"}, 
+  { id: 2, title: "10.دعاء النبي موسى (ع)", text: ``, audioUrl:" https://c.top4top.io/m_38551ygbs0.mp3"}, 
+  { id: 3, title: "11. دعاء النبي نوح (ع) ", text: ``, audioUrl:"https://j.top4top.io/m_38550ozr70.mp3"}, 
+  { id: 4, title: "12. دعاء النبي يعقوب (ع) ", text: ``, audioUrl:" https://a.top4top.io/m_3855tii2u0.mp3"}, 
+  { id: 1, title: "13.دعاء النبي يوسف (ع)", text: ` `, audioUrl:"https://j.top4top.io/m_3855fpety9.mp3"}, 
+  { id: 2, title: "14.دعاء النبي يونس (ع)", text: ``, audioUrl:" https://g.top4top.io/m_3855rqsps0.mp3"}, 
+  { id: 3, title: "15. دعاء النبي يوشع بن نون (ع) ", text: ``, audioUrl:"https://c.top4top.io/m_3855qs6qr0.mp3"}, 
   ];
 
 export const azkarData: Record<string, ZikrSection> = {
