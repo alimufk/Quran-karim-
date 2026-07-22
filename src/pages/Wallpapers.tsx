@@ -172,7 +172,7 @@ const wallpapersData: Wallpaper[] = [
     categoryLabel: 'المناسبات الإسلامية',
     src:  'https://j.top4top.io/p_3847lb1da0.jpg',
     location: 'ليالي المناسبات المباركة',
-    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+    description: 'الجمعة يوم مبارك للمسلمين', 
   }, 
   {
     id: 'kazim alghayz',
@@ -181,7 +181,7 @@ const wallpapersData: Wallpaper[] = [
     categoryLabel: 'المناسبات الإسلامية',
     src:  'https://d.top4top.io/p_384707rj00.jpg',
     location: 'النجف الاشرف',
-    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+    description: 'الامام موسى الكاظم علية السلام '
   }, 
   {
     id: 'The month of Shaban',
@@ -190,7 +190,7 @@ const wallpapersData: Wallpaper[] = [
     categoryLabel: 'المناسبات الإسلامية',
     src:  'https://b.top4top.io/p_3847xt4ta0.jpg',
     location: 'ليالي المناسبات المباركة',
-    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
+    description: 'أجواء رجبية من الاشهر المباركة'
   }, 
   {
     id: 'ramadan shahr alkhayr',
@@ -199,8 +199,25 @@ const wallpapersData: Wallpaper[] = [
     categoryLabel: 'المناسبات الإسلامية',
     src:  'https://l.top4top.io/p_3847bohcd0.jpg',
     location: 'ليالي المناسبات المباركة',
-    description: 'أجواء صوفية رائعة تضم هلالاً ذهبياً ونجوماً متلألئة في عمق السماء الليلية تتدلى من قوس أرابيسك بنقوش دقيقة.'
-}
+    description: 'أجواء رمضان المبارك تسوده الاجواء الروحانية'
+  }, 
+  {
+    id: 'Allah, Glorious is His Majesty', 
+    title: 'انا لله وانا الية راجعون', 
+    category: 'shrines', 
+    categoryLabel: 'الخط العربي والزخارف', 
+    src: 'https://j.top4top.io/p_3855h7a4i9.jpg', 
+    location: 'فن اسلامي حديث', 
+    description: 'الخطوط العربية الحديثة',
+  }, 
+  {
+    id:'', 
+    title:'', 
+    category:'', 
+    categoryLabel:'', 
+    src:'', 
+    location:'', 
+    description:'',
   ];
 
 export function Wallpapers() {
