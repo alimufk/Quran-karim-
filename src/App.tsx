@@ -30,7 +30,7 @@ import { useNotifications } from './hooks/useNotifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import GuideDashboard from './pages/GuideDashboard';
 import { CalendarConverter } from './pages/CalendarConverter';
-import { LostAndFound } from './pages/LostAndFound';
+import { SahifaSajjadiyya } from './pages/SahifaSajjadiyya';
 import { Settings } from './pages/Settings'; // تأكد من صحة مسار الملف بالنسبة لـ App.tsx
 
 function AppContent() {
@@ -75,7 +75,7 @@ function AppContent() {
           {/* صفحة الدليل والمسابقات */}
           <Route path="/guide" element={<GuideDashboard />} />
           <Route path="/calendar-converter" element={<CalendarConverter />} />
-          <Route path="/lost-and-found" element={<LostAndFound />} />
+          <Route path="/lost-and-found" element={<SahifaSajjadiyya />} />
           <Route path="/settings" element={<Settings />} />
           
           {/* سطر النجمة لإعادة التوجيه */}
