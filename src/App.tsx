@@ -75,7 +75,7 @@ function AppContent() {
           {/* صفحة الدليل والمسابقات */}
           <Route path="/guide" element={<GuideDashboard />} />
           <Route path="/calendar-converter" element={<CalendarConverter />} />
-          <Route path="/lost-and-found" element={<SahifaSajjadiyya />} />
+          <Route path="/Sahifa" element={<SahifaSajjadiyya />} />
           <Route path="/settings" element={<Settings />} />
           
           {/* سطر النجمة لإعادة التوجيه */}
