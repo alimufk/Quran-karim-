@@ -22,7 +22,7 @@ const sajjadSupplications = [
   }
 ];
 
-export function LostAndFound() {
+export function SahifaSajjadiyya() {
   const navigate = useNavigate();
 
   // حالات التحكم بالنص والثيمات
