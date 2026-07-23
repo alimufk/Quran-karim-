@@ -30,7 +30,7 @@ import { useNotifications } from './hooks/useNotifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import GuideDashboard from './pages/GuideDashboard';
 import { CalendarConverter } from './pages/CalendarConverter';
-import   SahifaSajjadiyya from './pages/SahifaSajjadiyya';
+import { SahifaSajjadiyya } from './pages/SahifaSajjadiyya';
 import { Settings } from './pages/Settings'; // تأكد من صحة مسار الملف بالنسبة لـ App.tsx
 
 function AppContent() {
