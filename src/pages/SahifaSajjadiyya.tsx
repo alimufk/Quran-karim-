@@ -203,7 +203,7 @@ export function SahifaSajjadiyya() {
               className={`p-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${currentTheme.btnBg}`}
               title="تصغير الخط"
             >
-              <ZoomOut size5={16} /> تصغير
+              <ZoomOut size={16} /> تصغير
             </button>
           </div>
 
