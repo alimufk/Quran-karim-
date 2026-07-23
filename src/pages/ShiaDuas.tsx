@@ -40,7 +40,13 @@ const duasList = [
   { id: 'aliimam_alkazim', name: '(ع)دعاء الامام الكاظم', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_aliimam_alkazim(e)wlid.mp3' },
   { id: 'alkasai', name: 'دعاء حديث الكساء', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_alkasai_eamiralkazmi.mp3' },
   { id: 'alhayeuzmialbalai', name: 'دعاء الهي عظم البلاء', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_alhayeuzmialbalai_mustafaa.mp3' },
-  { id: 'alhialuilli', name: 'دعاء الهي الويل لي للامام السجاد علية السلام', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_alhialuilli_abadhar.mp3' }
+  { id: 'alhialuilli', name: 'دعاء الهي الويل لي للامام السجاد علية السلام', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_alhialuilli_abadhar.mp3' }, 
+  { id: 'aliietiqad', name: 'دعاء الاعتقاد', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_aliietiqad_abadhir' },
+  { id: 'aliahtijab', name: 'دعاء الاحتجاب', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_aliahtijab_basimi.mp3' },
+  { id: 'aliimam_alkazim', name: '(ع)دعاء الامام الكاظم', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_aliimam_alkazim(e)wlid.mp3' },
+  { id: 'alkasai', name: 'دعاء حديث الكساء', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_alkasai_eamiralkazmi.mp3' },
+  { id: 'alhayeuzmialbalai', name: 'دعاء الهي عظم البلاء', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_alhayeuzmialbalai_mustafaa.mp3' },
+  { id: 'alhialuilli', name: 'دعاء الهي الو لي للامام السجاد علية السلام', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_alhialuilli_abadhar.mp3' }
 ];
 
 // 2. قائمة اللطميات الرسمية (تأكد من مطابقة حالة الأحرف الكبيرة والصغيرة للامتداد MP3 في مستودعك)
