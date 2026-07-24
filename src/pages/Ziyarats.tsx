@@ -1,124 +1,72 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, Calendar, ArrowRight, ChevronLeft } from 'lucide-react';
+import { BookOpen, Calendar, ArrowRight, ChevronLeft, Download, CheckCircle2, Loader2, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
-// 1️⃣ الرابط المباشر والمضمون للسيرفر لكي يشتغل الصوت تلقائياً بدون تحميل
+// -------------------------------------------------------------
+// محرك تخزين صوتيات أوفلاين بسيط باستخدام IndexedDB المدمج بالمتصفح
+// -------------------------------------------------------------
+const DB_NAME = 'ShiaZiyaratsAudioDB';
+const STORE_NAME = 'ziyarat_files';
+
+const openAudioDB = (): Promise<IDBDatabase> => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+};
+
+const saveAudioBlob = async (id: string, blob: Blob) => {
+  const db = await openAudioDB();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.put(blob, id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+};
+
+const getAudioBlob = async (id: string): Promise<Blob | null> => {
+  try {
+    const db = await openAudioDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+};
+// -------------------------------------------------------------
+
 const BASE_AUDIO_URL = "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio";
 
 export const ziyaratsData = {
-  ashura: {
-    id: "ashura",
-    title: "زيارة عاشوراء",
-    subtitle: "زيارة الإمام الحسين (ع) في يوم عاشوراء وطوال العام",
-    benefits: "توجب غفران الذنوب، وقضاء الحوائج، وسلامة الدارين، ونيل شفاعة سيد الشهداء عليه السلام.",
-    audioUrl: `${BASE_AUDIO_URL}/ashura.mp3`,
-    arabicText: `اَلسَّلامُ عَلَيْكَ يا أبا عَبْدِاللهِ، اَالسَّلامُ عَلَيْكَ يَا بْنَ رَسُولِ اللهِ، اَالسَّلامُ عَلَيْكَ يَا بْنَ أَمِيرِ الْمُؤْمِنِينَ وَابْنِ سَيِّدِ الْوَصِيِّينَ، اَلسَّلامُ عَلَيْكَ يَا بْنَ فاطِمَةَ سَيِّدَةِ نِساءِ الْعالَمِينَ، اَلسَّلامُ عَلَيْكَ يا ثارَ اللهِ وَابْنُ ثارِهِ وَالْوِتْرَ الْمَوْتُورَ...`
-  },
-  warith: {
-    id: "warith",
-    title: "زيارة وارث",
-    subtitle: "من الزيارات المشهورة للامام الحسين (ع)",
-    benefits: "زيارة عظيمة مروية عن الإمام الصادق (ع) تُبين مقام الإمام الحسين كوارث للأنبياء العظام.",
-    audioUrl: `${BASE_AUDIO_URL}/warith.mp3`,
-    arabicText: `السَّلامُ عَلَيْكَ يا وارِثَ آدَمَ صَفْوَةِ اللهِ، السَّلامُ عَلَيْكَ يا وارِثَ نُوح نَبِيِّ اللهِ، السَّلامُ عَلَيْكَ يا وارِثَ إِبْراهِيمَ خَلِيلِ اللهِ، السَّلامُ عَلَيْكَ يا وارِثَ مُوسى كَلِيمِ اللهِ، السَّلامُ عَلَيْكَ يا وارِثَ عِيسى رُوحِ اللهِ...`
-  },
-  aminullah: {
-    id: "aminullah",
-    title: "زيارة أمين الله",
-    subtitle: "زيارة أمير المؤمنين (ع) المقبولة والمشهورة",
-    benefits: "تعتبر من أعلى الزيارات شأناً واعتباراً، ويُزار بها في جميع الروائع والمشاهد المقرّبة.",
-    audioUrl: `${BASE_AUDIO_URL}/aminullah.mp3`,
-    arabicText: `السَّلامُ عَلَيْكَ يا أَمِينَ اللهِ فِي أَرْضِهِ، وَحُجَّتَهُ عَلَى عِبادِهِ، السَّلامُ عَلَيْكَ يا أَمِيرَ الْمُؤْمِنِينَ، أَشْهَدُ أَنَّكَ جاهَدْتَ فِي اللهِ حَقَّ جِهادِهِ، وَعَمِلْتَ بِكِتابِهِ، وَاتَّبَعْتَ سُنَنَ نَبِيِّهِ صَلَّى اللهُ عَلَيْهِ وَآلِهِ...`
-  },
-  jamia: {
-    id: "jamia",
-    title: "الزيارة الجامعة الكبيرة",
-    subtitle: "أصح وأكمل زيارات الأئمة الأطهار (ع)",
-    benefits: "من أعلى الزيارات سنداً وبلاغةً، تشتمل على بيان مقامات أهل البيت الأخلاقية والكونية الشريفة.",
-    audioUrl: `${BASE_AUDIO_URL}/jamia.mp3`,
-    arabicText: `السَّلامُ عَلَيْكُمْ يا أَهْلَ بَيْتِ النُّبُوَّةِ، وَمَوْضِعَ الرِّسالَةِ، وَمُخْتَلَفَ الْمَلائِكَةِ، وَمَهْبِطَ الْوَحْيِ، وَمَعْدِنَ الرَّحْمَةِ، وَخُزَّانَ الْعِلْمِ، وَمُنْتَهَى الْحِلْمِ، وَأُصُولَ الْكَرَمِ، وَقادَةَ الأُمَمِ...`
-  },
-  aleyasin: {
-    id: "aleyasin",
-    title: "زيارة آل ياسين",
-    subtitle: "زيارة صاحب العصر والزمان الحجة المهدي (عج)",
-    benefits: "مروية عن الناحية المقدسة، وهي الطريق الأسمى للارتباط وتجديد البيعة للإمام الحجة المنتظر.",
-    audioUrl: `${BASE_AUDIO_URL}/aleyasin.mp3`,
-    arabicText: `سَلامٌ عَلى آلِ ياسينَ، السَّلامُ عَلَيْكَ يا داعِيَ اللهِ وَرَبّانِيَ آياتِهِ، السَّلامُ عَلَيْكَ يا بابَ اللهِ وَدَيَّانَ دِينِهِ، السَّلامُ عَلَيْكَ يا خَلِيفَةَ اللهِ وَناصِرَ حَقِّهِ، السَّلامُ عَلَيْكَ يا حُجَّةَ اللهِ وَدَلِيلَ إِرادَتِهِ...`
-  },
-  nahiya: {
-    id: "nahiya",
-    title: "زيارة الناحية المقدسة",
-    subtitle: "الزيارة المروية عن الإمام الحجة في ندبة جده الحسين",
-    benefits: "تعبّر عن عمق الفجيعة والمواساة، وتفصل مصائب كربلاء بلسان المعصوم الحاضر.",
-    audioUrl: `${BASE_AUDIO_URL}/nahiya.mp3`,
-    arabicText: `السَّلامُ عَلى آدَمَ صِفْوَةِ اللهِ مِن خَليقَتِهِ، السَّلامُ عَلى شِيثَ وَلِيِّ اللهِ وَخِيَرَتِهِ، السَّلامُ عَلى إِدْرِيسَ القائِمِ للهِ بِحُجَّتِهِ، السَّلامُ عَلى نُوح المُجابِ في دَعْوَتِهِ...`
-  },
-  arbaeen: {
-    id: "arbaeen",
-    title: "زيارة الأربعين",
-    subtitle: "زيارة يوم العشرين من صفر للإمام الحسين (ع)",
-    benefits: "من علامات المؤمن الخمس المروية عن الإمام الحسن العسكري (ع)، وتجديد لميثاق الولاء.",
-    audioUrl: `${BASE_AUDIO_URL}/arbaeen.mp3`,
-    arabicText: `اَلسَّلامُ عَلى وَلِيِّ اللهِ وَحَبيبِهِ، اَلسَّلامُ عَلى خَليلِ اللهِ وَنَجيبِهِ، اَلسَّلامُ عَلى صَفِيِّ اللهِ وَابْنِ صَفِيِّهِ، اَلسَّلامُ عَلى الْحُسَيْنِ الْمَظْلُومِ الشَّهيدِ، اَلسَّلامُ على أَسيرِ الْكُرُباتِ وَقَتيلِ الْعَبَراتِ...`
-  },
-  saturday: {
-    id: "saturday",
-    title: "زيارة النبي محمد (ص)",
-    subtitle: "زيارة رسول الله الأكرم في يوم السبت",
-    benefits: "تجديد العهد والولاء لرسول الله الأعظم نبي الرحمة وخاتم المرسلين صلوات الله عليه وآله.",
-    audioUrl: `${BASE_AUDIO_URL}/saturday.mp3`,
-    arabicText: `أَشْهَدُ أَنْ لا إِلـهَ إِلاَّ اللهُ وَحْدَهُ لا شَرِيكَ لَهُ، وَأَشْهَدُ أَنَّكَ عَبْدُهُ وَرَسُولُهُ، وَأَنَّكَ مُحَمَّدُ بْنُ عَبْدِ اللهِ، وَأَنَّكَ قَدْ بَلَّغْتَ رِسالاتِ رَبِّكَ، وَنَصَحْتَ لِأُمَتِكَ، وَجاهَدْتَ فِي سَبِيلِ اللهِ بِالْحِكْمَةِ وَالْمَوْعِظَةِ الْحَسَنَةِ...`
-  },
-  sunday: {
-    id: "sunday",
-    title: "زيارة أمير المؤمنين والزهراء (ع)",
-    subtitle: "زيارة يوم الأحد المخصصة للوصي والبتول",
-    benefits: "الارتباط بباب علم رسول الله وأم الأئمة النجباء نيل شفاعتهم الخاصة بيوم الأحد.",
-    audioUrl: `${BASE_AUDIO_URL}/sunday.mp3`,
-    arabicText: `السَّلامُ عَلَيْكَ يا أَمِيرَ الْمُؤْمِنِينَ، السَّلامُ عَلَيْكِ يا سَيِّدَةَ نِساءِ الْعالَمِينَ، السَّلامُ عَلَيْكُما يا حُجَّتَيِ اللهِ عَلى عِبادِهِ، أَتَيْتُكُما زائِراً عارِفاً بِحَقِّكُما، مُسْتَجِيراً بِكُما عِنْدَ اللهِ...`
-  },
-  monday: {
-    id: "monday",
-    title: "زيارة الحسن والحسين (ع)",
-    subtitle: "زيارة سيدي شباب أهل الجنة في يوم الإثنين",
-    benefits: "تدرّ الخير والبركة وتحصّن قارئها ببركة ريحانتي رسول الله الأكرم عليهما السلام.",
-    audioUrl: `${BASE_AUDIO_URL}/monday.mp3`,
-    arabicText: `السَّلامُ عَلَيْكَ يَا بْنَ رَسُولِ رَبِّ الْعالَمِينَ، السَّلامُ عَلَيْكَ يَا بْنَ أَمِيرِ الْمُؤْمِنِينَ، السَّلامُ عَلَيْكَ يَا بْنَ فاطِمَةَ الزَّهْراءِ، السَّلامُ عَلَيْكُما يا سَيِّدَيْ شَبَابِ أَهْلِ الْجَنَّةِ...`
-  },
-  tuesday: {
-    id: "tuesday",
-    title: "زيارة السجاد والباقر والصادق (ع)",
-    subtitle: "زيارة أئمة البقيع في يوم الثلاثاء",
-    benefits: "تقوية البصيرة الدينية والارتباط بجهابذة العلم النبوي ومؤسسي الصرح الجعفري.",
-    audioUrl: `${BASE_AUDIO_URL}/tuesday.mp3`,
-    arabicText: `السَّلامُ عَلَيْكُمْ يا خُزَّانَ عِلْمِ اللهِ، السَّلامُ عَلَيْكُمْ يا تراجِمَةَ وَحْيِ اللهِ، السَّلامُ عَلَيْكُمْ يا أَئِمَّةَ الْهُدى، السَّلامُ عَلَيْكُمْ يا أَعْلامَ التُّقى، أَشْهَدُ أَنَّكُمْ حُجَجُ اللهِ عَلى خَلْقِهِ...`
-  },
-  wednesday: {
-    id: "wednesday",
-    title: "زيارة الكاظم والرضا والجواد والهادي (ع)",
-    subtitle: "زيارة الحجج الأربعة في يوم الأربعاء",
-    benefits: "قضاء الحوائج المستعصية، والأمن من غوائل الزمن ببركة باب الحوائج وغريب طوس والعلويين.",
-    audioUrl: `${BASE_AUDIO_URL}/wednesday.mp3`,
-    arabicText: `السَّلامُ عَلَيْكُمْ يا أَوْلِياءَ اللهِ، السَّلامُ عَلَيْكُمْ يا حُجَجَ اللهِ، السَّلامُ عَلَيْكُمْ يا نُورَ اللهِ فِي ظُلُماتِ الأَرْضِ، السَّلامُ عَلَيْكُمْ صَلَواتُ اللهِ عَلَيْكُمْ وَعَلى أَهْلِ بَيْتِكُمُ الطَّاهِرِينَ...`
-  },
-  thursday: {
-    id: "thursday",
-    title: "زيارة الحسن العسكري (ع)",
-    subtitle: "زيارة الإمام العسكري في يوم الخميس",
-    benefits: "التمهيد والتهيئة النفسية لولاية ابنه الحجة القائم ونيل النورانية القلبية المستمرة.",
-    audioUrl: `${BASE_AUDIO_URL}/thursday.mp3`,
-    arabicText: `السَّلامُ عَلَيْكَ يا وَلِيَّ اللهِ، السَّلامُ عَلَيْكَ يا حُجَّةَ اللهِ وَخالِصَتَهُ، السَّلامُ عَلَيْكَ يا إِمامَ الْمُؤْمِنِينَ، وَوارِثَ الْمُرْسَلِينَ، وَحُجَّةَ رَبِّ الْعالَمِينَ...`
-  },
-  friday: {
-    id: "friday",
-    title: "زيارة الحجة المهدي (عج)",
-    subtitle: "زيارة صاحب الأمر والزمان في يومه المبارك (الجمعة)",
-    benefits: "أعظم طقوس الاستغاثة والندبة وتوسيع دائرة الفرج والارتباط بقطب عالم الإمكان.",
-    audioUrl: `${BASE_AUDIO_URL}/friday.mp3`,
-    arabicText: `السَّلامُ عَلَيْكَ يا حُجَّةَ اللهِ فِي أَرْضِهِ، السَّلامُ عَلَيْكَ يا عَيْنَ اللهِ فِي خَلْقِهِ، السَّلامُ عَلَيْكَ يا نُورَ اللهِ الَّذِي يَهْتَدِي بِهِ الْمُهْتَدُونَ، وَيُفَرَّجُ بِهِ عَنِ الْمُؤْمِنِينَ...`
-  }
+  ashura: { id: "ashura", title: "زيارة عاشوراء", subtitle: "زيارة الإمام الحسين (ع) في يوم عاشوراء وطوال العام", benefits: "توجب غفران الذنوب، وقضاء الحوائج، وسلامة الدارين، ونيل شفاعة سيد الشهداء عليه السلام.", audioUrl: `${BASE_AUDIO_URL}/ashura.mp3`, arabicText: `اَالسَّلامُ عَلَيْكَ يا أبا عَبْدِاللهِ، اَالسَّلامُ عَلَيْكَ يَا بْنَ رَسُولِ اللهِ...` },
+  warith: { id: "warith", title: "زيارة وارث", subtitle: "من الزيارات المشهورة للامام الحسين (ع)", benefits: "زيارة عظيمة مروية عن الإمام الصادق (ع) تُبين مقام الإمام الحسين كوارث للأنبياء العظام.", audioUrl: `${BASE_AUDIO_URL}/warith.mp3`, arabicText: `السَّلامُ عَلَيْكَ يا وارِثَ آدَمَ صَفْوَةِ اللهِ...` },
+  aminullah: { id: "aminullah", title: "زيارة أمين الله", subtitle: "زيارة أمير المؤمنين (ع) المقبولة والمشهورة", benefits: "تعتبر من أعلى الزيارات شأناً واعتباراً، ويُزار بها في جميع الروائع والمشاهد المقرّبة.", audioUrl: `${BASE_AUDIO_URL}/aminullah.mp3`, arabicText: `السَّلامُ عَلَيْكَ يا أَمِينَ اللهِ فِي أَرْضِهِ...` },
+  jamia: { id: "jamia", title: "الزيارة الجامعة الكبيرة", subtitle: "أصح وأكمل زيارات الأئمة الأطهار (ع)", benefits: "من أعلى الزيارات سنداً وبلاغةً، تشتمل على بيان مقامات أهل البيت الأخلاقية والكونية الشريفة.", audioUrl: `${BASE_AUDIO_URL}/jamia.mp3`, arabicText: `السَّلامُ عَلَيْكُمْ يا أَهْلَ بَيْتِ النُّبُوَّةِ...` },
+  aleyasin: { id: "aleyasin", title: "زيارة آل ياسين", subtitle: "زيارة صاحب العصر والزمان الحجة المهدي (عج)", benefits: "مروية عن الناحية المقدسة، وهي الطريق الأسمى للارتباط وتجديد البيعة للإمام الحجة المنتظر.", audioUrl: `${BASE_AUDIO_URL}/aleyasin.mp3`, arabicText: `سَلامٌ عَلى آلِ ياسينَ...` },
+  nahiya: { id: "nahiya", title: "زيارة الناحية المقدسة", subtitle: "الزيارة المروية عن الإمام الحجة في ندبة جده الحسين", benefits: "تعبّر عن عمق الفجيعة والمواساة، وتفصل مصائب كربلاء بلسان المعصوم الحاضر.", audioUrl: `${BASE_AUDIO_URL}/nahiya.mp3`, arabicText: `السَّلامُ عَلى آدَمَ صِفْوَةِ اللهِ...` },
+  arbaeen: { id: "arbaeen", title: "زيارة الأربعين", subtitle: "زيارة يوم العشرين من صفر للإمام الحسين (ع)", benefits: "من علامات المؤمن الخمس المروية عن الإمام الحسن العسكري (ع)، وتجديد لميثاق الولاء.", audioUrl: `${BASE_AUDIO_URL}/arbaeen.mp3`, arabicText: `اَالسَّلامُ عَلى وَلِيِّ اللهِ وَحَبيبِهِ...` },
+  saturday: { id: "saturday", title: "زيارة النبي محمد (ص)", subtitle: "زيارة رسول الله الأكرم في يوم السبت", benefits: "تجديد العهد والولاء لرسول الله الأعظم نبي الرحمة وخاتم المرسلين صلوات الله عليه وآله.", audioUrl: `${BASE_AUDIO_URL}/saturday.mp3`, arabicText: `أَشْهَدُ أَنْ لا إِلـهَ إِلاَّ اللهُ وَحْدَهُ لا شَرِيكَ لَهُ...` },
+  sunday: { id: "sunday", title: "زيارة أمير المؤمنين والزهراء (ع)", subtitle: "زيارة يوم الأحد المخصصة للوصي والبتول", benefits: "الارتباط بباب علم رسول الله وأم الأئمة النجباء نيل شفاعتهم الخاصة بيوم الأحد.", audioUrl: `${BASE_AUDIO_URL}/sunday.mp3`, arabicText: `السَّلامُ عَلَيْكَ يا أَمِيرَ الْمُؤْمِنِينَ...` },
+  monday: { id: "monday", title: "زيارة الحسن والحسين (ع)", subtitle: "زيارة سيدي شباب أهل الجنة في يوم الإثنين", benefits: "تدرّ الخير والبركة وتحصّن قارئها ببركة ريحانتي رسول الله الأكرم عليهما السلام.", audioUrl: `${BASE_AUDIO_URL}/monday.mp3`, arabicText: `السَّلامُ عَلَيْكَ يَا بْنَ رَسُولِ رَبِّ الْعالَمِينَ...` },
+  tuesday: { id: "tuesday", title: "زيارة السجاد والباقر والصادق (ع)", subtitle: "زيارة أئمة البقيع في يوم الثلاثاء", benefits: "تقوية البصيرة الدينية والارتباط بجهابذة العلم النبوي ومؤسسي الصرح الجعفري.", audioUrl: `${BASE_AUDIO_URL}/tuesday.mp3`, arabicText: `السَّلامُ عَلَيْكُمْ يا خُزَّانَ عِلْمِ اللهِ...` },
+  wednesday: { id: "wednesday", title: "زيارة الكاظم والرضا والجواد والهادي (ع)", subtitle: "زيارة الحجج الأربعة في يوم الأربعاء", benefits: "قضاء الحوائج المستعصية، والأمن من غوائل الزمن ببركة باب الحوائج وغريب طوس والعلويين.", audioUrl: `${BASE_AUDIO_URL}/wednesday.mp3`, arabicText: `السَّلامُ عَلَيْكُمْ يا أَوْلِياءَ اللهِ...` },
+  thursday: { id: "thursday", title: "زيارة الحسن العسكري (ع)", subtitle: "زيارة الإمام العسكري في يوم الخميس", benefits: "التمهيد والتهيئة النفسية لولاية ابنه الحجة القائم ونيل النورانية القلبية المستمرة.", audioUrl: `${BASE_AUDIO_URL}/thursday.mp3`, arabicText: `السَّلامُ عَلَيْكَ يا وَلِيَّ اللهِ...` },
+  friday: { id: "friday", title: "زيارة الحجة المهدي (عج)", subtitle: "زيارة صاحب الأمر والزمان في يومه المبارك (الجمعة)", benefits: "أعظم طقوس الاستغاثة والندبة وتوسيع دائرة الفرج والارتباط بقطب عالم الإمكان.", audioUrl: `${BASE_AUDIO_URL}/friday.mp3`, arabicText: `السَّلامُ عَلَيْكَ يا حُجَّةَ اللهِ فِي أَرْضِهِ...` }
 };
 
 const generalZiyarats = [
@@ -144,22 +92,77 @@ const weeklyZiyarats = [
 export function Ziyarats() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'general' | 'weekly'>('general');
+  
+  const [downloadedIds, setDownloadedIds] = useState<string[]>([]);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  // 🔍 فحص الملفات المحفوظة محلياً عند الفتح
+  useEffect(() => {
+    const checkDownloaded = async () => {
+      const keys = [...generalZiyarats, ...weeklyZiyarats].map(z => z.id);
+      const downloaded: string[] = [];
+      for (const id of keys) {
+        const saved = await getAudioBlob(id);
+        if (saved) downloaded.push(id);
+      }
+      setDownloadedIds(downloaded);
+    };
+    checkDownloaded();
+  }, []);
+
+  // 📥 دالة التحميل أوفلاين
+  const handleDownloadOffline = async (e: React.MouseEvent, id: string, name: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (downloadedIds.includes(id)) {
+      alert(`🎉 "${name}" محفوظة محلياً وتعمل بدون إنترنت!`);
+      return;
+    }
+
+    const dataObj = (ziyaratsData as any)[id];
+    if (!dataObj || !dataObj.audioUrl) return;
+
+    setDownloadingId(id);
+
+    try {
+      const response = await fetch(encodeURI(dataObj.audioUrl));
+      if (!response.ok) throw new Error("فشل الاتصال بالخادم");
+
+      const blob = await response.blob();
+      await saveAudioBlob(id, blob);
+
+      setDownloadedIds(prev => [...prev, id]);
+      alert(`✅ تم تحميل صوت "${name}" أوفلاين بنجاح!`);
+    } catch (err) {
+      console.error("خطأ أثناء التحميل:", err);
+      alert("❌ تعذر التحميل، تأكد من الاتصال بالإنترنت أولاً.");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="p-6 space-y-6 min-h-screen pb-24 bg-[#022c22] text-[#f0f9ff]"
+      dir="rtl"
     >
       {/* Header */}
       <header className="flex justify-between items-center z-10 w-full mb-6">
-        <button 
+        <button
           onClick={() => navigate(-1)}
           className="p-3 bg-[#064e3b] text-[#fbbf24] rounded-full border border-[#059669]/30 hover:bg-[#064e3b]/40 transition active:scale-95"
         >
           <ArrowRight size={20} />
         </button>
-        <h1 className="text-2xl font-bold text-[#fbbf24] tracking-tight">الزيارات</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-[#fbbf24] tracking-tight text-center">الزيارات المباركة</h1>
+          <p className="text-[10px] text-[#059669] text-center flex items-center justify-center gap-1 mt-0.5">
+            <ShieldCheck size={12} /> يدعم الاستماع والتخزين أوفلاين
+          </p>
+        </div>
         <div className="w-[46px]" />
       </header>
 
@@ -173,8 +176,7 @@ export function Ziyarats() {
               : 'text-[#059669] hover:bg-[#059669]/20'
           }`}
         >
-          <BookOpen size={18} />
-          الزيارات العامة
+          <BookOpen size={18} /> الزيارات العامة
         </button>
         <button
           onClick={() => setActiveTab('weekly')}
@@ -184,8 +186,7 @@ export function Ziyarats() {
               : 'text-[#059669] hover:bg-[#059669]/20'
           }`}
         >
-          <Calendar size={18} />
-          أيام الأسبوع
+          <Calendar size={18} /> أيام الأسبوع
         </button>
       </div>
 
@@ -198,23 +199,49 @@ export function Ziyarats() {
             exit={{ opacity: 0, x: -20 }}
             className="flex flex-col gap-3"
           >
-            {generalZiyarats.map((ziyarat) => (
-              <Link
-                to={`/ziyarat/${ziyarat.id}`}
-                key={ziyarat.id}
-                className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl flex items-center justify-between hover:bg-[#059669]/30 transition-all group active:scale-[0.99]"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-[#fbbf24]/10 rounded-full text-[#fbbf24] group-hover:bg-[#fbbf24] group-hover:text-[#022c22] transition-colors">
-                    <BookOpen size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-[#f0f9ff] text-lg">{ziyarat.name}</h3>
+            {generalZiyarats.map((ziyarat) => {
+              const isDownloaded = downloadedIds.includes(ziyarat.id);
+              const isDownloading = downloadingId === ziyarat.id;
+
+              return (
+                <div
+                  key={ziyarat.id}
+                  className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl flex items-center justify-between hover:bg-[#059669]/30 transition-all group active:scale-[0.99]"
+                >
+                  <Link to={`/ziyarat/${ziyarat.id}`} className="flex items-center gap-4 flex-1">
+                    <div className="p-3 bg-[#fbbf24]/10 rounded-full text-[#fbbf24] group-hover:bg-[#fbbf24] group-hover:text-[#022c22] transition-colors">
+                      <BookOpen size={24} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-[#f0f9ff] text-lg">{ziyarat.name}</h3>
+                      {isDownloaded && (
+                        <span className="text-[11px] text-[#38ef7d] font-semibold">جاهز أوفلاين</span>
+                      )}
+                    </div>
+                  </Link>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => handleDownloadOffline(e, ziyarat.id, ziyarat.name)}
+                      disabled={isDownloading}
+                      className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-colors"
+                      title="تحميل الصوت للأوفلاين"
+                    >
+                      {isDownloading ? (
+                        <Loader2 size={20} className="animate-spin text-[#fbbf24]" />
+                      ) : isDownloaded ? (
+                        <CheckCircle2 size={20} className="text-[#38ef7d]" />
+                      ) : (
+                        <Download size={20} />
+                      )}
+                    </button>
+                    <Link to={`/ziyarat/${ziyarat.id}`}>
+                      <ChevronLeft className="text-[#059669] group-hover:text-[#fbbf24] transition-colors" />
+                    </Link>
                   </div>
                 </div>
-                <ChevronLeft className="text-[#059669] group-hover:text-[#fbbf24] transition-colors" />
-              </Link>
-            ))}
+              );
+            })}
           </motion.div>
         ) : (
           <motion.div
@@ -224,25 +251,52 @@ export function Ziyarats() {
             exit={{ opacity: 0, x: 20 }}
             className="flex flex-col gap-3"
           >
-            {weeklyZiyarats.map((ziyarat) => (
-              <Link
-                to={`/ziyarat/${ziyarat.id}`}
-                key={ziyarat.id}
-                className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl flex items-center justify-between hover:bg-[#059669]/30 transition-all group relative overflow-hidden active:scale-[0.99]"
-              >
-                <div className={`absolute top-0 right-0 w-2 h-full bg-gradient-to-b ${ziyarat.color}`} />
-                <div className="flex items-center gap-4 pr-3">
-                  <div className="p-3 bg-[#059669]/20 rounded-2xl text-[#fbbf24]">
-                    <Calendar size={24} />
-                  </div>
-                  <div>
-                    <p className="text-xs text-[#059669] mb-1 font-bold">{ziyarat.name}</p>
-                    <h3 className="font-bold text-[#f0f9ff]">{ziyarat.title}</h3>
+            {weeklyZiyarats.map((ziyarat) => {
+              const isDownloaded = downloadedIds.includes(ziyarat.id);
+              const isDownloading = downloadingId === ziyarat.id;
+
+              return (
+                <div
+                  key={ziyarat.id}
+                  className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-2xl flex items-center justify-between hover:bg-[#059669]/30 transition-all group relative overflow-hidden active:scale-[0.99]"
+                >
+                  <div className={`absolute top-0 right-0 w-2 h-full bg-gradient-to-b ${ziyarat.color}`} />
+                  
+                  <Link to={`/ziyarat/${ziyarat.id}`} className="flex items-center gap-4 pr-3 flex-1">
+                    <div className="p-3 bg-[#059669]/20 rounded-2xl text-[#fbbf24]">
+                      <Calendar size={24} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-[#059669] mb-1 font-bold">{ziyarat.name}</p>
+                      <h3 className="font-bold text-[#f0f9ff]">{ziyarat.title}</h3>
+                      {isDownloaded && (
+                        <span className="text-[11px] text-[#38ef7d] font-semibold">جاهز أوفلاين</span>
+                      )}
+                    </div>
+                  </Link>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => handleDownloadOffline(e, ziyarat.id, ziyarat.title)}
+                      disabled={isDownloading}
+                      className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-colors"
+                      title="تحميل الصوت للأوفلاين"
+                    >
+                      {isDownloading ? (
+                        <Loader2 size={20} className="animate-spin text-[#fbbf24]" />
+                      ) : isDownloaded ? (
+                        <CheckCircle2 size={20} className="text-[#38ef7d]" />
+                      ) : (
+                        <Download size={20} />
+                      )}
+                    </button>
+                    <Link to={`/ziyarat/${ziyarat.id}`}>
+                      <ChevronLeft className="text-[#059669] group-hover:text-[#fbbf24] transition-colors" />
+                    </Link>
                   </div>
                 </div>
-                <ChevronLeft className="text-[#059669] group-hover:text-[#fbbf24] transition-colors" />
-              </Link>
-            ))}
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>
