@@ -2,7 +2,53 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play, Pause, Search, Headphones, BookOpen, Volume2, ShieldCheck, Download, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { set, get } from 'idb-keyval';
+
+// -------------------------------------------------------------
+// محرك تخزين صوتيات أوفلاين بسيط باستخدام IndexedDB المدمج في المتصفح
+// -------------------------------------------------------------
+const DB_NAME = 'ShiaDuasAudioDB';
+const STORE_NAME = 'audio_files';
+
+const openAudioDB = (): Promise<IDBDatabase> => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+};
+
+const saveAudioBlob = async (id: string, blob: Blob) => {
+  const db = await openAudioDB();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.put(blob, id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+};
+
+const getAudioBlob = async (id: string): Promise<Blob | null> => {
+  try {
+    const db = await openAudioDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+};
+// -------------------------------------------------------------
 
 // 1. قائمة الأدعية الكاملة والمستقرة
 const duasList = [
@@ -76,7 +122,8 @@ const latmiyatList = [
   { id: 'latmia-28', name: 'قصيدة ما يحاجيها - حيدر البياتي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/mayhajiha.mp3' },
   { id: 'latmia-29', name: 'قصيدة اخاف امن اعوفك - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/akhaf_aman_aeufuk.mp3' },
   { id: 'latmia-30', name: 'قصيدة االبدوية - حسين المرياني ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/albadawia.mp3' },
-  { id: 'latmia-31', name: 'قصيدة سيناء الغيرة - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/sayna_alghayra.mp3' }, { id: 'latmia-32', name: 'قصيدة زلزل - حيدر بوحمد', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/zalzal_haydr_buhamd.mp3' },
+  { id: 'latmia-31', name: 'قصيدة سيناء الغيرة - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/sayna_alghayra.mp3' },
+  { id: 'latmia-32', name: 'قصيدة زلزل - حيدر بوحمد', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/zalzal_haydr_buhamd.mp3' },
   { id: 'latmia-33', name: 'قصيدة ودعت الحسين - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/wadaeti_alhsin_basim_alkarbilayiy.mp3' },
   { id: 'latmia-34', name: 'قصيدة شخبار اهلنة - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/shakhbari_ahlanah_mihamadi_aljanami.mp3' },
   { id: 'latmia-35', name: 'قصيدة سادة العشرة - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/sadatu_aleashra_mihamadi_aljanami.mp3' },
@@ -101,7 +148,6 @@ export function ShiaDuas() {
   const [hasError, setHasError] = useState(false);
   const [isOfflineTrack, setIsOfflineTrack] = useState(false);
 
-  // حالات لتتبع الملقات المحملة والتحميل الجاري
   const [downloadedIds, setDownloadedIds] = useState<string[]>([]);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
@@ -109,13 +155,12 @@ export function ShiaDuas() {
   const filteredDuas = duasList.filter(d => d.name.includes(search));
   const filteredLatmiyat = latmiyatList.filter(l => l.name.includes(search));
 
-  // 🔍 عند فتح التطبيق: فحص الملفات المحفوظة محلياً في ذاكرة الهاتف
   useEffect(() => {
     const checkDownloadedFiles = async () => {
       const allTracks = [...duasList, ...latmiyatList];
       const downloaded: string[] = [];
       for (const track of allTracks) {
-        const savedBlob = await get(`audio_${track.id}`);
+        const savedBlob = await getAudioBlob(track.id);
         if (savedBlob) {
           downloaded.push(track.id);
         }
@@ -125,7 +170,6 @@ export function ShiaDuas() {
     checkDownloadedFiles();
   }, []);
 
-  // 🎵 مراقبة وتشغيل الصوت (من أوفلاين أو عبر الإنترنت)
   useEffect(() => {
     let objectUrlToRevoke: string | null = null;
 
@@ -136,17 +180,14 @@ export function ShiaDuas() {
           setHasError(false);
 
           try {
-            // 1. البحث أولاً في ذاكرة الهاتف (IndexedDB)
-            const localBlob = await get<Blob>(`audio_${currentTrack.id}`);
+            const localBlob = await getAudioBlob(currentTrack.id);
 
             if (localBlob) {
-              // 🟢 الملف موجود محلياً! نقوم بإنشاء رابط Blob لا يتطلب نت نهائياً
               const localUrl = URL.createObjectURL(localBlob);
               objectUrlToRevoke = localUrl;
               audioRef.current.src = localUrl;
               setIsOfflineTrack(true);
             } else {
-              // 🌐 الملف غير محمل، سنستخدم رابط الإنترنت المباشر
               audioRef.current.crossOrigin = "anonymous";
               audioRef.current.src = encodeURI(currentTrack.url);
               setIsOfflineTrack(false);
@@ -186,7 +227,6 @@ export function ShiaDuas() {
     }
   };
 
-  // 📥 دالة التحميل الحقيقية للذاكرة الداخلية (Offline Storage)
   const handleDownloadOffline = async (e: React.MouseEvent, track: any) => {
     e.stopPropagation();
 
@@ -198,14 +238,11 @@ export function ShiaDuas() {
     setDownloadingId(track.id);
 
     try {
-      // جلب الملف تحويله لـ Blob
       const response = await fetch(encodeURI(track.url));
       if (!response.ok) throw new Error("فشل الاتصال بالخادم");
       
       const blob = await response.blob();
-
-      // تخزينه في IndexedDB باسم id المقطع
-      await set(`audio_${track.id}`, blob);
+      await saveAudioBlob(track.id, blob);
 
       setDownloadedIds(prev => [...prev, track.id]);
       alert(`✅ تم تحميل "${track.name}" بنجاح! يمكنك الاستماع له الآن أوفلاين بدون إنترنت.`);
@@ -219,7 +256,6 @@ export function ShiaDuas() {
 
   return (
     <div className="flex flex-col h-full bg-[#022c22] relative font-['Cairo'] text-right" dir="rtl">
-      {/* الهيدر الفخم المعتمد */}
       <header className="bg-[#064e3b] shadow-lg border-b border-[#059669]/30 px-4 py-3 flex items-center gap-4 z-20">
         <button onClick={() => navigate(-1)} className="p-2 text-[#fbbf24]">
           <ArrowRight size={24} />
@@ -232,7 +268,6 @@ export function ShiaDuas() {
         </div>
       </header>
 
-      {/* شريط البحث وأزرار التبديل غير المتداخلة */}
       <div className="px-6 py-4 z-10 bg-[#022c22]/90 backdrop-blur-md border-b border-[#059669]/10 space-y-4">
         <div className="relative">
           <input
@@ -263,9 +298,7 @@ export function ShiaDuas() {
         </div>
       </div>
 
-      {/* قائمة عرض العناصر والأيقونات الأصلية مع ميزة التحميل والاستماع */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 pb-32">
-        {/* قسم الأدعية */}
         {activeTab === 'duas' && filteredDuas.map((dua) => {
           const isDownloaded = downloadedIds.includes(dua.id);
           const isDownloading = downloadingId === dua.id;
@@ -308,7 +341,6 @@ export function ShiaDuas() {
           );
         })}
 
-        {/* قسم اللطميات */}
         {activeTab === 'latmiyat' && filteredLatmiyat.map((latmia) => {
           const isDownloaded = downloadedIds.includes(latmia.id);
           const isDownloading = downloadingId === latmia.id;
@@ -352,7 +384,6 @@ export function ShiaDuas() {
         })}
       </div>
 
-      {/* 🎵 شريط التحكم السفلي الثابت والذكي في رصد التوقف والتشغيل */}
       {currentTrack && (
         <div className="absolute bottom-0 left-0 right-0 bg-[#064e3b] px-6 py-5 border-t border-[#059669]/50 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] rounded-t-[32px] z-50">
           <div className="flex justify-between items-center">
