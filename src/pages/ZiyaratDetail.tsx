@@ -2,7 +2,55 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play, Pause, RotateCcw, Volume2, VolumeX, Download, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
-import { ziyaratsData, getAudioBlob, saveAudioBlob } from './Ziyarats';
+import { ziyaratsData } from './Ziyarats';
+
+// -------------------------------------------------------------
+// محرك تخزين صوتيات أوفلاين المدمج داخل الملف مباشرة
+// -------------------------------------------------------------
+const DB_NAME = 'ShiaZiyaratsAudioDB';
+const STORE_NAME = 'ziyarat_files';
+
+const openAudioDB = (): Promise<IDBDatabase> => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+};
+
+const saveAudioBlob = async (id: string, blob: Blob) => {
+  const db = await openAudioDB();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.put(blob, id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+};
+
+const getAudioBlob = async (id: string): Promise<Blob | null> => {
+  try {
+    const db = await openAudioDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+};
+
+// -------------------------------------------------------------
 
 export function ZiyaratDetail() {
   const { id } = useParams<{ id: string }>();
@@ -24,7 +72,6 @@ export function ZiyaratDetail() {
     if (!item) return;
 
     const prepareAudio = async () => {
-      // إيقاف أي صوت سابق وتنظيف الروابط مؤقتاً
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -36,7 +83,6 @@ export function ZiyaratDetail() {
       setAudioError(false);
       setIsPlaying(false);
 
-      // 1. فحص هل الملف مخزن محلياً أوفلاين في IndexedDB؟
       const savedBlob = await getAudioBlob(item.id);
 
       let audioSource = '';
@@ -49,7 +95,6 @@ export function ZiyaratDetail() {
         audioSource = item.audioUrl;
       }
 
-      // 2. إنشاء محرك الصوت المصحح
       audioRef.current = new Audio(audioSource);
       audioRef.current.muted = isMuted;
 
@@ -99,12 +144,11 @@ export function ZiyaratDetail() {
     setIsMuted(!isMuted);
   };
 
-  // دالة التحميل أوفلاين للملف الصوتي
   const handleDownload = async () => {
     if (!item || isDownloading) return;
 
     if (isDownloaded) {
-      alert(`🎉 "${item.title}" محفوضة بالفعل وتعمل أوفلاين دون إنترنت!`);
+      alert(`🎉 "${item.title}" محفوظة بالفعل وتعمل أوفلاين دون إنترنت!`);
       return;
     }
 
@@ -118,7 +162,6 @@ export function ZiyaratDetail() {
       setIsDownloaded(true);
       setAudioError(false);
 
-      // إعادة تهيئة المشغل لاستخدام النسخة المحفوظة محلياً فوراً
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -167,7 +210,6 @@ export function ZiyaratDetail() {
       animate={{ opacity: 1 }}
       className="p-4 min-h-screen pb-64 bg-[#022c22] text-[#f0f9ff] flex flex-col items-center select-none"
     >
-      {/* العلوية الـ Header */}
       <header className="flex justify-between items-center w-full mb-4">
         <button onClick={() => navigate(-1)} className="p-3 bg-[#064e3b] text-[#fbbf24] rounded-full border border-[#059669]/30">
           <ArrowRight size={20} />
@@ -176,23 +218,19 @@ export function ZiyaratDetail() {
         <div className="w-[46px]" />
       </header>
 
-      {/* نص فضل الزيارة */}
       {item.benefits && (
         <div className="bg-[#064e3b]/30 border border-[#059669]/20 p-3 rounded-2xl w-full text-center text-xs text-[#fbbf24]/90 mb-4 leading-relaxed">
           {item.benefits}
         </div>
       )}
 
-      {/* الحاوية الرئيسية لنص الزيارة */}
       <div className="flex-1 w-full bg-[#064e3b]/10 border border-[#059669]/10 rounded-3xl p-5 overflow-y-auto mb-4 shadow-inner">
         <p className="text-2xl text-center leading-[2.6] font-semibold text-[#f0f9ff] text-justify whitespace-pre-line" style={{ direction: 'rtl' }}>
           {item.arabicText}
         </p>
       </div>
 
-      {/* لوحة التحكم السفلية المرفوعة بدقة */}
       <div className="fixed bottom-20 left-4 right-4 max-w-md mx-auto z-50 flex flex-col gap-3">
-        {/* أزرار التنقل (السابق والتالي) */}
         <div className="bg-[#064e3b] border border-[#059669]/30 rounded-2xl p-2 flex justify-between items-center text-sm font-bold text-[#fbbf24] px-4 shadow-md">
           <button
             onClick={handlePrev}
@@ -213,9 +251,7 @@ export function ZiyaratDetail() {
           </button>
         </div>
 
-        {/* صندوق مشغل الصوت والتحذير */}
         <div className="relative w-full">
-          {/* لوحة الخطأ الحمراء */}
           {audioError && (
             <motion.div
               initial={{ opacity: 0, y: 5 }}
@@ -233,9 +269,7 @@ export function ZiyaratDetail() {
             </motion.div>
           )}
 
-          {/* البار الرئيسي للمشغل (الصندوق الأخضر المرفوع) */}
           <div className="bg-[#053e2f] border border-[#059669]/20 rounded-3xl p-4 flex items-center justify-between shadow-2xl h-24 pl-20 relative">
-            {/* جهة اليمين: زر الصوت المفعّل واسم الزيارة وحالتها */}
             <div className="flex items-center gap-3" style={{ direction: 'rtl' }}>
               <button
                 onClick={toggleMute}
@@ -253,7 +287,6 @@ export function ZiyaratDetail() {
               </div>
             </div>
 
-            {/* الأزرار الوسطى: التحميل والتكرار */}
             <div className="flex items-center gap-4">
               <button
                 onClick={handleDownload}
@@ -281,7 +314,6 @@ export function ZiyaratDetail() {
               </button>
             </div>
 
-            {/* جهة اليسار: زر التشغيل الأصفر */}
             <button
               onClick={togglePlay}
               disabled={audioError}
