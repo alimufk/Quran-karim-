@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'; 
 import { useParams, useNavigate } from 'react-router-dom'; 
-import { motion } from 'framer-motion'; 
+import { motion, AnimatePresence } from 'framer-motion'; 
 import { ArrowRight, Play, Pause, RotateCcw, Volume2, VolumeX, Download, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react'; 
 import { ziyaratsData } from './Ziyarats'; 
 
@@ -72,9 +72,10 @@ export function ZiyaratDetail() {
   };
 
   const currentKey = getValidKey(id);
-  const keys = Object.keys(ziyaratsData); 
-  const currentIndex = keys.indexOf(currentKey); 
   const item = ziyaratsData[currentKey as keyof typeof ziyaratsData]; 
+
+  const [pages, setPages] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(0);
 
   const [isPlaying, setIsPlaying] = useState(false); 
   const [isMuted, setIsMuted] = useState(false); 
@@ -85,6 +86,35 @@ export function ZiyaratDetail() {
   const audioRef = useRef<HTMLAudioElement | null>(null); 
   const currentBlobUrlRef = useRef<string | null>(null); 
 
+  // دالة آمنة لتقطيع النص إلى صفحات (30 كلمة لكل صفحة)
+  const cleanAndSplitText = (rawText: string, wordsPerPage = 30) => {
+    if (!rawText) return [];
+    const cleanText = rawText.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+    const words = cleanText.split(' ').filter(w => w.length > 0);
+    
+    if (words.length === 0) return [cleanText];
+
+    const resultPages: string[] = [];
+    for (let i = 0; i < words.length; i += wordsPerPage) {
+      const chunk = words.slice(i, i + wordsPerPage).join(' ');
+      if (chunk.trim()) {
+        resultPages.push(chunk);
+      }
+    }
+    return resultPages;
+  };
+
+  // تجهيز صفحات النص عند تغيير الزيارة
+  useEffect(() => {
+    if (item) {
+      const rawText = (item as any).text || (item as any).arabicText || "";
+      const splitPages = cleanAndSplitText(rawText, 30);
+      setPages(splitPages);
+      setCurrentPage(0);
+    }
+  }, [item, id]);
+
+  // تجهيز الصوتيات
   useEffect(() => { 
     if (!item) return; 
 
@@ -191,15 +221,16 @@ export function ZiyaratDetail() {
     } 
   }; 
 
-  const handleNext = () => { 
-    if (currentIndex < keys.length - 1) { 
-      navigate(`/ziyarat/${keys[currentIndex + 1]}`); 
+  // التنقل بين صفحات النص داخل الزيارة
+  const handleNextPage = () => { 
+    if (currentPage < pages.length - 1) { 
+      setCurrentPage(prev => prev + 1); 
     } 
   }; 
 
-  const handlePrev = () => { 
-    if (currentIndex > 0) { 
-      navigate(`/ziyarat/${keys[currentIndex - 1]}`); 
+  const handlePrevPage = () => { 
+    if (currentPage > 0) { 
+      setCurrentPage(prev => prev - 1); 
     } 
   }; 
 
@@ -217,9 +248,12 @@ export function ZiyaratDetail() {
     ); 
   } 
 
+  // النص المعروض حالياً
+  const currentTextSnippet = pages[currentPage] || (item as any).text || (item as any).arabicText || "السَّلامُ عَلَيْكَ يا وارِثَ آدَمَ صَفْوةِ اللهِ...";
+
   return ( 
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 min-h-screen pb-64 bg-[#022c22] text-[#f0f9ff] flex flex-col items-center select-none" dir="rtl"> 
-      {/* 1. الهيدر */}
+      {/* 1. الهيدر */} 
       <header className="flex justify-between items-center w-full mb-4"> 
         <button onClick={() => navigate(-1)} className="p-3 bg-[#064e3b] text-[#fbbf24] rounded-full border border-[#059669]/30 hover:bg-[#047857] transition"> 
           <ArrowRight size={20} /> 
@@ -228,31 +262,51 @@ export function ZiyaratDetail() {
         <div className="w-[46px]" /> 
       </header> 
 
-      {/* 2. الفضل والفوائد */}
+      {/* 2. الفضل والفوائد */} 
       {item.benefits && ( 
         <div className="bg-[#064e3b]/30 border border-[#059669]/20 p-3 rounded-2xl w-full text-center text-xs text-[#fbbf24]/90 mb-4 leading-relaxed"> 
           {item.benefits} 
         </div> 
       )} 
 
-      {/* 3. حاوية النص - تم تصحيح المفتاح إلى (text) للحصول على النص فوراً */}
-      <div className="flex-1 w-full bg-[#064e3b]/10 border border-[#059669]/10 rounded-3xl p-5 overflow-y-auto mb-4 shadow-inner max-h-[55vh]"> 
-        <p className="text-2xl text-center leading-[2.6] font-serif font-semibold text-[#f0f9ff] whitespace-pre-line tracking-wide"> 
-          {(item as any).text || (item as any).arabicText || "جاري تحميل النص الشريف..."} 
-        </p> 
+      {/* 3. حاوية عرض النص المقطّع بصفحات */} 
+      <div className="flex-1 w-full bg-[#064e3b]/20 border border-[#059669]/20 rounded-3xl p-6 flex items-center justify-center min-h-[280px] mb-4 shadow-inner relative overflow-hidden"> 
+        <AnimatePresence mode="wait">
+          <motion.p 
+            key={currentPage}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.02 }}
+            transition={{ duration: 0.15 }}
+            className="text-xl sm:text-2xl text-center leading-[2.4] font-serif font-semibold text-[#f0f9ff] tracking-wide"
+          > 
+            {currentTextSnippet} 
+          </motion.p> 
+        </AnimatePresence>
       </div> 
 
-      {/* 4. شريط المشغل والتحكم في الأسفل */}
+      {/* 4. شريط المشغل والتحكم في الأسفل */} 
       <div className="fixed bottom-20 left-4 right-4 max-w-md mx-auto z-50 flex flex-col gap-3"> 
+        {/* أزرار التنقل بين صفحات النص */}
         <div className="bg-[#064e3b] border border-[#059669]/30 rounded-2xl p-2 flex justify-between items-center text-sm font-bold text-[#fbbf24] px-4 shadow-md"> 
-          <button onClick={handlePrev} disabled={currentIndex <= 0} className={`flex items-center gap-1 ${currentIndex <= 0 ? 'opacity-40 cursor-not-allowed' : 'hover:text-white'}`}> 
-            ‹ السابق 
+          <button 
+            onClick={handleNextPage} 
+            disabled={currentPage >= (pages.length > 0 ? pages.length - 1 : 0)} 
+            className={`flex items-center gap-1 ${currentPage >= (pages.length > 0 ? pages.length - 1 : 0) ? 'opacity-30 cursor-not-allowed' : 'hover:text-white'}`}
+          > 
+            ‹ التالي 
           </button> 
+          
           <span className="text-xs bg-[#022c22] px-3 py-1 rounded-full text-gray-300"> 
-            {currentIndex + 1} / {keys.length} 
+            {pages.length > 0 ? `${currentPage + 1} / ${pages.length}` : '1 / 1'} 
           </span> 
-          <button onClick={handleNext} disabled={currentIndex >= keys.length - 1} className={`flex items-center gap-1 ${currentIndex >= keys.length - 1 ? 'opacity-40 cursor-not-allowed' : 'hover:text-white'}`}> 
-            التالي › 
+          
+          <button 
+            onClick={handlePrevPage} 
+            disabled={currentPage <= 0} 
+            className={`flex items-center gap-1 ${currentPage <= 0 ? 'opacity-30 cursor-not-allowed' : 'hover:text-white'}`}
+          > 
+            السابق › 
           </button> 
         </div> 
 
