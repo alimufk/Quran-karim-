@@ -164,7 +164,7 @@ const ZIYARAT_DATA: Record<string, { id: string; title: string; benefits: string
 // -------------------------------------------------------------
 // 3. المكون الرئيسي
 // -------------------------------------------------------------
-export default function ZiyaratDetail() {
+export function ZiyaratDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
