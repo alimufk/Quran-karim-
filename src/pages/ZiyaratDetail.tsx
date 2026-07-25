@@ -55,7 +55,7 @@ export function ZiyaratDetail() {
   const { id } = useParams<{ id: string }>(); 
   const navigate = useNavigate(); 
 
-  // دالة تحسين مطابقة الـ ID لتجنب عدم العثور على البيانات
+  // دالة تحسين مطابقة الـ ID
   const getValidKey = (paramId?: string): string => {
     if (!paramId) return "warith";
     const cleanId = paramId.toString().toLowerCase().trim();
@@ -74,6 +74,20 @@ export function ZiyaratDetail() {
   const currentKey = getValidKey(id);
   const item = ziyaratsData[currentKey as keyof typeof ziyaratsData]; 
 
+  // دالة استخراج النص من الكائن بذكاء مهما كان اسم الخاصية
+  const extractText = (obj: any): string => {
+    if (!obj) return "";
+    if (typeof obj === "string") return obj;
+    if (obj.text && typeof obj.text === "string") return obj.text;
+    if (obj.arabicText && typeof obj.arabicText === "string") return obj.arabicText;
+    if (obj.content && typeof obj.content === "string") return obj.content;
+    if (obj.ziyaratText && typeof obj.ziyaratText === "string") return obj.ziyaratText;
+    if (obj.body && typeof obj.body === "string") return obj.body;
+    return "";
+  };
+
+  const rawZiyaratText = extractText(item);
+
   const [pages, setPages] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
 
@@ -88,7 +102,7 @@ export function ZiyaratDetail() {
 
   // دالة آمنة لتقطيع النص إلى صفحات (30 كلمة لكل صفحة)
   const cleanAndSplitText = (rawText: string, wordsPerPage = 30) => {
-    if (!rawText) return [];
+    if (!rawText || !rawText.trim()) return [];
     const cleanText = rawText.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
     const words = cleanText.split(' ').filter(w => w.length > 0);
     
@@ -107,12 +121,11 @@ export function ZiyaratDetail() {
   // تجهيز صفحات النص عند تغيير الزيارة
   useEffect(() => {
     if (item) {
-      const rawText = (item as any).text || (item as any).arabicText || "";
-      const splitPages = cleanAndSplitText(rawText, 30);
+      const splitPages = cleanAndSplitText(rawZiyaratText, 30);
       setPages(splitPages);
       setCurrentPage(0);
     }
-  }, [item, id]);
+  }, [id, currentKey, rawZiyaratText]);
 
   // تجهيز الصوتيات
   useEffect(() => { 
@@ -248,8 +261,8 @@ export function ZiyaratDetail() {
     ); 
   } 
 
-  // النص المعروض حالياً
-  const currentTextSnippet = pages[currentPage] || (item as any).text || (item as any).arabicText || "السَّلامُ عَلَيْكَ يا وارِثَ آدَمَ صَفْوةِ اللهِ...";
+  // الحصول على النص الفعلي للصفحة الحالية
+  const currentTextSnippet = pages[currentPage] || rawZiyaratText || "النص غير متوفر لهذه الزيارة حالياً.";
 
   return ( 
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 min-h-screen pb-64 bg-[#022c22] text-[#f0f9ff] flex flex-col items-center select-none" dir="rtl"> 
@@ -273,7 +286,7 @@ export function ZiyaratDetail() {
       <div className="flex-1 w-full bg-[#064e3b]/20 border border-[#059669]/20 rounded-3xl p-6 flex items-center justify-center min-h-[280px] mb-4 shadow-inner relative overflow-hidden"> 
         <AnimatePresence mode="wait">
           <motion.p 
-            key={currentPage}
+            key={`${currentKey}-${currentPage}`}
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.02 }}
