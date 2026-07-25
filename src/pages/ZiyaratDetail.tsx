@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Play, Pause, Download, Volume2, RotateCcw, CheckCircle2, Loader2, ChevronRight, ChevronLeft, FastForward, Rewind } from 'lucide-react';
+import { 
+  ArrowRight, Play, Pause, Download, Volume2, VolumeX, RotateCcw, 
+  CheckCircle2, Loader2, ChevronRight, ChevronLeft, FastForward, 
+  Rewind, Copy, ZoomIn, ZoomOut, Check
+} from 'lucide-react';
 
 // -------------------------------------------------------------
 // 1. محرك IndexedDB للتخزين أوفلاين
@@ -50,7 +54,7 @@ const getOfflineAudio = async (id: string): Promise<Blob | null> => {
 };
 
 // -------------------------------------------------------------
-// 2. قائمة ترتيب الزيارات (لتطبيق التقديم والترجيع بين الزيارات)
+// 2. قائمة ترتيب الزيارات
 // -------------------------------------------------------------
 const ZIYARAT_KEYS = [
   "warith", "arbaeen", "ashura", "aminullah", "jamia", 
@@ -164,11 +168,10 @@ const ZIYARAT_DATA: Record<string, { id: string; title: string; benefits: string
 // -------------------------------------------------------------
 // 3. المكون الرئيسي
 // -------------------------------------------------------------
-export function ZiyaratDetail() {
+export default function ZiyaratDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // مطابقة المفتاح
   const getValidKey = (paramId?: string): string => {
     if (!paramId) return "warith";
     const cleanId = paramId.toString().toLowerCase().trim();
@@ -188,13 +191,16 @@ export function ZiyaratDetail() {
   const currentItem = ZIYARAT_DATA[currentKey] || ZIYARAT_DATA["warith"];
   const currentIndex = ZIYARAT_KEYS.indexOf(currentKey);
 
+  // حالات التحكم
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
   const [isDownloaded, setIsDownloaded] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [fontSize, setFontSize] = useState<number>(20); // حجم الخط الافتراضي
+  const [copied, setCopied] = useState<boolean>(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // إعادة ضبط الصوت والوضع عند تغيير الزيارة
   useEffect(() => {
     setIsPlaying(false);
     checkOfflineStatus();
@@ -212,7 +218,6 @@ export function ZiyaratDetail() {
     }
   };
 
-  // التنقل بين الزيارات الـ 14
   const goToNextZiyarat = () => {
     if (currentIndex < ZIYARAT_KEYS.length - 1) {
       navigate(`/ziyarat/${ZIYARAT_KEYS[currentIndex + 1]}`);
@@ -225,12 +230,30 @@ export function ZiyaratDetail() {
     }
   };
 
-  // تقديم وتأخير الصوت (10 ثوانٍ)
   const seekAudio = (seconds: number) => {
     if (audioRef.current) {
       audioRef.current.currentTime += seconds;
     }
   };
+
+  // تفعيل/كتم الصوت
+  const toggleMute = () => {
+    if (audioRef.current) {
+      audioRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  // نسخ نص الزيارة
+  const handleCopyText = () => {
+    navigator.clipboard.writeText(currentItem.text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // تكبير وتصغير الخط
+  const zoomInText = () => setFontSize(prev => Math.min(prev + 2, 34));
+  const zoomOutText = () => setFontSize(prev => Math.max(prev - 2, 14));
 
   const handleDownloadOffline = async () => {
     if (isDownloaded) {
@@ -286,7 +309,19 @@ export function ZiyaratDetail() {
             <ArrowRight size={20} />
           </button>
           <h2 className="text-xl font-bold text-[#fbbf24]">{currentItem.title}</h2>
-          <div className="w-8"></div>
+          
+          {/* أزرار التحكّم بالخط والنسخ من الأعلى */}
+          <div className="flex items-center gap-1.5 bg-[#064e3b]/50 p-1 rounded-xl border border-[#059669]/30">
+            <button onClick={zoomInText} className="p-1.5 text-[#fbbf24] hover:bg-[#022c22] rounded-lg transition" title="تكبير الخط">
+              <ZoomIn size={16} />
+            </button>
+            <button onClick={zoomOutText} className="p-1.5 text-[#fbbf24] hover:bg-[#022c22] rounded-lg transition" title="تصغير الخط">
+              <ZoomOut size={16} />
+            </button>
+            <button onClick={handleCopyText} className="p-1.5 text-[#fbbf24] hover:bg-[#022c22] rounded-lg transition" title="نسخ النص">
+              {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
+            </button>
+          </div>
         </div>
 
         {currentItem.benefits && (
@@ -296,28 +331,29 @@ export function ZiyaratDetail() {
         )}
       </div>
 
-      {/* 2. شاشة عرض النص الكامل مع التمرير السلس */}
-      <div className="flex-1 flex items-center justify-center my-2 min-h-[300px] max-h-[50vh] overflow-y-auto bg-[#03382c] border border-[#059669]/30 rounded-3xl p-6 shadow-inner relative custom-scrollbar">
+      {/* 2. شاشة عرض النص مع التحكم الدقيق بحجم الخط */}
+      <div className="flex-1 flex items-center justify-center my-2 min-h-[280px] max-h-[48vh] overflow-y-auto bg-[#03382c] border border-[#059669]/30 rounded-3xl p-6 shadow-inner relative custom-scrollbar">
         <AnimatePresence mode="wait">
           <motion.p
             key={currentKey}
+            style={{ fontSize: `${fontSize}px` }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="text-center text-lg sm:text-xl font-serif leading-loose text-[#f0f9ff] tracking-wide"
+            className="text-center font-serif leading-loose text-[#f0f9ff] tracking-wide"
           >
             {currentItem.text}
           </motion.p>
         </AnimatePresence>
       </div>
 
-      {/* 3. شريط التنقل بين الزيارات كاملة (التقديم والترجيع) */}
-      <div className="flex items-center justify-between bg-[#064e3b]/60 border border-[#059669]/30 rounded-2xl p-2 mb-4">
+      {/* 3. شريط التنقل بين الزيارات */}
+      <div className="flex items-center justify-between bg-[#064e3b]/60 border border-[#059669]/30 rounded-2xl p-2 mb-3">
         <button
           onClick={goToNextZiyarat}
           disabled={currentIndex >= ZIYARAT_KEYS.length - 1}
-          className={`flex items-center gap-1 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition ${
+          className={`flex items-center gap-1 px-3 py-2 rounded-xl font-bold text-xs transition ${
             currentIndex >= ZIYARAT_KEYS.length - 1 ? 'opacity-30 text-gray-400 cursor-not-allowed' : 'text-[#fbbf24] bg-[#022c22]/60 hover:bg-[#022c22]'
           }`}
         >
@@ -331,7 +367,7 @@ export function ZiyaratDetail() {
         <button
           onClick={goToPrevZiyarat}
           disabled={currentIndex <= 0}
-          className={`flex items-center gap-1 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition ${
+          className={`flex items-center gap-1 px-3 py-2 rounded-xl font-bold text-xs transition ${
             currentIndex <= 0 ? 'opacity-30 text-gray-400 cursor-not-allowed' : 'text-[#fbbf24] bg-[#022c22]/60 hover:bg-[#022c22]'
           }`}
         >
@@ -339,51 +375,57 @@ export function ZiyaratDetail() {
         </button>
       </div>
 
-      {/* 4. المشغل الصوتي (مع أزرار التقديم والتأخير للصوت) */}
-      <div className="bg-[#064e3b]/80 border border-[#059669]/40 rounded-3xl p-3 flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          {/* زر التشغيل/الإيقاف */}
+      {/* 4. المشغل الصوتي (المعدل بالكامل بدون خروج من الإطار ومع كتم تفاعلي) */}
+      <div className="bg-[#064e3b]/90 border border-[#059669]/40 rounded-3xl p-2.5 flex items-center justify-between gap-2 overflow-hidden">
+        {/* أزرار التشغيل والتقديم والتحميل */}
+        <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={togglePlayAudio}
-            className="w-11 h-11 bg-[#fbbf24] text-[#022c22] rounded-full flex items-center justify-center shadow-lg active:scale-95 transition"
+            className="w-10 h-10 bg-[#fbbf24] text-[#022c22] rounded-full flex items-center justify-center shadow-lg active:scale-95 transition"
           >
-            {isPlaying ? <Pause size={22} fill="#022c22" /> : <Play size={22} fill="#022c22" className="mr-0.5" />}
+            {isPlaying ? <Pause size={20} fill="#022c22" /> : <Play size={20} fill="#022c22" className="mr-0.5" />}
           </button>
 
-          {/* تأخير 10 ثوانٍ */}
           <button onClick={() => seekAudio(-10)} className="p-1.5 text-[#059669] hover:text-[#fbbf24] transition" title="-10 ثوانٍ">
-            <Rewind size={18} />
+            <Rewind size={16} />
           </button>
 
-          {/* تقديم 10 ثوانٍ */}
           <button onClick={() => seekAudio(10)} className="p-1.5 text-[#059669] hover:text-[#fbbf24] transition" title="+10 ثوانٍ">
-            <FastForward size={18} />
+            <FastForward size={16} />
           </button>
 
-          {/* إعادة من البداية */}
           <button onClick={() => { if (audioRef.current) audioRef.current.currentTime = 0; }} className="p-1.5 text-[#059669] hover:text-[#fbbf24] transition" title="إعادة">
-            <RotateCcw size={16} />
+            <RotateCcw size={15} />
           </button>
 
-          {/* التحميل أوفلاين */}
           <button
             onClick={handleDownloadOffline}
             className={`p-1.5 transition ${isDownloaded ? 'text-[#34d399]' : 'text-[#059669] hover:text-[#fbbf24]'}`}
           >
-            {isDownloading ? <Loader2 size={18} className="animate-spin" /> : isDownloaded ? <CheckCircle2 size={18} /> : <Download size={18} />}
+            {isDownloading ? <Loader2 size={16} className="animate-spin" /> : isDownloaded ? <CheckCircle2 size={16} /> : <Download size={16} />}
           </button>
         </div>
 
-        <div className="text-left pr-2">
-          <h4 className="font-bold text-xs sm:text-sm text-[#f0f9ff] truncate max-w-[110px]">{currentItem.title}</h4>
-          <p className="text-[10px] text-[#059669]">
-            {isPlaying ? "جاري التشغيل..." : isDownloaded ? "جاهز أوفلاين" : "متوقف"}
+        {/* عنوان الزيارة (مع حماية الحجم لمنع الخروج عن الإطار) */}
+        <div className="flex-1 min-w-0 text-center px-1">
+          <h4 className="font-bold text-xs text-[#f0f9ff] truncate">{currentItem.title}</h4>
+          <p className="text-[10px] text-[#059669] truncate">
+            {isPlaying ? (isMuted ? "مكتوم..." : "جاري التشغيل...") : isDownloaded ? "جاهز أوفلاين" : "متوقف"}
           </p>
         </div>
 
-        <div className="p-2 bg-[#022c22]/50 border border-[#059669]/30 rounded-xl text-[#059669]">
-          <Volume2 size={18} />
-        </div>
+        {/* زر كتم وتفعيل الصوت الشغال والتفاعلي */}
+        <button
+          onClick={toggleMute}
+          className={`p-2 rounded-xl border transition shrink-0 ${
+            isMuted 
+              ? 'bg-red-500/20 border-red-500/50 text-red-400' 
+              : 'bg-[#022c22]/60 border-[#059669]/40 text-[#34d399] hover:text-[#fbbf24]'
+          }`}
+          title={isMuted ? "إلغاء الكتم" : "كتم الصوت"}
+        >
+          {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+        </button>
       </div>
     </div>
   );
