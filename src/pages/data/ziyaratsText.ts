@@ -50,11 +50,12 @@ const getOfflineAudio = async (id: string): Promise<Blob | null> => {
 };
 
 // -------------------------------------------------------------
-// 2. قاعدة البيانات الشاملة بالنصوص الكاملة
+// 2. قاعدة البيانات الشاملة (تضم الـ 14 زيارة كاملة)
 // -------------------------------------------------------------
 const BASE_AUDIO_URL = "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio";
 
 const ZIYARAT_DATA: Record<string, { id: string; title: string; benefits: string; audioUrl: string; text: string }> = {
+  // --- الزيارات العامة (7) ---
   "warith": {
     id: "warith",
     title: "زيارة وارث",
@@ -104,6 +105,8 @@ const ZIYARAT_DATA: Record<string, { id: string; title: string; benefits: string
     audioUrl: `${BASE_AUDIO_URL}/nahiya.mp3`,
     text: `السَّلامُ عَلى آدَمَ صَفْوةِ اللهِ مِن خَليقَتِهِ، السَّلامُ عَلى شِيثٍ وَلِيِّ اللهِ وَخِيَرَتِهِ، السَّلامُ عَلى إِدْريسَ القائِمِ بِحُجَّتِهِ، السَّلامُ عَلى نُوحٍ المُجابِ في دَعْوَتِهِ، السَّلامُ عَلى هُودٍ المَمْدُودِ بِمَعُونَتِهِ، السَّلامُ عَلى صالِحٍ الَّذي تَوَّجَهُ اللهُ بِكَرامَتِهِ، السَّلامُ عَلى إِبْراهيمَ الَّذي خَلَّلَهُ اللهُ بِخُلَّتِهِ، السَّلامُ عَلى إِسْماعيلَ الَّذي فَداهُ اللهُ بِذِبْحٍ عَظيمٍ.`
   },
+
+  // --- زيارات أيام الأسبوع الـ 7 ---
   "saturday": {
     id: "saturday",
     title: "زيارة النبي محمد (ص) - يوم السبت",
@@ -156,7 +159,7 @@ const ZIYARAT_DATA: Record<string, { id: string; title: string; benefits: string
 };
 
 // -------------------------------------------------------------
-// 3. المكون الرئيسي لعرض التفاصيل
+// 3. المكون الرئيسي
 // -------------------------------------------------------------
 export default function ZiyaratDetail() {
   const { id } = useParams<{ id: string }>();
@@ -173,25 +176,14 @@ export default function ZiyaratDetail() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // دالة تقسيم محكمة تجمع بين الجمل حتى يمتلئ المربع بالكامل (حوالي 250 حرف لكل صفحة)
-  const splitTextIntoPages = (fullText: string, targetCharsPerPage = 250) => {
-    // التقسيم المبدئي بناءً على الفواصل والظروف
-    const sentences = fullText.split(/(?<=[،؛.\n])/);
+  // 💥 دالة تقسيم حاسمة تعتمد على عدد الكلمات لتضمن امتلاء المربع بالكامل 💥
+  const splitTextByWords = (fullText: string, wordsPerPage = 25) => {
+    const words = fullText.trim().split(/\s+/);
     const resultPages: string[] = [];
-    let currentChunk = "";
 
-    for (const sentence of sentences) {
-      if ((currentChunk + sentence).length > targetCharsPerPage) {
-        if (currentChunk.trim().length > 0) {
-          resultPages.push(currentChunk.trim());
-        }
-        currentChunk = sentence;
-      } else {
-        currentChunk += sentence;
-      }
-    }
-    if (currentChunk.trim().length > 0) {
-      resultPages.push(currentChunk.trim());
+    for (let i = 0; i < words.length; i += wordsPerPage) {
+      const pageChunk = words.slice(i, i + wordsPerPage).join(" ");
+      resultPages.push(pageChunk);
     }
 
     return resultPages;
@@ -199,7 +191,8 @@ export default function ZiyaratDetail() {
 
   useEffect(() => {
     if (currentItem) {
-      const pageList = splitTextIntoPages(currentItem.text, 250);
+      // هنا حددنا 25 كلمة بكل صفحة ليتم ملء المربع الأخضر بشكل مريح ومقروء
+      const pageList = splitTextByWords(currentItem.text, 25);
       setPages(pageList);
       setCurrentPage(0);
 
@@ -283,8 +276,8 @@ export default function ZiyaratDetail() {
         )}
       </div>
 
-      {/* 2. شاشة عرض النص الرئيسية (ممتلئة بالكامل الآن) */}
-      <div className="flex-1 flex items-center justify-center my-2 min-h-[320px] bg-[#03382c] border border-[#059669]/30 rounded-3xl p-6 shadow-inner relative overflow-hidden">
+      {/* 2. شاشة عرض النص الرئيسية الممتلئة */}
+      <div className="flex-1 flex items-center justify-center my-2 min-h-[300px] bg-[#03382c] border border-[#059669]/30 rounded-3xl p-6 shadow-inner relative overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentPage}
@@ -299,7 +292,7 @@ export default function ZiyaratDetail() {
         </AnimatePresence>
       </div>
 
-      {/* 3. شريط التحكم والتنقل */}
+      {/* 3. شريط التنقل بالصفحات */}
       <div className="flex items-center justify-between bg-[#064e3b]/60 border border-[#059669]/30 rounded-2xl p-2 mb-4">
         <button
           onClick={() => currentPage < pages.length - 1 && setCurrentPage(p => p + 1)}
@@ -326,7 +319,7 @@ export default function ZiyaratDetail() {
         </button>
       </div>
 
-      {/* 4. مشغل الصوت */}
+      {/* 4. المشغل الصوتي */}
       <div className="bg-[#064e3b]/80 border border-[#059669]/40 rounded-3xl p-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <button 
