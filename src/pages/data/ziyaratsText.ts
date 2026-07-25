@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Play, Pause, Download, Volume2, RotateCcw, CheckCircle2, Loader2 } from 'lucide-react';
+import { ArrowRight, Play, Pause, Download, Volume2, RotateCcw, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
 
 // -------------------------------------------------------------
 // 1. محرك IndexedDB للتخزين أوفلاين
@@ -50,7 +50,7 @@ const getOfflineAudio = async (id: string): Promise<Blob | null> => {
 };
 
 // -------------------------------------------------------------
-// 2. قاعدة البيانات الشاملة (تضم الـ 14 زيارة بالكامل)
+// 2. قاعدة البيانات الشاملة
 // -------------------------------------------------------------
 const BASE_AUDIO_URL = "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio";
 
@@ -162,7 +162,7 @@ export default function ZiyaratDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // 🛠️ دالة مطابقة مفتاح الزيارة بمرونة كاملة
+  // 🛠️ دالة مطابقة مفتاح الزيارة
   const getValidKey = (paramId?: string): string => {
     if (!paramId) return "warith";
     const cleanId = paramId.toString().toLowerCase().trim();
@@ -189,29 +189,38 @@ export default function ZiyaratDetail() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // دالة تقطيع النص لصفحات
+  // دالة تقطيع النص لصفحات المضمونة 100%
   const cleanAndSplitText = (rawText: string, wordsPerPage = 35) => {
-    if (!rawText) return ["جاري تحميل النص الشريف..."];
+    if (!rawText || !rawText.trim()) return ["لا يوجد نص لهذه الزيارة حالياً."];
     const cleanText = rawText.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
-    const words = cleanText.split(' ');
-    const resultPages: string[] = [];
+    const words = cleanText.split(' ').filter(w => w.trim().length > 0);
 
+    if (words.length === 0) return [cleanText];
+
+    const resultPages: string[] = [];
     for (let i = 0; i < words.length; i += wordsPerPage) {
       const chunk = words.slice(i, i + wordsPerPage).join(' ');
-      resultPages.push(chunk);
+      if (chunk.trim()) {
+        resultPages.push(chunk);
+      }
     }
 
     return resultPages.length > 0 ? resultPages : [cleanText];
   };
 
+  // إعادة ضبط النص والصوت فور تغيير المعلمة (id)
   useEffect(() => {
-    const pageList = cleanAndSplitText(currentItem.text, 35);
-    setPages(pageList);
-    setCurrentPage(0);
-    checkOfflineStatus();
+    if (currentItem && currentItem.text) {
+      const pageList = cleanAndSplitText(currentItem.text, 35);
+      setPages(pageList);
+      setCurrentPage(0);
+      setIsPlaying(false);
+      checkOfflineStatus();
+    }
   }, [id, currentKey]);
 
   const checkOfflineStatus = async () => {
+    if (!currentItem) return;
     const localBlob = await getOfflineAudio(currentItem.id);
     if (localBlob && audioRef.current) {
       audioRef.current.src = URL.createObjectURL(localBlob);
@@ -290,7 +299,7 @@ export default function ZiyaratDetail() {
       <div className="flex-1 flex items-center justify-center my-2 min-h-[300px] bg-[#03382c] border border-[#059669]/30 rounded-3xl p-6 shadow-inner relative overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentPage}
+            key={`${currentKey}-${currentPage}`}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
@@ -306,9 +315,9 @@ export default function ZiyaratDetail() {
       <div className="flex items-center justify-between bg-[#064e3b]/60 border border-[#059669]/30 rounded-2xl p-2 mb-4">
         <button
           onClick={() => currentPage < pages.length - 1 && setCurrentPage(p => p + 1)}
-          disabled={currentPage === pages.length - 1}
+          disabled={currentPage >= pages.length - 1}
           className={`px-5 py-2.5 rounded-xl font-bold text-sm transition ${
-            currentPage === pages.length - 1 ? 'opacity-30 text-gray-400 cursor-not-allowed' : 'text-[#fbbf24] bg-[#022c22]/60 hover:bg-[#022c22]'
+            currentPage >= pages.length - 1 ? 'opacity-30 text-gray-400 cursor-not-allowed' : 'text-[#fbbf24] bg-[#022c22]/60 hover:bg-[#022c22]'
           }`}
         >
           ‹ التالي
