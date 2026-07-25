@@ -1,65 +1,178 @@
-import { useState, useEffect, useRef } from 'react'; 
-import { useParams, useNavigate } from 'react-router-dom'; 
-import { motion, AnimatePresence } from 'framer-motion'; 
-import { ArrowRight, Play, Pause, RotateCcw, Volume2, VolumeX, Download, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react'; 
-import { ziyaratsData } from './Ziyarats'; 
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, Play, Pause, Download, Volume2, RotateCcw, CheckCircle2, Loader2, ChevronRight, ChevronLeft, FastForward, Rewind } from 'lucide-react';
 
-// ------------------------------------------------------------- 
-// محرك تخزين صوتيات أوفلاين المدمج
-// ------------------------------------------------------------- 
-const DB_NAME = 'ShiaZiyaratsAudioDB'; 
-const STORE_NAME = 'ziyarat_files'; 
+// -------------------------------------------------------------
+// 1. محرك IndexedDB للتخزين أوفلاين
+// -------------------------------------------------------------
+const DB_NAME = 'ZiyaratsAudioDB_Full';
+const STORE_NAME = 'audio_files';
 
-const openAudioDB = (): Promise<IDBDatabase> => { 
-  return new Promise((resolve, reject) => { 
-    const request = indexedDB.open(DB_NAME, 1); 
-    request.onupgradeneeded = () => { 
-      const db = request.result; 
-      if (!db.objectStoreNames.contains(STORE_NAME)) { 
-        db.createObjectStore(STORE_NAME); 
-      } 
-    }; 
-    request.onsuccess = () => resolve(request.result); 
-    request.onerror = () => reject(request.error); 
-  }); 
-}; 
+const openAudioDB = (): Promise<IDBDatabase> => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+};
 
-const saveAudioBlob = async (id: string, blob: Blob) => { 
-  const db = await openAudioDB(); 
-  return new Promise<void>((resolve, reject) => { 
-    const tx = db.transaction(STORE_NAME, 'readwrite'); 
-    const store = tx.objectStore(STORE_NAME); 
-    const req = store.put(blob, id); 
-    req.onsuccess = () => resolve(); 
-    req.onerror = () => reject(req.error); 
-  }); 
-}; 
+const saveAudioOffline = async (id: string, blob: Blob) => {
+  const db = await openAudioDB();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.put(blob, id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+};
 
-const getAudioBlob = async (id: string): Promise<Blob | null> => { 
-  try { 
-    const db = await openAudioDB(); 
-    return new Promise((resolve) => { 
-      const tx = db.transaction(STORE_NAME, 'readonly'); 
-      const store = tx.objectStore(STORE_NAME); 
-      const req = store.get(id); 
-      req.onsuccess = () => resolve(req.result || null); 
-      req.onerror = () => resolve(null); 
-    }); 
-  } catch { 
-    return null; 
-  } 
-}; 
+const getOfflineAudio = async (id: string): Promise<Blob | null> => {
+  try {
+    const db = await openAudioDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get(id);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+};
 
-// ------------------------------------------------------------- 
-export function ZiyaratDetail() { 
-  const { id } = useParams<{ id: string }>(); 
-  const navigate = useNavigate(); 
+// -------------------------------------------------------------
+// 2. قائمة ترتيب الزيارات (لتطبيق التقديم والترجيع بين الزيارات)
+// -------------------------------------------------------------
+const ZIYARAT_KEYS = [
+  "warith", "arbaeen", "ashura", "aminullah", "jamia", 
+  "aleyasin", "nahiya", "saturday", "sunday", "monday", 
+  "tuesday", "wednesday", "thursday", "friday"
+];
 
-  // دالة تحسين مطابقة الـ ID
+const BASE_AUDIO_URL = "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio";
+
+const ZIYARAT_DATA: Record<string, { id: string; title: string; benefits: string; audioUrl: string; text: string }> = {
+  "warith": {
+    id: "warith",
+    title: "زيارة وارث",
+    benefits: "زيارة عظيمة مروية عن الإمام الصادق (ع) تُبين مقام الإمام الحسين كوارث للأنبياء العظام.",
+    audioUrl: `${BASE_AUDIO_URL}/warith.mp3`,
+    text: `السَّلامُ عَلَيْكَ يا وارِثَ آدَمَ صَفْوةِ اللهِ، السَّلامُ عَلَيْكَ يا وارِثَ نُوحٍ نَبِيِّ اللهِ، السَّلامُ عَلَيْكَ يا وارِثَ إِبْراهِيمَ خَلِيلِ اللهِ، السَّلامُ عَلَيْكَ يا وارِثَ مُوسَى كَلِيمِ اللهِ، السَّلامُ عَلَيْكَ يا وارِثَ عِيسَى رُوحِ اللهِ، السَّلامُ عَلَيْكَ يا وارِثَ مُحَمَّدٍ حَبِيبِ اللهِ، السَّلامُ عَلَيْكَ يا وارِثَ أَمِيرِ الْمُؤْمِنِينَ عَلَيْهِ السَّلامُ، السَّلامُ عَلَيْكَ يابْنَ مُحَمَّدٍ الْمُصْطَفى، السَّلامُ عَلَيْكَ يابْنَ عَلِيٍّ الْمُرْتَضى، السَّلامُ عَلَيْكَ يابْنَ فاطِمَةَ الزَّهْراءِ، السَّلامُ عَلَيْكَ يابْنَ خَدِيجَةَ الْكُبْرى. أَشْهَدُ أَنَّكَ قَدْ أَقَمْتَ الصَّلاةَ، وَآتَيْتَ الزَّكاةَ، وَأَمَرْتَ بِالْمَعْرُوفِ، وَنَهَيْتَ عَنِ الْمُنْكَرِ، وَأَطَعْتَ اللهَ وَرَسُولَهُ حَتّى أَتاكَ الْيَقِينُ. فَلَعَنَ اللهُ أُمَّةً قَتَلَتْكَ، وَلَعَنَ اللهُ أُمَّةً ظَلَمَتْكَ، وَلَعَنَ اللهُ أُمَّةً سَمِعَتْ بِذلِكَ فَرَضِيَتْ بِهِ.`
+  },
+  "arbaeen": {
+    id: "arbaeen",
+    title: "زيارة الأربعين",
+    benefits: "من علامات المؤمن الخمس المروية عن الإمام الحسن العسكري (ع)، وتجديد لميثاق الولاء.",
+    audioUrl: `${BASE_AUDIO_URL}/arbaeen.mp3`,
+    text: `السَّلامُ عَلَى وَلِيِّ اللهِ وَحَبِيبِهِ، السَّلامُ عَلَى خَلِيلِ اللهِ وَنَجِيبِهِ، السَّلامُ عَلَى صَفِيِّ اللهِ وَابْنِ صَفِيِّهِ، السَّلامُ عَلَى الحُسَيْنِ المَظْلُومِ الشَّهِيدِ، السَّلامُ عَلَى أَسِيرِ الكُرُبَاتِ وَقَتِيلِ العَبَرَاتِ. اللَّهُمَّ إِنِّي أَشْهَدُ أَنَّهُ وَلِيُّكَ وَابْنُ وَلِيِّكَ وَصَفِيُّكَ وَابْنُ صَفِيِّكَ الفَائِزُ بِكَرَامَتِكَ، أَكْرَمْتَهُ بِالشَّهَادَةِ وَحَبَوْتَهُ بِالسَّعَادَةِ.`
+  },
+  "ashura": {
+    id: "ashura",
+    title: "زيارة عاشوراء",
+    benefits: "توجب غفران الذنوب، وقضاء الحوائج، وسلامة الدارين، ونيل شفاعة سيد الشهداء (ع).",
+    audioUrl: `${BASE_AUDIO_URL}/ashura.mp3`,
+    text: `السَّلامُ عَلَيْكَ يا أَبا عَبْدِ اللهِ، السَّلامُ عَلَيْكَ يابْنَ رَسُولِ اللهِ، السَّلامُ عَلَيْكَ يا خِيَرَةَ اللهِ وَابْنَ خِيَرَتِهِ، السَّلامُ عَلَيْكَ يابْنَ أَمِيرِ الْمُؤْمِنِينَ وَابْنَ سَيِّدِ الْوَصِيِّينَ، السَّلامُ عَلَيْكَ يابْنَ فاطِمَةَ سَيِّدَةِ نِساءِ الْعالَمِينَ. السَّلامُ عَلَيْكَ يا ثارَ اللهِ وَابْنَ ثارِهِ وَالْوِتْرَ الْمَوْتُورَ.`
+  },
+  "aminullah": {
+    id: "aminullah",
+    title: "زيارة أمين الله",
+    benefits: "تعتبر من أعلى الزيارات شأناً واعتباراً، ويُزار بها أمير المؤمنين وسائر الأئمة.",
+    audioUrl: `${BASE_AUDIO_URL}/aminullah.mp3`,
+    text: `السَّلامُ عَلَيكَ يا أمِينَ اللهِ في أرضِهِ وَحُجَّتَهُ عَلى عِبادِهِ، السَّلامُ عَلَيكَ يا أمِيرَ المُؤْمِنِينَ. أشهَدُ أنَّكَ جاهَدتَ في اللهِ حَقَّ جِهادِهِ، وَعَمِلتَ بِكِتابِهِ، وَاتَّبَعتَ سُنَنَ نَبِيِّهِ صَلَّى اللهُ عَلَيهِ وَآلِهِ، حَتّى دَعاكَ اللهُ إلى جِوارِهِ.`
+  },
+  "jamia": {
+    id: "jamia",
+    title: "الزيارة الجامعة الكبيرة",
+    benefits: "من أعلى الزيارات سنداً وبلاغةً، تشتمل على بيان مقامات أهل البيت الأخلاقية والكونية.",
+    audioUrl: `${BASE_AUDIO_URL}/jamia.mp3`,
+    text: `السَّلامُ عَلَيْكُمْ يا أَهْلَ بَيْتِ النُّبُوَّةِ، وَمَوْضِعَ الرِّسالَةِ، وَمُخْتَلَفَ المَلائِكَةِ، وَمَبْطِطَ الوَحْيِ، وَمَعْدِنَ الرَّحْمَةِ، وَخُزَّانَ العِلْمِ، وَمُنْتَهَى الحِلْمِ، وَأُصُولَ الكَرَمِ، وَقادَةَ الأُمَمِ.`
+  },
+  "aleyasin": {
+    id: "aleyasin",
+    title: "زيارة آل ياسين",
+    benefits: "مروية عن الناحية المقدسة، وهي الطريق الأسمى للارتباط والتوسل بالإمام الحجة (عج).",
+    audioUrl: `${BASE_AUDIO_URL}/aleyasin.mp3`,
+    text: `سَلامٌ عَلى آلِ يس، السَّلامُ عَلَيْكَ يا داعِيَ اللهِ وَرَبَّانِيَّ آياتِهِ، السَّلامُ عَلَيْكَ يا بابَ اللهِ وَدَيَّانَ دِينِهِ، السَّلامُ عَلَيْكَ يا خَلِيفَةَ اللهِ وَناصِرَ حَقِّهِ.`
+  },
+  "nahiya": {
+    id: "nahiya",
+    title: "زيارة الناحية المقدسة",
+    benefits: "تعبّر عن عمق الفجيعة والمواساة، وتفصل مصائب كربلاء بلسان المعصوم الحاضر.",
+    audioUrl: `${BASE_AUDIO_URL}/nahiya.mp3`,
+    text: `السَّلامُ عَلى آدَمَ صَفْوةِ اللهِ مِن خَليقَتِهِ، السَّلامُ عَلى شِيثٍ وَلِيِّ اللهِ وَخِيَرَتِهِ، السَّلامُ عَلى إِدْريسَ القائِمِ بِحُجَّتِهِ، السَّلامُ عَلى نُوحٍ المُجابِ في دَعْوَتِهِ.`
+  },
+  "saturday": {
+    id: "saturday",
+    title: "زيارة النبي محمد (ص) - يوم السبت",
+    benefits: "تجديد العهد والولاء لرسول الله الأعظم نبي الرحمة وخاتم المرسلين صلوات الله عليه وآله.",
+    audioUrl: `${BASE_AUDIO_URL}/saturday.mp3`,
+    text: `أَشْهَدُ أَنْ لا إِلَهَ إِلاَّ اللهُ وَحْدَهُ لا شَرِيكَ لَهُ، وَأَشْهَدُ أَنَّكَ رَسُولُهُ، وَأَنَّكَ مُحَمَّدُ بْنُ عَبْدِ اللهِ، وَأَشْهَدُ أَنَّكَ قَدْ بَلَّغْتَ رِسالاتِ رَبِّكَ وَنَصَحْتَ لأُمَّتِكَ.`
+  },
+  "sunday": {
+    id: "sunday",
+    title: "زيارة أمير المؤمنين والزهراء (ع) - يوم الأحد",
+    benefits: "الارتباط بباب علم رسول الله وأم الأئمة النجباء ونيل شفاعتهم الخاصة بيوم الأحد.",
+    audioUrl: `${BASE_AUDIO_URL}/sunday.mp3`,
+    text: `السَّلامُ عَلَى الشَّجَرَةِ النَّبَوِيَّةِ، وَالدَّوْحَةِ الْهَاشِمِيَّةِ، الْمُضِيئَةِ الْمُثْمِرَةِ بِالنُّبُوَّةِ، الْمُؤْنِقَةِ بِالإِمَامَةِ، وَعَلَى ضَجِيعَيْكَ آدَمَ وَنوُحٍ عَلَيْهِمَا السَّلامُ.`
+  },
+  "monday": {
+    id: "monday",
+    title: "زيارة الحسن والحسين (ع) - يوم الإثنين",
+    benefits: "تدرّ الخير والبركة وتحصّن قارئها ببركة ريحانتي رسول الله الأكرم عليهما السلام.",
+    audioUrl: `${BASE_AUDIO_URL}/monday.mp3`,
+    text: `السَّلامُ عَلَيْكَ يَا بْنَ رَسُولِ رَبِّ الْعالَمِينَ، السَّلامُ عَلَيْكَ يَا بْنَ أمِيرِ الْمُؤْمِنِينَ، السَّلامُ عَلَيْكَ يَا بْنَ فَاطِمَةَ الزَّهْرَاءِ سَيِّدَةِ نِساءِ الْعَالَمِينَ.`
+  },
+  "tuesday": {
+    id: "tuesday",
+    title: "زيارة أئمة البقيع (ع) - يوم الثلاثاء",
+    benefits: "تقوية البصيرة الدينية والارتباط بجهابذة العلم النبوي: السجاد والباقر والصادق (ع).",
+    audioUrl: `${BASE_AUDIO_URL}/tuesday.mp3`,
+    text: `السَّلامُ عَلَيْكُمْ يَا خُزَّانَ عِلْمِ اللهِ، السَّلامُ عَلَيْكُمْ يَا تَرَاجِمَةَ وَحْيِ اللهِ، السَّلامُ عَلَيْكُمْ يَا أَئِمَّةَ الْهُدَى، وَأَعْلامَ التُّقَى.`
+  },
+  "wednesday": {
+    id: "wednesday",
+    title: "زيارة الحجج الأربعة (ع) - يوم الأربعاء",
+    benefits: "زيارة الإمام الكاظم والرضا والجواد والهادي (ع) لقضاء الحوائج والبركة.",
+    audioUrl: `${BASE_AUDIO_URL}/wednesday.mp3`,
+    text: `السَّلامُ عَلَيْكُمْ يَا أَوْلِيَاءَ اللهِ، السَّلامُ عَلَيْكُمْ يَا حُجَجَ اللهِ، السَّلامُ عَلَيْكُمْ يَا نُورَ اللهِ فِي ظُلُمَاتِ الأَرْضِ.`
+  },
+  "thursday": {
+    id: "thursday",
+    title: "زيارة الحسن العسكري (ع) - يوم الخميس",
+    benefits: "التمهيد والتهيئة النفسية لولاية ابنه الحجة القائم ونيل النورانية القلبية المستمرة.",
+    audioUrl: `${BASE_AUDIO_URL}/thursday.mp3`,
+    text: `السَّلامُ عَلَيْكَ يَا وَلِيَّ اللهِ، السَّلامُ عَلَيْكَ يَا حُجَّةَ اللهِ وَخَالِصَتَهُ، السَّلامُ عَلَيْكَ يَا إِمَامَ الْمُؤْمِنِينَ.`
+  },
+  "friday": {
+    id: "friday",
+    title: "زيارة صاحب الزمان (عج) - يوم الجمعة",
+    benefits: "أعظم طقوس الندبة والارتباط بقطب عالم الإمكان الإمام المهدي المنتظر.",
+    audioUrl: `${BASE_AUDIO_URL}/friday.mp3`,
+    text: `السَّلامُ عَلَيْكَ يَا حُجَّةَ اللهِ فِي أَرْضِهِ، السَّلامُ عَلَيْكَ يَا عَيْنَ اللهِ فِي خَلْقِهِ، السَّلامُ عَلَيْكَ يَا نُورَ اللهِ الَّذِي يَهْتَدِي بِهِ الْمُهْتَدُونَ.`
+  }
+};
+
+// -------------------------------------------------------------
+// 3. المكون الرئيسي
+// -------------------------------------------------------------
+export default function ZiyaratDetail() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  // مطابقة المفتاح
   const getValidKey = (paramId?: string): string => {
     if (!paramId) return "warith";
     const cleanId = paramId.toString().toLowerCase().trim();
-    if (ziyaratsData[cleanId as keyof typeof ziyaratsData]) return cleanId;
+    if (ZIYARAT_DATA[cleanId]) return cleanId;
 
     const numericMap: Record<string, string> = {
       "1": "ashura", "2": "warith", "3": "aminullah", "4": "jamia",
@@ -72,302 +185,206 @@ export function ZiyaratDetail() {
   };
 
   const currentKey = getValidKey(id);
-  const item = ziyaratsData[currentKey as keyof typeof ziyaratsData]; 
+  const currentItem = ZIYARAT_DATA[currentKey] || ZIYARAT_DATA["warith"];
+  const currentIndex = ZIYARAT_KEYS.indexOf(currentKey);
 
-  // دالة استخراج النص من الكائن بذكاء مهما كان اسم الخاصية
-  const extractText = (obj: any): string => {
-    if (!obj) return "";
-    if (typeof obj === "string") return obj;
-    if (obj.text && typeof obj.text === "string") return obj.text;
-    if (obj.arabicText && typeof obj.arabicText === "string") return obj.arabicText;
-    if (obj.content && typeof obj.content === "string") return obj.content;
-    if (obj.ziyaratText && typeof obj.ziyaratText === "string") return obj.ziyaratText;
-    if (obj.body && typeof obj.body === "string") return obj.body;
-    return "";
-  };
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isDownloaded, setIsDownloaded] = useState<boolean>(false);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
 
-  const rawZiyaratText = extractText(item);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const [pages, setPages] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(0);
-
-  const [isPlaying, setIsPlaying] = useState(false); 
-  const [isMuted, setIsMuted] = useState(false); 
-  const [audioError, setAudioError] = useState(false); 
-  const [isDownloaded, setIsDownloaded] = useState(false); 
-  const [isDownloading, setIsDownloading] = useState(false); 
-
-  const audioRef = useRef<HTMLAudioElement | null>(null); 
-  const currentBlobUrlRef = useRef<string | null>(null); 
-
-  // دالة آمنة لتقطيع النص إلى صفحات (30 كلمة لكل صفحة)
-  const cleanAndSplitText = (rawText: string, wordsPerPage = 30) => {
-    if (!rawText || !rawText.trim()) return [];
-    const cleanText = rawText.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
-    const words = cleanText.split(' ').filter(w => w.length > 0);
-    
-    if (words.length === 0) return [cleanText];
-
-    const resultPages: string[] = [];
-    for (let i = 0; i < words.length; i += wordsPerPage) {
-      const chunk = words.slice(i, i + wordsPerPage).join(' ');
-      if (chunk.trim()) {
-        resultPages.push(chunk);
-      }
-    }
-    return resultPages;
-  };
-
-  // تجهيز صفحات النص عند تغيير الزيارة
+  // إعادة ضبط الصوت والوضع عند تغيير الزيارة
   useEffect(() => {
-    if (item) {
-      const splitPages = cleanAndSplitText(rawZiyaratText, 30);
-      setPages(splitPages);
-      setCurrentPage(0);
+    setIsPlaying(false);
+    checkOfflineStatus();
+  }, [id, currentKey]);
+
+  const checkOfflineStatus = async () => {
+    if (!currentItem) return;
+    const localBlob = await getOfflineAudio(currentItem.id);
+    if (localBlob && audioRef.current) {
+      audioRef.current.src = URL.createObjectURL(localBlob);
+      setIsDownloaded(true);
+    } else if (audioRef.current) {
+      audioRef.current.src = currentItem.audioUrl;
+      setIsDownloaded(false);
     }
-  }, [id, currentKey, rawZiyaratText]);
+  };
 
-  // تجهيز الصوتيات
-  useEffect(() => { 
-    if (!item) return; 
+  // التنقل بين الزيارات الـ 14
+  const goToNextZiyarat = () => {
+    if (currentIndex < ZIYARAT_KEYS.length - 1) {
+      navigate(`/ziyarat/${ZIYARAT_KEYS[currentIndex + 1]}`);
+    }
+  };
 
-    const prepareAudio = async () => { 
-      if (audioRef.current) { 
-        audioRef.current.pause(); 
-      } 
-      if (currentBlobUrlRef.current) { 
-        URL.revokeObjectURL(currentBlobUrlRef.current); 
-        currentBlobUrlRef.current = null; 
-      } 
-      setAudioError(false); 
-      setIsPlaying(false); 
+  const goToPrevZiyarat = () => {
+    if (currentIndex > 0) {
+      navigate(`/ziyarat/${ZIYARAT_KEYS[currentIndex - 1]}`);
+    }
+  };
 
-      const savedBlob = await getAudioBlob(item.id); 
-      let audioSource = ''; 
+  // تقديم وتأخير الصوت (10 ثوانٍ)
+  const seekAudio = (seconds: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime += seconds;
+    }
+  };
 
-      if (savedBlob) { 
-        setIsDownloaded(true); 
-        currentBlobUrlRef.current = URL.createObjectURL(savedBlob); 
-        audioSource = currentBlobUrlRef.current; 
-      } else { 
-        setIsDownloaded(false); 
-        audioSource = item.audioUrl; 
-      } 
+  const handleDownloadOffline = async () => {
+    if (isDownloaded) {
+      alert("✅ الصوت محفوظ أوفلاين وتعمل هذه الشاشة بدون إنترنت!");
+      return;
+    }
 
-      audioRef.current = new Audio(audioSource); 
-      audioRef.current.muted = isMuted; 
-      audioRef.current.addEventListener('error', () => { 
-        setAudioError(true); 
-        setIsPlaying(false); 
-      }); 
-      audioRef.current.addEventListener('ended', () => { 
-        setIsPlaying(false); 
-      }); 
-    }; 
+    setIsDownloading(true);
+    try {
+      const response = await fetch(encodeURI(currentItem.audioUrl));
+      if (!response.ok) throw new Error("تعذر جلب الملف");
+      const blob = await response.blob();
+      await saveAudioOffline(currentItem.id, blob);
 
-    prepareAudio(); 
+      if (audioRef.current) {
+        audioRef.current.src = URL.createObjectURL(blob);
+      }
+      setIsDownloaded(true);
+      alert("🎉 تم حفظ الصوت بنجاح لاستخدامه أوفلاين!");
+    } catch {
+      alert("❌ تعذر التحميل. تأكد من الاتصال بالإنترنت أولاً.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
-    return () => { 
-      if (audioRef.current) { 
-        audioRef.current.pause(); 
-        audioRef.current = null; 
-      } 
-      if (currentBlobUrlRef.current) { 
-        URL.revokeObjectURL(currentBlobUrlRef.current); 
-      } 
-    }; 
-  }, [item, id]); 
+  const togglePlayAudio = () => {
+    if (!audioRef.current) return;
 
-  const togglePlay = () => { 
-    if (!audioRef.current || audioError) return; 
-    if (isPlaying) { 
-      audioRef.current.pause(); 
-      setIsPlaying(false); 
-    } else { 
-      audioRef.current 
-        .play() 
-        .then(() => setIsPlaying(true)) 
-        .catch(() => { 
-          setAudioError(true); 
-          setIsPlaying(false); 
-        }); 
-    } 
-  }; 
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+      }).catch(() => {
+        alert("تعذر تشغيل الصوت. أعد التحميل أو تحقق من الاتصال.");
+      });
+    }
+  };
 
-  const toggleMute = () => { 
-    if (!audioRef.current) return; 
-    audioRef.current.muted = !isMuted; 
-    setIsMuted(!isMuted); 
-  }; 
+  return (
+    <div className="min-h-screen bg-[#022c22] text-[#f0f9ff] flex flex-col justify-between p-4 pb-20 select-none" dir="rtl">
+      <audio ref={audioRef} onEnded={() => setIsPlaying(false)} preload="metadata" />
 
-  const handleDownload = async () => { 
-    if (!item || isDownloading) return; 
-    if (isDownloaded) { 
-      alert(`🎉 "${item.title}" محفوظة بالفعل وتعمل أوفلاين دون إنترنت!`); 
-      return; 
-    } 
+      {/* 1. الهيدر وفضل الزيارة */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 bg-[#064e3b] text-[#fbbf24] rounded-full border border-[#059669]/30 hover:bg-[#047857] transition"
+          >
+            <ArrowRight size={20} />
+          </button>
+          <h2 className="text-xl font-bold text-[#fbbf24]">{currentItem.title}</h2>
+          <div className="w-8"></div>
+        </div>
 
-    setIsDownloading(true); 
-    try { 
-      const response = await fetch(encodeURI(item.audioUrl)); 
-      if (!response.ok) throw new Error('فشل جلب الملف الصوتي'); 
-      const blob = await response.blob(); 
-      await saveAudioBlob(item.id, blob); 
+        {currentItem.benefits && (
+          <div className="p-3 bg-[#064e3b]/40 border border-[#059669]/30 rounded-2xl text-center text-xs text-[#34d399] leading-relaxed mb-4">
+            {currentItem.benefits}
+          </div>
+        )}
+      </div>
 
-      setIsDownloaded(true); 
-      setAudioError(false); 
-
-      if (audioRef.current) { 
-        audioRef.current.pause(); 
-      } 
-
-      currentBlobUrlRef.current = URL.createObjectURL(blob); 
-      audioRef.current = new Audio(currentBlobUrlRef.current); 
-      audioRef.current.muted = isMuted; 
-
-      alert(`✅ تم تحميل صوت "${item.title}" بنجاح! يمكنك الاستماع إليها الآن بدون إنترنت.`); 
-    } catch (err) { 
-      console.error(err); 
-      alert('❌ تعذر التحميل، يرجى التأكد من توفر الإنترنت عند التحميل لأول مرة.'); 
-    } finally { 
-      setIsDownloading(false); 
-    } 
-  }; 
-
-  // التنقل بين صفحات النص داخل الزيارة
-  const handleNextPage = () => { 
-    if (currentPage < pages.length - 1) { 
-      setCurrentPage(prev => prev + 1); 
-    } 
-  }; 
-
-  const handlePrevPage = () => { 
-    if (currentPage > 0) { 
-      setCurrentPage(prev => prev - 1); 
-    } 
-  }; 
-
-  if (!item) { 
-    return ( 
-      <div className="min-h-screen bg-[#022c22] text-white flex items-center justify-center p-6 text-center" dir="rtl"> 
-        <div> 
-          <AlertTriangle className="text-amber-500 mx-auto mb-4" size={48} /> 
-          <p className="text-xl font-bold">الزيارة غير موجودة</p> 
-          <button onClick={() => navigate(-1)} className="mt-4 px-6 py-2 bg-[#064e3b] rounded-xl text-[#fbbf24]"> 
-            العودة 
-          </button> 
-        </div> 
-      </div> 
-    ); 
-  } 
-
-  // الحصول على النص الفعلي للصفحة الحالية
-  const currentTextSnippet = pages[currentPage] || rawZiyaratText || "النص غير متوفر لهذه الزيارة حالياً.";
-
-  return ( 
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 min-h-screen pb-64 bg-[#022c22] text-[#f0f9ff] flex flex-col items-center select-none" dir="rtl"> 
-      {/* 1. الهيدر */} 
-      <header className="flex justify-between items-center w-full mb-4"> 
-        <button onClick={() => navigate(-1)} className="p-3 bg-[#064e3b] text-[#fbbf24] rounded-full border border-[#059669]/30 hover:bg-[#047857] transition"> 
-          <ArrowRight size={20} /> 
-        </button> 
-        <h1 className="text-xl font-bold text-[#fbbf24]">{item.title}</h1> 
-        <div className="w-[46px]" /> 
-      </header> 
-
-      {/* 2. الفضل والفوائد */} 
-      {item.benefits && ( 
-        <div className="bg-[#064e3b]/30 border border-[#059669]/20 p-3 rounded-2xl w-full text-center text-xs text-[#fbbf24]/90 mb-4 leading-relaxed"> 
-          {item.benefits} 
-        </div> 
-      )} 
-
-      {/* 3. حاوية عرض النص المقطّع بصفحات */} 
-      <div className="flex-1 w-full bg-[#064e3b]/20 border border-[#059669]/20 rounded-3xl p-6 flex items-center justify-center min-h-[280px] mb-4 shadow-inner relative overflow-hidden"> 
+      {/* 2. شاشة عرض النص الكامل مع التمرير السلس */}
+      <div className="flex-1 flex items-center justify-center my-2 min-h-[300px] max-h-[50vh] overflow-y-auto bg-[#03382c] border border-[#059669]/30 rounded-3xl p-6 shadow-inner relative custom-scrollbar">
         <AnimatePresence mode="wait">
-          <motion.p 
-            key={`${currentKey}-${currentPage}`}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.15 }}
-            className="text-xl sm:text-2xl text-center leading-[2.4] font-serif font-semibold text-[#f0f9ff] tracking-wide"
-          > 
-            {currentTextSnippet} 
-          </motion.p> 
+          <motion.p
+            key={currentKey}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="text-center text-lg sm:text-xl font-serif leading-loose text-[#f0f9ff] tracking-wide"
+          >
+            {currentItem.text}
+          </motion.p>
         </AnimatePresence>
-      </div> 
+      </div>
 
-      {/* 4. شريط المشغل والتحكم في الأسفل */} 
-      <div className="fixed bottom-20 left-4 right-4 max-w-md mx-auto z-50 flex flex-col gap-3"> 
-        {/* أزرار التنقل بين صفحات النص */}
-        <div className="bg-[#064e3b] border border-[#059669]/30 rounded-2xl p-2 flex justify-between items-center text-sm font-bold text-[#fbbf24] px-4 shadow-md"> 
-          <button 
-            onClick={handleNextPage} 
-            disabled={currentPage >= (pages.length > 0 ? pages.length - 1 : 0)} 
-            className={`flex items-center gap-1 ${currentPage >= (pages.length > 0 ? pages.length - 1 : 0) ? 'opacity-30 cursor-not-allowed' : 'hover:text-white'}`}
-          > 
-            ‹ التالي 
-          </button> 
-          
-          <span className="text-xs bg-[#022c22] px-3 py-1 rounded-full text-gray-300"> 
-            {pages.length > 0 ? `${currentPage + 1} / ${pages.length}` : '1 / 1'} 
-          </span> 
-          
-          <button 
-            onClick={handlePrevPage} 
-            disabled={currentPage <= 0} 
-            className={`flex items-center gap-1 ${currentPage <= 0 ? 'opacity-30 cursor-not-allowed' : 'hover:text-white'}`}
-          > 
-            السابق › 
-          </button> 
-        </div> 
+      {/* 3. شريط التنقل بين الزيارات كاملة (التقديم والترجيع) */}
+      <div className="flex items-center justify-between bg-[#064e3b]/60 border border-[#059669]/30 rounded-2xl p-2 mb-4">
+        <button
+          onClick={goToNextZiyarat}
+          disabled={currentIndex >= ZIYARAT_KEYS.length - 1}
+          className={`flex items-center gap-1 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition ${
+            currentIndex >= ZIYARAT_KEYS.length - 1 ? 'opacity-30 text-gray-400 cursor-not-allowed' : 'text-[#fbbf24] bg-[#022c22]/60 hover:bg-[#022c22]'
+          }`}
+        >
+          الزيارة التالية <ChevronLeft size={16} />
+        </button>
 
-        <div className="relative w-full"> 
-          {audioError && ( 
-            <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="absolute -top-24 left-0 right-0 bg-[#311111] border border-red-900 rounded-2xl p-3 flex items-center justify-between text-red-200 text-xs shadow-lg"> 
-              <div className="flex items-center gap-2"> 
-                <AlertTriangle size={18} className="text-red-500 shrink-0" /> 
-                <span className="leading-relaxed">الملف غير موجود محلياً أو يتطلب الاتصال بالإنترنت أولاً لتحميله أوفلاين.</span> 
-              </div> 
-              <button onClick={() => setAudioError(false)} className="text-red-400 font-bold px-1 text-sm"> × </button> 
-            </motion.div> 
-          )} 
+        <div className="px-3 py-1 bg-[#022c22] border border-[#059669]/40 rounded-xl text-xs font-bold text-[#fbbf24]">
+          {currentIndex + 1} / {ZIYARAT_KEYS.length}
+        </div>
 
-          <div className="bg-[#053e2f] border border-[#059669]/20 rounded-3xl p-4 flex items-center justify-between shadow-2xl h-24 pl-20 relative"> 
-            <div className="flex items-center gap-3"> 
-              <button onClick={toggleMute} className={`w-10 h-10 rounded-full flex items-center justify-center shadow-inner transition ${ isMuted ? 'bg-red-900 text-red-400' : 'bg-[#064e3b] text-[#fbbf24]' }`}> 
-                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />} 
-              </button> 
-              <div className="flex flex-col text-right"> 
-                <span className="text-sm font-bold text-[#fbbf24]">{item.title}</span> 
-                <span className="text-[10px] text-gray-400 mt-0.5"> 
-                  {isPlaying ? 'جاري التشغيل...' : isDownloaded ? 'جاهز (أوفلاين)' : 'متوقف'} 
-                </span> 
-              </div> 
-            </div> 
+        <button
+          onClick={goToPrevZiyarat}
+          disabled={currentIndex <= 0}
+          className={`flex items-center gap-1 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition ${
+            currentIndex <= 0 ? 'opacity-30 text-gray-400 cursor-not-allowed' : 'text-[#fbbf24] bg-[#022c22]/60 hover:bg-[#022c22]'
+          }`}
+        >
+          <ChevronRight size={16} /> الزيارة السابقة
+        </button>
+      </div>
 
-            <div className="flex items-center gap-4"> 
-              <button onClick={handleDownload} disabled={isDownloading} className="text-[#fbbf24] hover:text-white transition disabled:opacity-50" title="تحميل أوفلاين"> 
-                {isDownloading ? ( 
-                  <Loader2 size={20} className="animate-spin text-[#fbbf24]" /> 
-                ) : isDownloaded ? ( 
-                  <CheckCircle2 size={20} className="text-[#38ef7d]" /> 
-                ) : ( 
-                  <Download size={20} /> 
-                )} 
-              </button> 
-              <button onClick={() => { if (audioRef.current) { audioRef.current.currentTime = 0; } }} className="text-[#059669] hover:text-[#fbbf24] transition"> 
-                <RotateCcw size={18} /> 
-              </button> 
-            </div> 
+      {/* 4. المشغل الصوتي (مع أزرار التقديم والتأخير للصوت) */}
+      <div className="bg-[#064e3b]/80 border border-[#059669]/40 rounded-3xl p-3 flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          {/* زر التشغيل/الإيقاف */}
+          <button
+            onClick={togglePlayAudio}
+            className="w-11 h-11 bg-[#fbbf24] text-[#022c22] rounded-full flex items-center justify-center shadow-lg active:scale-95 transition"
+          >
+            {isPlaying ? <Pause size={22} fill="#022c22" /> : <Play size={22} fill="#022c22" className="mr-0.5" />}
+          </button>
 
-            <button onClick={togglePlay} disabled={audioError} className={`absolute left-2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full flex items-center justify-center shadow-2xl border-4 border-[#022c22] transition transform active:scale-95 ${ audioError ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-[#f5b025] text-black hover:bg-[#fbbf24]' }`}> 
-              {isPlaying ? <Pause size={28} fill="currentColor" /> : <Play size={28} className="ml-1" fill="currentColor" />} 
-            </button> 
-          </div> 
-        </div> 
-      </div> 
-    </motion.div> 
-  ); 
+          {/* تأخير 10 ثوانٍ */}
+          <button onClick={() => seekAudio(-10)} className="p-1.5 text-[#059669] hover:text-[#fbbf24] transition" title="-10 ثوانٍ">
+            <Rewind size={18} />
+          </button>
+
+          {/* تقديم 10 ثوانٍ */}
+          <button onClick={() => seekAudio(10)} className="p-1.5 text-[#059669] hover:text-[#fbbf24] transition" title="+10 ثوانٍ">
+            <FastForward size={18} />
+          </button>
+
+          {/* إعادة من البداية */}
+          <button onClick={() => { if (audioRef.current) audioRef.current.currentTime = 0; }} className="p-1.5 text-[#059669] hover:text-[#fbbf24] transition" title="إعادة">
+            <RotateCcw size={16} />
+          </button>
+
+          {/* التحميل أوفلاين */}
+          <button
+            onClick={handleDownloadOffline}
+            className={`p-1.5 transition ${isDownloaded ? 'text-[#34d399]' : 'text-[#059669] hover:text-[#fbbf24]'}`}
+          >
+            {isDownloading ? <Loader2 size={18} className="animate-spin" /> : isDownloaded ? <CheckCircle2 size={18} /> : <Download size={18} />}
+          </button>
+        </div>
+
+        <div className="text-left pr-2">
+          <h4 className="font-bold text-xs sm:text-sm text-[#f0f9ff] truncate max-w-[110px]">{currentItem.title}</h4>
+          <p className="text-[10px] text-[#059669]">
+            {isPlaying ? "جاري التشغيل..." : isDownloaded ? "جاهز أوفلاين" : "متوقف"}
+          </p>
+        </div>
+
+        <div className="p-2 bg-[#022c22]/50 border border-[#059669]/30 rounded-xl text-[#059669]">
+          <Volume2 size={18} />
+        </div>
+      </div>
+    </div>
+  );
 }
