@@ -50,7 +50,7 @@ const getOfflineAudio = async (id: string): Promise<Blob | null> => {
 };
 
 // -------------------------------------------------------------
-// 2. قاعدة البيانات الشاملة (تضم الـ 14 زيارة كاملة)
+// 2. قاعدة البيانات الشاملة (تضم الـ 14 زيارة بالكامل)
 // -------------------------------------------------------------
 const BASE_AUDIO_URL = "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio";
 
@@ -75,7 +75,7 @@ const ZIYARAT_DATA: Record<string, { id: string; title: string; benefits: string
     title: "زيارة عاشوراء",
     benefits: "توجب غفران الذنوب، وقضاء الحوائج، وسلامة الدارين، ونيل شفاعة سيد الشهداء (ع).",
     audioUrl: `${BASE_AUDIO_URL}/ashura.mp3`,
-    text: `السَّلامُ عَلَيْكَ يا أَبا عَبْدِ اللهِ، السَّلامُ عَلَيْكَ يابْنَ رَسُولِ اللهِ، السَّلامُ عَلَيْكَ يا خِيَرَةَ اللهِ وَابْنَ خِيَرَتِهِ، السَّلامُ عَلَيْكَ يابْنَ أَمِيرِ الْمُؤْمِنِينَ وَابْنَ سَيِّدِ الْوَصِيِّينَ، السَّلامُ عَلَيْكَ يابْنَ فاطِمَةَ سَيِّدَةِ نِساءِ الْعالَمِينَ. السَّلامُ عَلَيْكَ يا ثارَ اللهِ وَابْنَ ثارِهِ وَالْوِتْرَ الْمَوْتُورَ، السَّلامُ عَلَيْكَ وَعَلَى الأَرْواحِ الَّتي حَلَّتْ بِفِنائِكَ، عَلَيْكُمْ مِنّي جَمِيعاً سَلامُ اللهِ أَبَداً ما بَقِيتُ وَبَقِيَ اللَّيْلُ وَالنَّهارُ. يا أَبا عَبْدِ اللهِ، لَقَدْ عَظُمَتِ الرَّزِيَّةُ وَجَلَّتْ وَعَظُمَتِ الْمُصِيبَةُ بِكَ عَلَيْنا وَعَلى جَمِيعِ أَهْلِ الإِسْلامِ، وَجَلَّتْ وَعَظُمَتِ مُصِيبَتُكَ فِي السَّماواتِ عَلى جَمِيعِ أَهْلِ السَّماواتِ.`
+    text: `السَّلامُ عَلَيْكَ يا أَبا عَبْدِ اللهِ، السَّلامُ عَلَيْكَ يابْنَ رَسُولِ اللهِ، السَّلامُ عَلَيْكَ يا خِيَرَةَ اللهِ وَابْنَ خِيَرَتِهِ، السَّلامُ عَلَيْكَ يابْنَ أَمِيرِ الْمُؤْمِنِينَ وَابْنَ سَيِّدِ الْوَصِيِّينَ، السَّلامُ عَلَيْكَ يابْنَ فاطِمَةَ سَيِّدَةِ نِساءِ الْعالَمِينَ. السَّلامُ عَلَيْكَ يا ثارَ اللهِ وَابْنَ ثارِهِ وَالْوِتْرَ الْمَوْتُورَ، السَّلامُ عَلَيْكَ وَعَلَى الأَرْواحِ الَّتي حَلَّتْ بِفِنائِكَ، عَلَيْكُمْ مِنّي جَمِيعاً سَلامُ اللهِ أَبَداً ما بَقِيتُ وَبَقِيَ اللَّيْلُ وَالنَّهارُ. يا أَبا عَبْدِ اللهِ، لَقَدْ عَظُمَتِ الرَّزِيَّةُ وَجَلَّتْ وَعَظُمَتِ الْمُصِيبَةُ بِكَ عَلَيْنا وَعَلى جَمِيعِ أَهْلِ الإِسْلامِ، وَجَلَّتْ وَعَظُمَتْ مُصِيبَتُكَ فِي السَّماواتِ عَلى جَمِيعِ أَهْلِ السَّماواتِ.`
   },
   "aminullah": {
     id: "aminullah",
@@ -176,14 +176,19 @@ export default function ZiyaratDetail() {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // 💥 دالة تقسيم حاسمة تعتمد على عدد الكلمات لتضمن امتلاء المربع بالكامل 💥
-  const splitTextByWords = (fullText: string, wordsPerPage = 25) => {
-    const words = fullText.trim().split(/\s+/);
+  // 🔥 دالة التقطيع والتنظيف الحاسمة 🔥
+  const cleanAndSplitText = (rawText: string, wordsPerPage = 35) => {
+    // 1. تنظيف النص تماماً من الأسطر الفارغة والمسافات الزائدة
+    const cleanText = rawText.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+    
+    // 2. تقسيم النص لكلمات صافية
+    const words = cleanText.split(' ');
     const resultPages: string[] = [];
 
+    // 3. دمج كل 35 كلمة في صفحة واحدة ممتلئة
     for (let i = 0; i < words.length; i += wordsPerPage) {
-      const pageChunk = words.slice(i, i + wordsPerPage).join(" ");
-      resultPages.push(pageChunk);
+      const chunk = words.slice(i, i + wordsPerPage).join(' ');
+      resultPages.push(chunk);
     }
 
     return resultPages;
@@ -191,8 +196,8 @@ export default function ZiyaratDetail() {
 
   useEffect(() => {
     if (currentItem) {
-      // هنا حددنا 25 كلمة بكل صفحة ليتم ملء المربع الأخضر بشكل مريح ومقروء
-      const pageList = splitTextByWords(currentItem.text, 25);
+      // 35 كلمة تجعل المربع ممتلئاً بالكامل بصورة مريحة للعين
+      const pageList = cleanAndSplitText(currentItem.text, 35);
       setPages(pageList);
       setCurrentPage(0);
 
@@ -276,7 +281,7 @@ export default function ZiyaratDetail() {
         )}
       </div>
 
-      {/* 2. شاشة عرض النص الرئيسية الممتلئة */}
+      {/* 2. شاشة عرض النص الرئيسية (ستصبح ممتلئة بالكامل الآن) */}
       <div className="flex-1 flex items-center justify-center my-2 min-h-[300px] bg-[#03382c] border border-[#059669]/30 rounded-3xl p-6 shadow-inner relative overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
@@ -292,7 +297,7 @@ export default function ZiyaratDetail() {
         </AnimatePresence>
       </div>
 
-      {/* 3. شريط التنقل بالصفحات */}
+      {/* 3. شريط التنقل بالصفحات (سينخفض إجمالي الصفحات لـ 3 أو 4 بدلاً من 14) */}
       <div className="flex items-center justify-between bg-[#064e3b]/60 border border-[#059669]/30 rounded-2xl p-2 mb-4">
         <button
           onClick={() => currentPage < pages.length - 1 && setCurrentPage(p => p + 1)}
