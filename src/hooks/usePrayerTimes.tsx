@@ -14,7 +14,7 @@ const voicesConfig: Record<string, { url: string }> = {
     url: "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Adhan.mp3"
   },
   universal: {
-    url: "https://www.islamcan.com/audio/adhan/azan3.mp3"
+    url: "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Adhan4.mp3"
   }
 };
 
