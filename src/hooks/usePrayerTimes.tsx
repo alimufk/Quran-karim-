@@ -11,7 +11,7 @@ const prayerNamesAr: Record<string, string> = {
 
 const voicesConfig: Record<string, { url: string }> = {
   makkah: {
-    url: "https://www.islamcan.com/audio/adhan/azan1.mp3"
+    url: "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Adhan.mp3"
   },
   universal: {
     url: "https://www.islamcan.com/audio/adhan/azan3.mp3"
