@@ -278,7 +278,7 @@ export function Home() {
             <div className="p-3 bg-[#fbbf24]/10 rounded-2xl text-[#fbbf24] group-hover:scale-110 transition-transform"> 
               <HeartPulse size={28} /> 
             </div> 
-            <span className="font-medium text-sm text-[#f0f9ff]">الأذكار</span> 
+            <span className="font-medium text-sm text-[#f0f9ff]">مناجاة وتعقيبات الصلاة</span> 
           </Link> 
 
           <Link to="/qibla" className="bg-[#064e3b]/40 border border-[#059669]/20 p-5 rounded-[24px] flex flex-col items-center justify-center gap-3 hover:bg-[#059669]/30 transition-all group"> 
@@ -444,7 +444,7 @@ export function Home() {
         {/* Programmer Credit */} 
         <div className="mt-8 mb-4 text-center"> 
           <p className="text-sm text-[#059669]"> 
-            تطوير المبرمج <span className="font-bold text-[#fbbf24]">علاوي النعيمي</span> 
+            Developer_Development<span className="font-bold text-[#fbbf24]">Alawi Al-Nuaimi</span> 
           </p> 
         </div> 
       </motion.div> 
