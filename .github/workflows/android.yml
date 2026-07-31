@@ -18,18 +18,12 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
-      with:
-        validate-wrappers: false
-
     - name: Build Release APK & AAB
       run: |
         cd android
         rm -f app/release-key.keystore
         keytool -genkeypair -v -keystore app/release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass 12345678 -keypass 12345678 -dname "CN=App, OU=Dev, O=Dev, L=City, S=State, C=US"
-        chmod +x gradlew
-        ./gradlew assembleRelease bundleRelease
+        gradle assembleRelease bundleRelease
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
