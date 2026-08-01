@@ -36,6 +36,7 @@
     "vite": "^6.2.3"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.4.1",
     "@types/adm-zip": "^0.5.8",
     "@types/archiver": "^8.0.0",
