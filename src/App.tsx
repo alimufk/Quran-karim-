@@ -25,7 +25,7 @@ import { Saimoon } from './pages/Saimoon';
 import { Ramadan } from './pages/Ramadan';
 import { Mosques } from './pages/Mosques';
 import { NotificationsSettings } from './pages/NotificationsSettings';
-import { usePrayerTimes, PrayerTimesProvider } from './hooks/usePrayerTimes';
+import { usePrayerTimes,  } from './hooks/usePrayerTimes';
 import { useNotifications } from './hooks/useNotifications';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import GuideDashboard from './pages/GuideDashboard';
@@ -91,11 +91,11 @@ function AppContent() {
 export default function App() {
   return (
     <ThemeProvider>
-      <PrayerTimesProvider>
+      <>
         <Router>
           <AppContent />
         </Router>
-      </PrayerTimesProvider>
+      </>
     </ThemeProvider>
   );
 }
