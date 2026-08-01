@@ -93,7 +93,9 @@ export default function App() {
     <ThemeProvider>
       <>
         <Router>
+          <PrayerTimesProvider>
           <AppContent />
+        </PrayerTimesProvider>
         </Router>
       </>
     </ThemeProvider>
