@@ -187,28 +187,7 @@ export function Home() {
               إكمال 
             </button> 
           </div> 
-        )} 
-
-        {/* Istikhara Banner */} 
-        <Link to="Istikhara" className="block mt-4 bg-gradient-to-r from-[#064e3b] to-[#022c22] p-6 rounded-[28px] border border-[#059669]/40 relative overflow-hidden shadow-xl hover:scale-[1.01] transition-all group"> 
-          <div className="absolute -left-6 -top-6 w-24 h-24 bg-[#fbbf24]/10 rounded-full blur-[25px]" /> 
-          <div className="relative z-10 flex items-center justify-between"> 
-            <div className="flex items-center gap-4"> 
-              <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-[#fbbf24] group-hover:rotate-12 transition-transform"> 
-                <Sparkles size={26} className="animate-pulse" /> 
-              </div> 
-              <div className="text-right"> 
-                <p className="text-[#fbbf24] text-xs font-bold uppercase tracking-wide mb-0.5 flex items-center gap-1 justify-start"> 
-                  <span>جديد</span> 
-                  <span className="w-1.5 h-1.5 bg-[#fbbf24] rounded-full" /> 
-                </p> 
-                <h3 className="text-lg font-black text-[#f0f9ff]">استخارة من القرآن الكريم</h3> 
-                <p className="text-emerald-100/70 text-xs mt-0.5 font-medium">ليطمئن قلبك</p> 
-              </div> 
-            </div> 
-            <span className="text-[#fbbf24] text-xl font-bold">←</span> 
-          </div> 
-        </Link> 
+        )}
 
         {/* Quick Actions */} 
         <div className="grid grid-cols-2 gap-4 mt-6"> 
