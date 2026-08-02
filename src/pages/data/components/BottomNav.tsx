@@ -12,7 +12,7 @@ export function BottomNav() {
     { name: 'القراءة', path: '/quran', icon: BookOpen },
     { name: 'الاستماع', path: '/reciters', icon: Headphones },
     { name: 'أوقات الصلاة', path: '/prayer', icon: Clock },
-    { name: 'الأذكار', path: '/azkar', icon: HeartPulse },
+    { name: 'تعقيبات', path: '/azkar', icon: HeartPulse },
     { name: 'حول', path: '/about', icon: Info },
   ];
 
