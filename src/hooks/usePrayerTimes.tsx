@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
-import { getAudioUrl } from '../utils/audioUrl';
 import { LocalNotifications } from '@capacitor/local-notifications';
 
 const prayerNamesAr: Record<string, string> = {
@@ -37,9 +36,9 @@ const PrayerTimesContext = createContext<PrayerTimesContextType | undefined>(und
 
 export function PrayerTimesProvider({ children }: { children: ReactNode }) {
   const [timings, setTimings] = useState<Record<string, string> | null>(null);
-  const [adhanEnabled, setAdhanEnabled] = useState(
-    localStorage.getItem('adhanEnabled') !== 'false'
-  );
+  const [adhanEnabled, setAdhanEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('adhanEnabled') !== 'false';
+  });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
 
@@ -63,18 +62,8 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const config = voicesConfig[adhanVoice] || voicesConfig.makkah;
-    setResolvedUrl(getAudioUrl(config.url));
+    setResolvedUrl(config.url);
   }, [adhanVoice]);
-
-  useEffect(() => {
-    if (audioRef.current && resolvedUrl) {
-      try {
-        audioRef.current.load();
-      } catch (err) {
-        console.warn("Could not reload audio element:", err);
-      }
-    }
-  }, [resolvedUrl]);
 
   useEffect(() => {
     localStorage.setItem('adhanEnabled', String(adhanEnabled));
@@ -89,11 +78,12 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('adhanStateChanged', handleStorageChange);
   }, []);
 
-  // طلب إذن الإشعارات من نظام أندرويد
+  // طلب صلاحيات الإشعارات
   useEffect(() => {
-    LocalNotifications.requestPermissions().catch(e => console.error(e));
+    LocalNotifications.requestPermissions().catch(() => {});
   }, []);
 
+  // جلب أوقات الصلاة
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -107,8 +97,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
              console.error("Aladhan API fetch error:", e);
           }
         },
-        async (error) => {
-          console.warn("Geolocation denied, using default (Makkah)", error);
+        async () => {
           try {
              const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=Makkah&country=SA&method=4`);
              const data = await res.json();
@@ -142,13 +131,12 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('earlyReminderStateChanged'));
   };
 
-  // جدولة الأذان بالنظام الأندرويدي المباشر (AlarmManager)
+  // جدولة الإشعارات
   useEffect(() => {
     if (!timings || !adhanEnabled) return;
 
-    async function scheduleNativeAdhan() {
+    const scheduleNativeAdhan = async () => {
       try {
-        // إلغاء الإشعارات القديمة لتجنب التكرار
         const pending = await LocalNotifications.getPending();
         if (pending.notifications.length > 0) {
           await LocalNotifications.cancel(pending);
@@ -159,14 +147,13 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
         let idCounter = 1;
 
         for (const prayer of prayers) {
-          const timeStr = timings![prayer];
+          const timeStr = timings[prayer];
           if (!timeStr) continue;
 
           const [hours, minutes] = timeStr.split(':').map(Number);
           const prayerDate = new Date();
           prayerDate.setHours(hours, minutes, 0, 0);
 
-          // إذا كان الوقت قد مضى اليوم، نجدوله للغد
           if (prayerDate.getTime() <= Date.now()) {
             prayerDate.setDate(prayerDate.getDate() + 1);
           }
@@ -176,7 +163,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
             body: `حان الآن موعد أذان صلاة ${prayerNamesAr[prayer]}`,
             id: idCounter++,
             schedule: { at: prayerDate, allowWhileIdle: true },
-            sound: "adhan", // الصوت المضاف
+            sound: "adhan",
             actionTypeId: "",
             extra: null
           });
@@ -190,7 +177,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         console.error("Local Notifications Schedule Error:", err);
       }
-    }
+    };
 
     scheduleNativeAdhan();
   }, [timings, adhanEnabled]);
