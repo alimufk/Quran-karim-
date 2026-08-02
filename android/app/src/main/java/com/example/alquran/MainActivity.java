@@ -1,30 +1,31 @@
-package com.example.alquran
+package com.example.alquran;
 
-import android.os.Bundle
-import com.getcapacitor.BridgeActivity
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.media.AudioAttributes
-import android.net.Uri
-import android.os.Build
+import android.os.Bundle;
+import com.getcapacitor.BridgeActivity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.os.Build;
 
-class MainActivity : BridgeActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        createNotificationChannel()
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        createNotificationChannel();
     }
 
-    private fun createNotificationChannel() {
+    private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Adhan Channel"
-            val descriptionText = "Channel for Adhan Notifications"
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel("adhan_channel", name, importance).apply {
-                description = descriptionText
+            String name = "Adhan Channel";
+            String descriptionText = "Channel for Adhan Notifications";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            
+            NotificationChannel channel = new NotificationChannel("adhan_channel", name, importance);
+            channel.setDescription(descriptionText);
+            
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
             }
-            val notificationManager: NotificationManager =
-                getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
         }
     }
 }
