@@ -11,10 +11,10 @@ const prayerNamesAr: Record<string, string> = {
 
 const voicesConfig: Record<string, { url: string }> = {
   makkah: {
-    url: "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Adhan.mp3"
+    url: "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/adhan1.mp3"
   },
   universal: {
-    url: "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Adhan4.mp3"
+    url: "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/adhan2.mp3"
   }
 };
 
