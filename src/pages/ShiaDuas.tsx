@@ -135,7 +135,11 @@ const latmiyatList = [
   { id: 'latmia-41', name: 'قصيدة حضرة السند - علي الساعدي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/3hadratu_alsand_ali_alsaaeidi.mp3' },
   { id: 'latmia-42', name: 'قصيدة اجيبوني - علي الساعدي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/2ajybwny_ali_alsaaeidi.mp3' },
   { id: 'latmia-43', name: 'قصيدة راية عباس - علي الساعدي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/1rayat_abbas_ali_alsaaeidi.mp3' },
-  { id: 'latmia-44', name: 'قصيدة انكسار - حيدر البياتي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/1Inkisar-Haidar Al-Bayati.mp3' }
+  { id: 'latmia-44', name: 'قصيدة انكسار - حيدر البياتي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/1Inkisar-Haidar Al-Bayati.mp3' },
+  { id: 'latmia-45', name: ' قصيدة رجعلي رقية - مرتضى حرب ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/rpaiea.mp3'},
+  { id: 'latmia-46', name: ' قصيدة ظعن الشمس - مرتضى حرب ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/dahinalsmis3.mp3'},
+  { id: 'latmia-47', name: ' قصيدة نايهة - محمد باقر الخاقاني ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/nahiea.mp3'}
+  
 ];
 
 export function ShiaDuas() {
