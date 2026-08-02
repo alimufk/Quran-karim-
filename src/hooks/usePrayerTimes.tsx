@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { getAudioUrl } from '../utils/audioUrl';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 const prayerNamesAr: Record<string, string> = {
   Fajr: 'الفجر',
@@ -78,10 +79,6 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem('adhanEnabled', String(adhanEnabled));
     window.dispatchEvent(new Event('adhanStateChanged'));
-    
-    if (adhanEnabled && "Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
   }, [adhanEnabled]);
 
   useEffect(() => {
@@ -90,6 +87,11 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     };
     window.addEventListener('adhanStateChanged', handleStorageChange);
     return () => window.removeEventListener('adhanStateChanged', handleStorageChange);
+  }, []);
+
+  // طلب إذن الإشعارات من نظام أندرويد
+  useEffect(() => {
+    LocalNotifications.requestPermissions().catch(e => console.error(e));
   }, []);
 
   useEffect(() => {
@@ -108,7 +110,6 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
         async (error) => {
           console.warn("Geolocation denied, using default (Makkah)", error);
           try {
-             // Fallback to Makkah
              const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=Makkah&country=SA&method=4`);
              const data = await res.json();
              setTimings(data.data.timings);
@@ -119,9 +120,6 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
       );
     }
   }, []);
-
-  const lastFiredTime = useRef<string | null>(null);
-  const lastFiredEarly = useRef<string | null>(null);
 
   const [earlyReminderMinutes, setEarlyReminderMinutesState] = useState<number>(() => {
     const val = localStorage.getItem('earlyReminderMinutes');
@@ -144,107 +142,58 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('earlyReminderStateChanged'));
   };
 
+  // جدولة الأذان بالنظام الأندرويدي المباشر (AlarmManager)
   useEffect(() => {
-    const handleEarlyChange = () => {
-      const val = localStorage.getItem('earlyReminderMinutes');
-      setEarlyReminderMinutesState(val !== null ? parseInt(val, 10) : 10);
-      setEarlyReminderVoiceEnabledState(localStorage.getItem('earlyReminderVoiceEnabled') !== 'false');
-    };
-    window.addEventListener('earlyReminderStateChanged', handleEarlyChange);
-    return () => window.removeEventListener('earlyReminderStateChanged', handleEarlyChange);
-  }, []);
+    if (!timings || !adhanEnabled) return;
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!timings) return;
-      
-      const now = new Date();
-      const currentHours = now.getHours().toString().padStart(2, '0');
-      const currentMinutes = now.getMinutes().toString().padStart(2, '0');
-      const currentTimeStr = `${currentHours}:${currentMinutes}`;
-      
-      // 1. Regular Adhan Playback at Prayer Time
-      if (adhanEnabled) {
-        const playPrayer = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].find(
-          prayer => timings[prayer] === currentTimeStr
-        );
-
-        // Avoid playing multiple times within the same minute by tracking the last fired time
-        if (playPrayer && lastFiredTime.current !== currentTimeStr) {
-          lastFiredTime.current = currentTimeStr;
-          
-          if (audioRef.current) {
-            audioRef.current.play().catch(e => console.error("Adhan playback requires user interaction", e));
-          }
-          
-          if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("حان الآن موعد الصلاة", {
-              body: `حان الآن موعد أذان صلاة ${prayerNamesAr[playPrayer]}`,
-              icon: "/favicon.ico"
-            });
-          }
+    async function scheduleNativeAdhan() {
+      try {
+        // إلغاء الإشعارات القديمة لتجنب التكرار
+        const pending = await LocalNotifications.getPending();
+        if (pending.notifications.length > 0) {
+          await LocalNotifications.cancel(pending);
         }
-      }
 
-      // 2. Early Approaching Prayer Notification & Vocal Reminder
-      if (earlyReminderMinutes > 0) {
-        const approachingPrayer = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].find(
-          prayer => {
-            const timeStr = timings[prayer];
-            if (!timeStr) return false;
-            
-            const [hStr, mStr] = timeStr.split(':');
-            let h = parseInt(hStr, 10);
-            let m = parseInt(mStr, 10);
-            
-            m -= earlyReminderMinutes;
-            if (m < 0) {
-              h -= Math.ceil(Math.abs(m) / 60);
-              m = (m % 60 + 60) % 60;
-            }
-            if (h < 0) {
-              h = (h % 24 + 24) % 24;
-            }
-            const alarmTimeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-            return alarmTimeStr === currentTimeStr;
-          }
-        );
+        const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+        const notificationsToSchedule = [];
+        let idCounter = 1;
 
-        if (approachingPrayer && lastFiredEarly.current !== currentTimeStr) {
-          lastFiredEarly.current = currentTimeStr;
+        for (const prayer of prayers) {
+          const timeStr = timings![prayer];
+          if (!timeStr) continue;
 
-          // Sound tone
-          try {
-            const chimeUrl = "https://actions.google.com/sounds/v1/alarms/beep_short.ogg";
-            const chimeAudio = new Audio(chimeUrl);
-            chimeAudio.volume = 0.6;
-            chimeAudio.play().catch(e => console.log("Alert chime play blocked or failed", e));
-          } catch (e) {
-            console.error("Failed to construct audio alert", e);
+          const [hours, minutes] = timeStr.split(':').map(Number);
+          const prayerDate = new Date();
+          prayerDate.setHours(hours, minutes, 0, 0);
+
+          // إذا كان الوقت قد مضى اليوم، نجدوله للغد
+          if (prayerDate.getTime() <= Date.now()) {
+            prayerDate.setDate(prayerDate.getDate() + 1);
           }
 
-          // Vocal speech notification
-          if (earlyReminderVoiceEnabled && 'speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance();
-            utterance.text = `اقترب موعد صلاة ${prayerNamesAr[approachingPrayer]}، يرجى الاستعداد.`;
-            utterance.lang = 'ar-SA';
-            utterance.rate = 0.9;
-            window.speechSynthesis.speak(utterance);
-          }
-
-          // Browser notifications
-          if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("اقترب موعد الصلاة", {
-              body: `بقي قرابة ${earlyReminderMinutes} دقائق على موعد أذان صلاة ${prayerNamesAr[approachingPrayer]}`,
-              icon: "/favicon.ico"
-            });
-          }
+          notificationsToSchedule.push({
+            title: "حان الآن موعد الصلاة",
+            body: `حان الآن موعد أذان صلاة ${prayerNamesAr[prayer]}`,
+            id: idCounter++,
+            schedule: { at: prayerDate, allowWhileIdle: true },
+            sound: "adhan", // الصوت المضاف
+            actionTypeId: "",
+            extra: null
+          });
         }
-      }
-    }, 1000);
 
-    return () => clearInterval(interval);
-  }, [timings, adhanEnabled, earlyReminderMinutes, earlyReminderVoiceEnabled]);
+        if (notificationsToSchedule.length > 0) {
+          await LocalNotifications.schedule({
+            notifications: notificationsToSchedule
+          });
+        }
+      } catch (err) {
+        console.error("Local Notifications Schedule Error:", err);
+      }
+    }
+
+    scheduleNativeAdhan();
+  }, [timings, adhanEnabled]);
 
   return (
     <PrayerTimesContext.Provider value={{
