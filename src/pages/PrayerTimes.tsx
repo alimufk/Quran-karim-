@@ -286,8 +286,8 @@ export function PrayerTimes() {
                 onChange={(e) => setAdhanVoice(e.target.value)}
                 className="bg-[#042f2e]/80 border border-[#059669]/40 text-[#fbbf24] rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#fbbf24]/50 w-full cursor-pointer font-bold"
               >
-                <option value="makkah">أذان الحرم المكي (علي ملا)</option>
-                <option value="universal">الأذان الافتراضي (صوت هادئ)</option>
+                <option value="makkah">أذان عامر الكاظمي</option>
+                <option value="universal">أذان الحرم المكي</option>
               </select>
             </div>
 
