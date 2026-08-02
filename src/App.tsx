@@ -3,7 +3,6 @@ import { BottomNav } from './pages/data/components/BottomNav';
 import { Home } from './pages/Home';
 import { Quran } from './pages/Quran';
 import { Surah } from './pages/Surah';
- // أو حسب مسار مجلدك
 import  Azkar  from './pages/Azkar';
 import { Qibla } from './pages/Qibla';
 import { Reciters } from './pages/Reciters';
@@ -50,7 +49,6 @@ function AppContent() {
           <Route path="/about" element={<About />} />
           <Route path="/quran" element={<Quran />} />
           <Route path="/quran/:surahId" element={<Surah />} />
-          <Route path="/Istikhara" element={<Istikhara />} />
           <Route path="/reciters" element={<Reciters />} />
           <Route path="/listen/:reciterId" element={<Listen />} />
           <Route path="/azkar" element={<Azkar />} />
