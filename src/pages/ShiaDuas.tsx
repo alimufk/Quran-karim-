@@ -139,7 +139,7 @@ const latmiyatList = [
   { id: 'latmia-45', name: ' قصيدة رجعلي رقية - مرتضى حرب ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/rpaiea.mp3'},
   { id: 'latmia-46', name: ' قصيدة ظعن الشمس - مرتضى حرب ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/dahinalsmis3.mp3'},
   { id: 'latmia-47', name: ' قصيدة نايحه - محمد باقر الخاقاني ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/nahiea.mp3'},
-  { id: 'latmia-47', name: ' قصيدة خرابة - باسم الكربلائي ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/baseim1985.mp3'}
+  { id: 'latmia-48', name: ' قصيدة خرابة - باسم الكربلائي ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/baseim1985.mp3'}
 ];
 
 export function ShiaDuas() {
