@@ -12,9 +12,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="true" />
     <uses-feature android:name="android.hardware.camera.ar" android:required="false" />
-    <receiver android:name=".AdhanReceiver" android:enabled="true" android:exported="true"/>
-
-
+    
 
     <application
         android:allowBackup="true"
@@ -48,5 +46,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+        <receiver android:name=".AdhanReceiver" android:enabled="true" android:exported="true"/>
+
     </application>
 </manifest>
