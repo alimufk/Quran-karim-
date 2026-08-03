@@ -131,7 +131,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('earlyReminderStateChanged'));
   };
 
-  // جدولة الإشعارات
+  // جدولة الإشعارات مع القناة والصوت الصحيحين
   useEffect(() => {
     if (!timings || !adhanEnabled) return;
 
@@ -159,11 +159,12 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
           }
 
           notificationsToSchedule.push({
-            title: "حان الآن موعد الصلاة",
+            title: "الله أكبر .. حان الآن موعد الصلاة",
             body: `حان الآن موعد أذان صلاة ${prayerNamesAr[prayer]}`,
             id: idCounter++,
             schedule: { at: prayerDate, allowWhileIdle: true },
             sound: "adhan",
+            channelId: "adhan_channel",
             actionTypeId: "",
             extra: null
           });
