@@ -78,9 +78,9 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('adhanStateChanged', handleStorageChange);
   }, []);
 
-  // طلب صلاحيات الإشعارات
+  // طلب أذونات الإشعارات
   useEffect(() => {
-    LocalNotifications.requestPermissions().catch(() => {});
+    LocalNotifications.requestPermissions().catch(err => console.log(err));
   }, []);
 
   // جلب أوقات الصلاة
@@ -131,7 +131,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('earlyReminderStateChanged'));
   };
 
-  // جدولة الإشعارات مع القناة والصوت الصحيحين
+  // جدولة الإشعارات
   useEffect(() => {
     if (!timings || !adhanEnabled) return;
 
@@ -164,9 +164,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
             id: idCounter++,
             schedule: { at: prayerDate, allowWhileIdle: true },
             sound: "adhan",
-            channelId: "adhan_channel",
-            actionTypeId: "",
-            extra: null
+            channelId: "adhan_channel"
           });
         }
 
