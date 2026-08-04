@@ -131,62 +131,41 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('earlyReminderStateChanged'));
   };
 
-  // جدولة المنبهات الصارمة لإيقاظ الهاتف
+  // 🧪 جدولة مخصصة للاختبار المحلي (تنبيه بعد دقيقة واحدة من الآن)
   useEffect(() => {
-    if (!timings || !adhanEnabled) return;
+    if (!adhanEnabled) return;
 
-    const scheduleNativeAdhan = async () => {
+    const scheduleTestAdhan = async () => {
       try {
-        const pending = await LocalNotifications.getPending();
-        if (pending.notifications.length > 0) {
-          await LocalNotifications.cancel(pending);
-        }
+        await LocalNotifications.cancel(await LocalNotifications.getPending());
 
-        const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-        const notificationsToSchedule = [];
-        let idCounter = 100;
+        // تجربة منبه بعد دقيقة واحدة بالضبط من الآن
+        const testDate = new Date();
+        testDate.setMinutes(testDate.getMinutes() + 1);
 
-        for (const prayer of prayers) {
-          const timeStr = timings[prayer];
-          if (!timeStr) continue;
-
-          const [hours, minutes] = timeStr.split(':').map(Number);
-          const prayerDate = new Date();
-          prayerDate.setHours(hours, minutes, 0, 0);
-
-          if (prayerDate.getTime() <= Date.now()) {
-            prayerDate.setDate(prayerDate.getDate() + 1);
-          }
-
-          notificationsToSchedule.push({
-            title: "الله أكبر .. حان الآن موعد الصلاة",
-            body: `حان الآن موعد أذان صلاة ${prayerNamesAr[prayer]}`,
-            id: idCounter++,
-            schedule: { 
-              at: prayerDate, 
-              allowWhileIdle: true,
-              repeats: false 
-            },
-            sound: "adhan",
-            channelId: "adhan_channel_v2",
-            extra: {
-              prayerName: prayer
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              title: "تجربة الأذان المحلي",
+              body: "اختبار تشغيل صوت الأذان المحلي بدون إنترنت",
+              id: 999,
+              schedule: { 
+                at: testDate, 
+                allowWhileIdle: true 
+              },
+              extra: {
+                test: true
+              }
             }
-          });
-        }
-
-        if (notificationsToSchedule.length > 0) {
-          await LocalNotifications.schedule({
-            notifications: notificationsToSchedule
-          });
-        }
+          ]
+        });
       } catch (err) {
         console.error("Local Notifications Schedule Error:", err);
       }
     };
 
-    scheduleNativeAdhan();
-  }, [timings, adhanEnabled]);
+    scheduleTestAdhan();
+  }, [adhanEnabled]);
 
   return (
     <PrayerTimesContext.Provider value={{
