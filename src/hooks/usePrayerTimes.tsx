@@ -1,5 +1,11 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
-import { LocalNotifications } from '@capacitor/local-notifications';
+import { registerPlugin } from '@capacitor/core';
+
+// تسجيل الإضافة المخصصة من Java
+interface AdhanSchedulerPluginType {
+  scheduleAdhan(options: { timeInMillis: number; requestCode: number }): Promise<void>;
+}
+const AdhanScheduler = registerPlugin<AdhanSchedulerPluginType>('AdhanScheduler');
 
 const prayerNamesAr: Record<string, string> = {
   Fajr: 'الفجر',
@@ -78,11 +84,6 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('adhanStateChanged', handleStorageChange);
   }, []);
 
-  // طلب صلاحيات الإشعارات
-  useEffect(() => {
-    LocalNotifications.requestPermissions().catch(() => {});
-  }, []);
-
   // جلب أوقات الصلاة
   useEffect(() => {
     if ("geolocation" in navigator) {
@@ -131,39 +132,52 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('earlyReminderStateChanged'));
   };
 
-  // 🧪 جدولة اختبار دقيقة واحدة مع ربطها بقناة الأذان الكبرى
+  // 🧪 جدولة الأذان المباشرة مع نظام أندرويد (تنبيه تجريبي بعد دقيقة واحدة)
   useEffect(() => {
     if (!adhanEnabled) return;
 
-    const scheduleTestAdhan = async () => {
+    const scheduleNativeAdhan = async () => {
       try {
-        await LocalNotifications.cancel(await LocalNotifications.getPending());
-
+        // 1. اختبار فوري: جدولة منبه بعد دقيقة واحدة من الآن لضمان النتيجة
         const testDate = new Date();
         testDate.setMinutes(testDate.getMinutes() + 1);
 
-        await LocalNotifications.schedule({
-          notifications: [
-            {
-              title: "الله أكبر .. حان الآن موعد الصلاة",
-              body: "اختبار تشغيل الأذان المحلي كمنبه",
-              id: 999,
-              schedule: { 
-                at: testDate, 
-                allowWhileIdle: true 
-              },
-              sound: "adhan",
-              channelId: "adhan_alarm_channel"
-            }
-          ]
+        await AdhanScheduler.scheduleAdhan({
+          timeInMillis: testDate.getTime(),
+          requestCode: 999
         });
+        console.log("تمت جدولة المنبه التجريبي بعد دقيقة عبر Java Native Plugin!");
+
+        // 2. جدولة الصلوات الخمس الحقيقية
+        if (timings) {
+          const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+          let reqCode = 1000;
+
+          for (const prayer of prayers) {
+            const timeStr = timings[prayer];
+            if (!timeStr) continue;
+
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            const prayerDate = new Date();
+            prayerDate.setHours(hours, minutes, 0, 0);
+
+            if (prayerDate.getTime() <= Date.now()) {
+              prayerDate.setDate(prayerDate.getDate() + 1);
+            }
+
+            await AdhanScheduler.scheduleAdhan({
+              timeInMillis: prayerDate.getTime(),
+              requestCode: reqCode++
+            });
+          }
+        }
       } catch (err) {
-        console.error("Local Notifications Schedule Error:", err);
+        console.error("Adhan Scheduler Error:", err);
       }
     };
 
-    scheduleTestAdhan();
-  }, [adhanEnabled]);
+    scheduleNativeAdhan();
+  }, [timings, adhanEnabled]);
 
   return (
     <PrayerTimesContext.Provider value={{
