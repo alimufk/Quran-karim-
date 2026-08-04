@@ -6,26 +6,29 @@ import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.PowerManager;
+import android.util.Log;
 
 public class AdhanReceiver extends BroadcastReceiver {
     private static MediaPlayer mediaPlayer;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // 1. إيقاظ المعالج والشاشة فوراً
+        Log.d("AdhanReceiver", "تم استقبال إشارة أذان الصلاة من أندرويد!");
+
+        // 1. إيقاظ الجهاز والشاشة فوراً
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         PowerManager.WakeLock wakeLock = null;
         if (pm != null) {
             wakeLock = pm.newWakeLock(
                 PowerManager.FULL_WAKE_LOCK |
                 PowerManager.ACQUIRE_CAUSES_WAKEUP |
-                PowerManager.ON_AFTER_RELEASE, 
+                PowerManager.ON_AFTER_RELEASE,
                 "QuranApp:AdhanWakeLock"
             );
             wakeLock.acquire(3 * 60 * 1000L); // إبقاء الهاتف مستيقظاً لمدة 3 دقائق
         }
 
-        // 2. تشغيل ملف الصوت adhan.mp3 كاملاً بصوت المنبه
+        // 2. تشغيل ملف الصوت المحلي adhan.mp3 المدمج في res/raw
         try {
             if (mediaPlayer != null) {
                 if (mediaPlayer.isPlaying()) mediaPlayer.stop();
@@ -47,7 +50,7 @@ public class AdhanReceiver extends BroadcastReceiver {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("AdhanReceiver", "خطأ في تشغيل صوت الأذان", e);
         }
     }
 }
