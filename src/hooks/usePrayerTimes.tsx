@@ -131,7 +131,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('earlyReminderStateChanged'));
   };
 
-  // 🧪 جدولة مخصصة للاختبار المحلي (تنبيه بعد دقيقة واحدة من الآن)
+  // 🧪 جدولة اختبار دقيقة واحدة مع ربطها بقناة الأذان الكبرى
   useEffect(() => {
     if (!adhanEnabled) return;
 
@@ -139,23 +139,21 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
       try {
         await LocalNotifications.cancel(await LocalNotifications.getPending());
 
-        // تجربة منبه بعد دقيقة واحدة بالضبط من الآن
         const testDate = new Date();
         testDate.setMinutes(testDate.getMinutes() + 1);
 
         await LocalNotifications.schedule({
           notifications: [
             {
-              title: "تجربة الأذان المحلي",
-              body: "اختبار تشغيل صوت الأذان المحلي بدون إنترنت",
+              title: "الله أكبر .. حان الآن موعد الصلاة",
+              body: "اختبار تشغيل الأذان المحلي كمنبه",
               id: 999,
               schedule: { 
                 at: testDate, 
                 allowWhileIdle: true 
               },
-              extra: {
-                test: true
-              }
+              sound: "adhan",
+              channelId: "adhan_alarm_channel"
             }
           ]
         });
