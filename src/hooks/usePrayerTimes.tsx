@@ -1,11 +1,5 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
-import { registerPlugin } from '@capacitor/core';
-
-// تسجيل الإضافة المخصصة من Java
-interface AdhanSchedulerPluginType {
-  scheduleAdhan(options: { timeInMillis: number; requestCode: number }): Promise<void>;
-}
-const AdhanScheduler = registerPlugin<AdhanSchedulerPluginType>('AdhanScheduler');
+import AdhanScheduler from '../plugins/AdhanScheduler';
 
 const prayerNamesAr: Record<string, string> = {
   Fajr: 'الفجر',
@@ -132,13 +126,13 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('earlyReminderStateChanged'));
   };
 
-  // 🧪 جدولة الأذان المباشرة مع نظام أندرويد (تنبيه تجريبي بعد دقيقة واحدة)
+  // 🧪 الجدولة المباشرة مع نظام أندرويد
   useEffect(() => {
     if (!adhanEnabled) return;
 
     const scheduleNativeAdhan = async () => {
       try {
-        // 1. اختبار فوري: جدولة منبه بعد دقيقة واحدة من الآن لضمان النتيجة
+        // 1. منبه تجريبي بعد 60 ثانية للتحقق المباشر
         const testDate = new Date();
         testDate.setMinutes(testDate.getMinutes() + 1);
 
@@ -146,9 +140,8 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
           timeInMillis: testDate.getTime(),
           requestCode: 999
         });
-        console.log("تمت جدولة المنبه التجريبي بعد دقيقة عبر Java Native Plugin!");
 
-        // 2. جدولة الصلوات الخمس الحقيقية
+        // 2. جدولة مواعيد الصلوات الخمس
         if (timings) {
           const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
           let reqCode = 1000;
@@ -172,7 +165,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (err) {
-        console.error("Adhan Scheduler Error:", err);
+        console.error("Adhan Scheduler Call Failed:", err);
       }
     };
 
