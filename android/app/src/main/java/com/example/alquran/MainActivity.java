@@ -17,19 +17,21 @@ public class MainActivity extends BridgeActivity {
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String channelId = "adhan_channel_v2";
+            CharSequence name = "Adhan Channel";
+            String descriptionText = "Channel for Adhan Audio Notifications";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+
+            NotificationChannel channel = new NotificationChannel(channelId, name, importance);
+            channel.setDescription(descriptionText);
+
+            // ربط القناة بالملف الصوتي adhan.mp3 المدمج داخل التطبيق
             Uri soundUri = Uri.parse("android.resource://" + getPackageName() + "/raw/adhan");
-            
             AudioAttributes audioAttributes = new AudioAttributes.Builder()
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                     .setUsage(AudioAttributes.USAGE_ALARM)
                     .build();
 
-            String name = "Adhan Channel";
-            String descriptionText = "Channel for Adhan Notifications";
-            int importance = NotificationManager.IMPORTANCE_HIGH;
-
-            NotificationChannel channel = new NotificationChannel("adhan_channel", name, importance);
-            channel.setDescription(descriptionText);
             channel.setSound(soundUri, audioAttributes);
             channel.enableVibration(true);
 
