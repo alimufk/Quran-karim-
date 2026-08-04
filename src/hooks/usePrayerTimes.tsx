@@ -1,5 +1,12 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
-import AdhanScheduler from '../plugins/AdhanScheduler';
+import { registerPlugin } from '@capacitor/core';
+
+// تسجيل إضافة Java المخصصة مباشرة لضمان نجاح عملية البناء (Build)
+interface AdhanSchedulerPluginType {
+  scheduleAdhan(options: { timeInMillis: number; requestCode: number }): Promise<void>;
+}
+
+const AdhanScheduler = registerPlugin<AdhanSchedulerPluginType>('AdhanScheduler');
 
 const prayerNamesAr: Record<string, string> = {
   Fajr: 'الفجر',
@@ -126,13 +133,13 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('earlyReminderStateChanged'));
   };
 
-  // 🧪 الجدولة المباشرة مع نظام أندرويد
+  // 🧪 الجدولة المباشرة مع إضافة أندرويد Native
   useEffect(() => {
     if (!adhanEnabled) return;
 
     const scheduleNativeAdhan = async () => {
       try {
-        // 1. منبه تجريبي بعد 60 ثانية للتحقق المباشر
+        // 1. اختبار تجريبي بعد 60 ثانية لضمان عمل الصوت فوراً
         const testDate = new Date();
         testDate.setMinutes(testDate.getMinutes() + 1);
 
@@ -141,7 +148,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
           requestCode: 999
         });
 
-        // 2. جدولة مواعيد الصلوات الخمس
+        // 2. جدولة مواعيد الصلوات الخمس الحقيقية
         if (timings) {
           const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
           let reqCode = 1000;
