@@ -51,6 +51,11 @@
                 android:resource="@xml/file_paths" />
         </provider>
         <receiver android:name=".AdhanReceiver" android:enabled="true" android:exported="true"/>
+        
+    <receiver 
+    android:name=".AdhanReceiver" 
+    android:enabled="true" 
+    android:exported="true" />
 
     </application>
 </manifest>
