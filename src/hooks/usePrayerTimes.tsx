@@ -131,7 +131,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('earlyReminderStateChanged'));
   };
 
-  // جدولة الإشعارات مع ربطها بقناة الأذان القوية adhan_channel_v2
+  // جدولة المنبهات الصارمة لإيقاظ الهاتف
   useEffect(() => {
     if (!timings || !adhanEnabled) return;
 
@@ -144,7 +144,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
 
         const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
         const notificationsToSchedule = [];
-        let idCounter = 1;
+        let idCounter = 100;
 
         for (const prayer of prayers) {
           const timeStr = timings[prayer];
@@ -162,11 +162,16 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
             title: "الله أكبر .. حان الآن موعد الصلاة",
             body: `حان الآن موعد أذان صلاة ${prayerNamesAr[prayer]}`,
             id: idCounter++,
-            schedule: { at: prayerDate, allowWhileIdle: true },
+            schedule: { 
+              at: prayerDate, 
+              allowWhileIdle: true,
+              repeats: false 
+            },
             sound: "adhan",
             channelId: "adhan_channel_v2",
-            actionTypeId: "",
-            extra: null
+            extra: {
+              prayerName: prayer
+            }
           });
         }
 
