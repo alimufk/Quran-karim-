@@ -1,19 +1,28 @@
 package com.example.alquran;
 
+import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
+import androidx.core.content.ContextCompat;
 
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.annotation.Permission;
 
-@CapacitorPlugin(name = "AdhanScheduler")
+@CapacitorPlugin(
+    name = "AdhanScheduler",
+    permissions = {
+        @Permission(strings = { Manifest.permission.POST_NOTIFICATIONS }, alias = "notifications")
+    }
+)
 public class AdhanSchedulerPlugin extends Plugin {
 
     @PluginMethod
@@ -28,6 +37,31 @@ public class AdhanSchedulerPlugin extends Plugin {
 
         long timeInMillis = timeDouble.longValue();
         Context context = getContext();
+
+        // 1. طلب إذن الإشعارات في أندرويد 13+ برمجياً
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissionForAlias("notifications", call, "checkPermissionCallback");
+                return;
+            }
+        }
+
+        doSchedule(call, timeInMillis, reqCode);
+    }
+
+    @com.getcapacitor.annotation.PermissionCallback
+    private void checkPermissionCallback(PluginCall call) {
+        Double timeDouble = call.getDouble("timeInMillis");
+        Integer reqCode = call.getInt("requestCode", 1001);
+        if (timeDouble != null) {
+            doSchedule(call, timeDouble.longValue(), reqCode);
+        } else {
+            call.reject("لم يتم منح إذن الإشعارات");
+        }
+    }
+
+    private void doSchedule(PluginCall call, long timeInMillis, Integer reqCode) {
+        Context context = getContext();
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         if (alarmManager == null) {
@@ -35,7 +69,7 @@ public class AdhanSchedulerPlugin extends Plugin {
             return;
         }
 
-        // 1. فحص إذن المنبهات الدقيقة في أندرويد 12 فما فوق (Android 12+)
+        // 2. فحص إذن المنبهات الدقيقة في أندرويد 12+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (!alarmManager.canScheduleExactAlarms()) {
                 try {
@@ -45,7 +79,7 @@ public class AdhanSchedulerPlugin extends Plugin {
                 } catch (Exception e) {
                     Log.e("AdhanScheduler", "تعذر فتح إعدادات المنبهات: " + e.getMessage());
                 }
-                call.reject("يرجى تفعيل خيار 'المنبهات والتذكيرات' للتطبيق من شاشة الإعدادات التي تم فتحها الآن، ثم أعد المحاولة.");
+                call.reject("يرجى تفعيل خيار 'المنبهات والتذكيرات' للتطبيق، ثم أعد المحاولة.");
                 return;
             }
         }
