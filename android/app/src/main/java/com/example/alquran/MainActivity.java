@@ -12,12 +12,12 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        // 1. تسجيل إضافة الجدولة المخصصة AdhanSchedulerPlugin في جسر Capacitor
+        // 1. تسجيل إضافة Kotlin (AdhanSchedulerPlugin) في جسر Capacitor
         registerPlugin(AdhanSchedulerPlugin.class);
 
         super.onCreate(savedInstanceState);
 
-        // 2. إنشاء قناة إشعارات الأذان عالية الأولوية مع ربطها بملف الصوت المحلي
+        // 2. إنشاء قناة إشعارات الأذان بصوت المنبه في أندرويد
         createNotificationChannel();
     }
 
@@ -25,17 +25,17 @@ public class MainActivity extends BridgeActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String channelId = "adhan_alarm_channel";
             CharSequence name = "Adhan Alarms";
-            String descriptionText = "Channel for Prayer Adhan Audio Alerts";
+            String descriptionText = "Channel for Prayer Adhan Alarms";
             int importance = NotificationManager.IMPORTANCE_HIGH;
 
             NotificationChannel channel = new NotificationChannel(channelId, name, importance);
             channel.setDescription(descriptionText);
 
-            // ربط القناة بملف الصوت المحلي adhan.mp3 الموجود في res/raw/adhan.mp3
+            // ربط القناة بملف الصوت المحلي adhan.mp3 في res/raw/adhan.mp3
             Uri soundUri = Uri.parse("android.resource://" + getPackageName() + "/raw/adhan");
             AudioAttributes audioAttributes = new AudioAttributes.Builder()
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .setUsage(AudioAttributes.USAGE_ALARM) // التعامل معه كمنبه هاتف رسمي
+                    .setUsage(AudioAttributes.USAGE_ALARM) // معاملته كمنبه هاتف رسمي وليس إشعار عادي
                     .build();
 
             channel.setSound(soundUri, audioAttributes);
