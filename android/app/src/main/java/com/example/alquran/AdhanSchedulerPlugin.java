@@ -45,20 +45,11 @@ public class AdhanSchedulerPlugin extends Plugin {
 
         if (alarmManager != null) {
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        timeInMillis,
-                        pendingIntent
-                    );
-                } else {
-                    alarmManager.setExact(
-                        AlarmManager.RTC_WAKEUP,
-                        timeInMillis,
-                        pendingIntent
-                    );
-                }
-                Log.d("AdhanScheduler", "تمت جدولة المنبه للوقت: " + timeInMillis);
+                // استخدام setAlarmClock: المنبه الرسمي الصارم المضمون 100% في أندرويد
+                AlarmManager.AlarmClockInfo clockInfo = new AlarmManager.AlarmClockInfo(timeInMillis, pendingIntent);
+                alarmManager.setAlarmClock(clockInfo, pendingIntent);
+                
+                Log.d("AdhanScheduler", "تمت الجدولة كمنبه نظام رسمي: " + timeInMillis);
                 call.resolve();
             } catch (Exception e) {
                 Log.e("AdhanScheduler", "خطأ في جدولة المنبه: " + e.getMessage());
