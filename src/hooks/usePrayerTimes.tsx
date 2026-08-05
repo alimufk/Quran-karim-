@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { registerPlugin } from '@capacitor/core';
 
-// تسجيل إضافة Java المخصصة مباشرة لضمان نجاح عملية البناء (Build)
+// تسجيل إضافة Java المخصصة لجدولة المنبهات
 interface AdhanSchedulerPluginType {
   scheduleAdhan(options: { timeInMillis: number; requestCode: number }): Promise<void>;
 }
@@ -37,6 +37,7 @@ interface PrayerTimesContextType {
   adhanVoice: string;
   setAdhanVoice: (voice: string) => void;
   resolvedUrl: string | null;
+  testAdhanInOneMinute: () => Promise<void>;
 }
 
 const PrayerTimesContext = createContext<PrayerTimesContextType | undefined>(undefined);
@@ -85,7 +86,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('adhanStateChanged', handleStorageChange);
   }, []);
 
-  // جلب أوقات الصلاة
+  // جلب أوقات الصلاة حسب الموقع الجغرافي
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -133,16 +134,29 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('earlyReminderStateChanged'));
   };
 
-  // 🧪 الجدولة المباشرة مع إضافة أندرويد Native
+  // دالة لاختبار الأذان يدوياً بعد دقيقة واحدة
+  const testAdhanInOneMinute = async () => {
+    try {
+      const testDate = new Date(Date.now() + 60 * 1000); // بعد 60 ثانية
+      await AdhanScheduler.scheduleAdhan({
+        timeInMillis: testDate.getTime(),
+        requestCode: 999
+      });
+      alert('تمت جدولة الأذان التجريبي بعد دقيقة واحدة! أغلق الشاشة الآن للاختبار.');
+    } catch (err) {
+      console.error("Test Adhan failed:", err);
+      alert("خطأ في جدولة التجربة: " + JSON.stringify(err));
+    }
+  };
+
+  // 🧪 الجدولة المباشرة عبر Native Plugin
   useEffect(() => {
     if (!adhanEnabled) return;
 
     const scheduleNativeAdhan = async () => {
       try {
-        // 1. اختبار تجريبي بعد 60 ثانية لضمان عمل الصوت فوراً
-        const testDate = new Date();
-        testDate.setMinutes(testDate.getMinutes() + 1);
-
+        // 1. تجربة تجريبية بعد دقيقة فور فتح التطبيق
+        const testDate = new Date(Date.now() + 60 * 1000);
         await AdhanScheduler.scheduleAdhan({
           timeInMillis: testDate.getTime(),
           requestCode: 999
@@ -161,6 +175,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
             const prayerDate = new Date();
             prayerDate.setHours(hours, minutes, 0, 0);
 
+            // إذا مضى وقت صلاة اليوم يتم جدولتها لليوم التالي تلقائياً
             if (prayerDate.getTime() <= Date.now()) {
               prayerDate.setDate(prayerDate.getDate() + 1);
             }
@@ -191,7 +206,8 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
       setEarlyReminderVoiceEnabled,
       adhanVoice,
       setAdhanVoice,
-      resolvedUrl
+      resolvedUrl,
+      testAdhanInOneMinute
     }}>
       {children}
     </PrayerTimesContext.Provider>
