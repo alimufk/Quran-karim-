@@ -14,7 +14,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-
     
     <!-- أذونات الكاميرا والواقع المعزز -->
     <uses-permission android:name="android.permission.CAMERA" />
@@ -54,6 +53,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- استقبال التنبيه عند وقت الصلاة -->
         <receiver 
             android:name="com.example.alquran.AdhanReceiver" 
             android:enabled="true" 
@@ -62,6 +62,25 @@
                 <action android:name="com.example.alquran.PLAY_ADHAN" />
             </intent-filter>
         </receiver>
+
+        <!-- إعادة جدولة المنبهات عند إعادة تشغيل الجهاز -->
+        <receiver
+            android:name="com.example.alquran.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
+        <!-- الخدمة الدائمة لتشغيل الصوت في الخلفية -->
+        <service 
+            android:name="com.example.alquran.AdhanForegroundService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
 
     </application>
 </manifest>
