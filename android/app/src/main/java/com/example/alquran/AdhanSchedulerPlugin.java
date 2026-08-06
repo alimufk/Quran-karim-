@@ -19,7 +19,7 @@ public class AdhanSchedulerPlugin extends Plugin {
         Integer requestCode = call.getInt("requestCode");
 
         if (timeDouble == null || requestCode == null) {
-            call.reject("Invalid parameters");
+            call.reject("Invalid timeInMillis or requestCode");
             return;
         }
 
@@ -28,7 +28,7 @@ public class AdhanSchedulerPlugin extends Plugin {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         if (alarmManager == null) {
-            call.reject("AlarmManager unavailable");
+            call.reject("AlarmManager system service not found");
             return;
         }
 
@@ -43,22 +43,16 @@ public class AdhanSchedulerPlugin extends Plugin {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, flags);
 
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (alarmManager.canScheduleExactAlarms()) {
-                    AlarmManager.AlarmClockInfo clockInfo = new AlarmManager.AlarmClockInfo(timeInMillis, pendingIntent);
-                    alarmManager.setAlarmClock(clockInfo, pendingIntent);
-                } else {
-                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
-                }
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 AlarmManager.AlarmClockInfo clockInfo = new AlarmManager.AlarmClockInfo(timeInMillis, pendingIntent);
                 alarmManager.setAlarmClock(clockInfo, pendingIntent);
             } else {
-                alarmManager.setExact(timeInMillis, pendingIntent);
+                // تم تصحيح السطر هنا بإضافة AlarmManager.RTC_WAKEUP
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
             }
             call.resolve();
         } catch (Exception e) {
-            call.reject("Failed: " + e.getMessage());
+            call.reject("Scheduling failed: " + e.getMessage());
         }
     }
 }
