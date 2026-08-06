@@ -1,5 +1,12 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
-import { LocalNotifications } from '@capacitor/local-notifications';
+import { registerPlugin } from '@capacitor/core';
+
+// تسجيل إضافة Java المخصصة لجدولة المنبهات
+interface AdhanSchedulerPluginType {
+  scheduleAdhan(options: { timeInMillis: number; requestCode: number }): Promise<void>;
+}
+
+const AdhanScheduler = registerPlugin<AdhanSchedulerPluginType>('AdhanScheduler');
 
 const prayerNamesAr: Record<string, string> = {
   Fajr: 'الفجر',
@@ -9,39 +16,34 @@ const prayerNamesAr: Record<string, string> = {
   Isha: 'العشاء'
 };
 
-// قائمة أصوات الأذان المتاحة داخل مجلد android/app/src/main/res/raw/
-export const ADHAN_SOUNDS = [
-  { id: 'adhan_alafasy', name: 'أذان مشاري العفاسي' },
-  { id: 'adhan_makkah', name: 'أذان الحرم المكي' },
-  { id: 'adhan_madinah', name: 'أذان الحرم المدني' }
-];
+export const voicesConfig: Record<string, { name: string; url: string }> = {
+  makkah: {
+    name: 'أذان عامر الكاظمي',
+    url: "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/adhan1.mp3"
+  },
+  universal: {
+    name: 'أذان الحرم المكي ',
+    url: "https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/adhan2.mp3"
+  }
+};
 
 interface PrayerTimesContextType {
   timings: Record<string, string> | null;
   adhanEnabled: boolean;
   setAdhanEnabled: (enabled: boolean) => void;
   audioRef: React.RefObject<HTMLAudioElement | null>;
-  testAdhanNow: () => Promise<void>;
-  
-  // التحكم بصوت الأذان المختار
+  earlyReminderMinutes: number;
+  setEarlyReminderMinutes: (mins: number) => void;
+  earlyReminderVoiceEnabled: boolean;
+  setEarlyReminderVoiceEnabled: (enabled: boolean) => void;
+  adhanVoice: string;
+  setAdhanVoice: (voice: string) => void;
   selectedAdhanSound: string;
-  setSelectedAdhanSound: (soundId: string) => void;
-
-  // التحكم بالقارئ
-  reciter: string;
-  setReciter: (reciter: string) => void;
-  selectedReciter: any;
-  setSelectedReciter: (reciter: any) => void;
-  changeReciter: (reciterObj: any) => void;
-  
-  // التحكم بمشغل الصوتيات
-  isPlaying: boolean;
-  setIsPlaying: (playing: boolean) => void;
-  currentSurah: any;
-  setCurrentSurah: (surah: any) => void;
-  playAudio: (url?: string) => void;
-  pauseAudio: () => void;
-  togglePlay: () => void;
+  setSelectedAdhanSound: (voice: string) => void;
+  resolvedUrl: string | null;
+  testAdhanInOneMinute: () => Promise<void>;
+  testAdhanNow: () => Promise<void>;
+  testAdhan: () => Promise<void>;
 }
 
 const PrayerTimesContext = createContext<PrayerTimesContextType | undefined>(undefined);
@@ -51,93 +53,51 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
   const [adhanEnabled, setAdhanEnabled] = useState<boolean>(() => {
     return localStorage.getItem('adhanEnabled') !== 'false';
   });
-
-  // حالة صوت الأذان المختار
-  const [selectedAdhanSound, setSelectedAdhanSoundState] = useState<string>(() => {
-    return localStorage.getItem('selectedAdhanSound') || 'adhan_alafasy';
-  });
-
-  const setSelectedAdhanSound = (soundId: string) => {
-    setSelectedAdhanSoundState(soundId);
-    localStorage.setItem('selectedAdhanSound', soundId);
-  };
-
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
 
-  // حالة تشغيل السور والقراء
-  const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [currentSurah, setCurrentSurah] = useState<any>(null);
-
-  const [reciter, setReciterState] = useState<string>(() => {
-    return localStorage.getItem('selectedReciter') || 'ar.alafasy';
+  const [adhanVoice, setAdhanVoiceState] = useState<string>(() => {
+    return localStorage.getItem('adhanVoice') || 'makkah';
   });
 
-  const [selectedReciter, setSelectedReciterState] = useState<any>(() => {
-    const saved = localStorage.getItem('selectedReciterObj');
-    return saved ? JSON.parse(saved) : { identifier: 'ar.alafasy', name: 'مشاري العفاسي' };
-  });
-
-  const setReciter = (newReciter: string) => {
-    setReciterState(newReciter);
-    localStorage.setItem('selectedReciter', newReciter);
+  const setAdhanVoice = (voice: string) => {
+    const cleanVoice = voice ? voice.replace(/\.mp3$/i, '').trim() : 'makkah';
+    const finalVoice = voicesConfig[cleanVoice] ? cleanVoice : 'makkah';
+    localStorage.setItem('adhanVoice', finalVoice);
+    setAdhanVoiceState(finalVoice);
+    window.dispatchEvent(new Event('adhanVoiceChanged'));
   };
 
-  const setSelectedReciter = (newReciterObj: any) => {
-    setSelectedReciterState(newReciterObj);
-    if (typeof newReciterObj === 'string') {
-      setReciterState(newReciterObj);
-      localStorage.setItem('selectedReciter', newReciterObj);
-    } else if (newReciterObj?.identifier) {
-      setReciterState(newReciterObj.identifier);
-      localStorage.setItem('selectedReciter', newReciterObj.identifier);
-      localStorage.setItem('selectedReciterObj', JSON.stringify(newReciterObj));
-    }
-  };
+  // مرادف لدعم مسميات الأزرار المختلفة
+  const setSelectedAdhanSound = (voice: string) => setAdhanVoice(voice);
 
-  const changeReciter = (reciterObj: any) => {
-    setSelectedReciter(reciterObj);
-  };
+  useEffect(() => {
+    const handleVoiceChange = () => {
+      setAdhanVoiceState(localStorage.getItem('adhanVoice') || 'makkah');
+    };
+    window.addEventListener('adhanVoiceChanged', handleVoiceChange);
+    return () => window.removeEventListener('adhanVoiceChanged', handleVoiceChange);
+  }, []);
 
-  // دوال التحكم بالصوت لتفادي خطأ O/S is not a function
-  const playAudio = (url?: string) => {
-    if (audioRef.current) {
-      if (url) audioRef.current.src = url;
-      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-    }
-  };
+  useEffect(() => {
+    const config = voicesConfig[adhanVoice] || voicesConfig.makkah;
+    setResolvedUrl(config.url);
+  }, [adhanVoice]);
 
-  const pauseAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    }
-  };
+  useEffect(() => {
+    localStorage.setItem('adhanEnabled', String(adhanEnabled));
+    window.dispatchEvent(new Event('adhanStateChanged'));
+  }, [adhanEnabled]);
 
-  const togglePlay = () => {
-    if (isPlaying) pauseAudio();
-    else playAudio();
-  };
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setAdhanEnabled(localStorage.getItem('adhanEnabled') !== 'false');
+    };
+    window.addEventListener('adhanStateChanged', handleStorageChange);
+    return () => window.removeEventListener('adhanStateChanged', handleStorageChange);
+  }, []);
 
-  // 1. إنشاء قناة الإشعارات لصوت الأذان المحدد
-  const createAdhanChannel = async (soundId: string) => {
-    const channelId = `adhan_channel_${soundId}`;
-    try {
-      await LocalNotifications.createChannel({
-        id: channelId,
-        name: `أوقات الصلاة - ${soundId}`,
-        description: 'تشغيل صوت الأذان عند حلول موعد الصلاة',
-        sound: `${soundId}.mp3`,
-        importance: 5,
-        visibility: 1,
-        vibration: true,
-      });
-    } catch (e) {
-      console.error("خطأ في إنشاء القناة:", e);
-    }
-    return channelId;
-  };
-
-  // 2. جلب أوقات الصلاة تلقائياً
+  // جلب أوقات الصلاة حسب الموقع الجغرافي
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -146,60 +106,82 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
             const { latitude, longitude } = position.coords;
             const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${latitude}&longitude=${longitude}&method=4`);
             const data = await res.json();
-            setTimings(data.data.timings);
+            if (data?.data?.timings) {
+              setTimings(data.data.timings);
+            }
           } catch (e) {
-             console.error("API error:", e);
+             console.error("Aladhan API fetch error:", e);
           }
         },
         async () => {
           try {
              const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=Makkah&country=SA&method=4`);
              const data = await res.json();
-             setTimings(data.data.timings);
+             if (data?.data?.timings) {
+               setTimings(data.data.timings);
+             }
           } catch (e) {
-             console.error("API fallback error:", e);
+             console.error("Aladhan API fetch error fallback:", e);
           }
         }
       );
     }
   }, []);
 
-  // 3. دالة تجربة الأذان بعد 10 ثوانٍ
-  const testAdhanNow = async () => {
-    try {
-      const channelId = await createAdhanChannel(selectedAdhanSound);
-      const perm = await LocalNotifications.requestPermissions();
-      if (perm.display !== 'granted') return;
+  const [earlyReminderMinutes, setEarlyReminderMinutesState] = useState<number>(() => {
+    const val = localStorage.getItem('earlyReminderMinutes');
+    return val !== null ? parseInt(val, 10) : 10;
+  });
 
-      await LocalNotifications.schedule({
-        notifications: [
-          {
-            title: "الله أكبر - حان الآن وقت الصلاة 🕌",
-            body: "حي على الصلاة، حي على الفلاح",
-            id: 999,
-            schedule: { at: new Date(Date.now() + 10000) },
-            sound: `${selectedAdhanSound}.mp3`,
-            channelId: channelId,
-            actionTypeId: "",
-            extra: null
-          }
-        ]
-      });
-    } catch (e) {
-      console.error("خطأ في دالة التجربة:", e);
+  const [earlyReminderVoiceEnabled, setEarlyReminderVoiceEnabledState] = useState<boolean>(() => {
+    return localStorage.getItem('earlyReminderVoiceEnabled') !== 'false';
+  });
+
+  const setEarlyReminderMinutes = (val: number) => {
+    localStorage.setItem('earlyReminderMinutes', String(val));
+    setEarlyReminderMinutesState(val);
+    window.dispatchEvent(new Event('earlyReminderStateChanged'));
+  };
+
+  const setEarlyReminderVoiceEnabled = (val: boolean) => {
+    localStorage.setItem('earlyReminderVoiceEnabled', String(val));
+    setEarlyReminderVoiceEnabledState(val);
+    window.dispatchEvent(new Event('earlyReminderStateChanged'));
+  };
+
+  // دالة لاختبار الأذان يدوياً بعد دقيقة واحدة عند الضغط على زر التجربة
+  const testAdhanInOneMinute = async () => {
+    try {
+      const testDate = new Date(Date.now() + 60 * 1000); // بعد 60 ثانية
+      if (AdhanScheduler && typeof AdhanScheduler.scheduleAdhan === 'function') {
+        await AdhanScheduler.scheduleAdhan({
+          timeInMillis: testDate.getTime(),
+          requestCode: 999
+        });
+        alert('تمت جدولة الأذان التجريبي بعد دقيقة واحدة! أغلق الشاشة الآن للاختبار.');
+      } else {
+        alert('إضافة AdhanScheduler غير معرّفة على النظام المحمول.');
+      }
+    } catch (err) {
+      console.error("Test Adhan failed:", err);
+      alert("خطأ في جدولة التجربة: " + JSON.stringify(err));
     }
   };
 
-  // 4. جدولة الصلوات الخمس الحقيقية
+  // مرادفات لدعم الشاشات التي تنادي دالة التجربة بأسماء أخرى
+  const testAdhanNow = () => testAdhanInOneMinute();
+  const testAdhan = () => testAdhanInOneMinute();
+
+  // 🧪 الجدولة المباشرة عبر Native Plugin للصلوات الخمس فقط عند التفعيل أو تغيير التوقيت
   useEffect(() => {
     if (!adhanEnabled || !timings) return;
 
-    const scheduleAllPrayers = async () => {
+    const scheduleNativeAdhan = async () => {
       try {
-        const channelId = await createAdhanChannel(selectedAdhanSound);
+        if (!AdhanScheduler || typeof AdhanScheduler.scheduleAdhan !== 'function') return;
+
         const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-        const notificationsList = [];
-        let idCounter = 100;
+        let reqCode = 1000;
 
         for (const prayer of prayers) {
           const timeStr = timings[prayer];
@@ -209,52 +191,42 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
           const prayerDate = new Date();
           prayerDate.setHours(hours, minutes, 0, 0);
 
+          // إذا مضى وقت صلاة اليوم يتم جدولتها لليوم التالي تلقائياً
           if (prayerDate.getTime() <= Date.now()) {
             prayerDate.setDate(prayerDate.getDate() + 1);
           }
 
-          notificationsList.push({
-            title: `الله أكبر - حان الآن وقت صلاة ${prayerNamesAr[prayer] || prayer}`,
-            body: "حي على الصلاة، حي على الفلاح",
-            id: idCounter++,
-            schedule: { at: prayerDate },
-            sound: `${selectedAdhanSound}.mp3`,
-            channelId: channelId
+          await AdhanScheduler.scheduleAdhan({
+            timeInMillis: prayerDate.getTime(),
+            requestCode: reqCode++
           });
         }
-
-        if (notificationsList.length > 0) {
-          await LocalNotifications.schedule({ notifications: notificationsList });
-        }
-      } catch (e) {
-        console.error("فشل جدولة الصلوات:", e);
+      } catch (err) {
+        console.error("Adhan Scheduler Call Failed:", err);
       }
     };
 
-    scheduleAllPrayers();
-  }, [timings, adhanEnabled, selectedAdhanSound]);
+    scheduleNativeAdhan();
+  }, [timings, adhanEnabled]);
 
   return (
     <PrayerTimesContext.Provider value={{
       timings, 
       adhanEnabled, 
       setAdhanEnabled, 
-      audioRef,
-      testAdhanNow,
-      selectedAdhanSound,
+      audioRef, 
+      earlyReminderMinutes, 
+      setEarlyReminderMinutes, 
+      earlyReminderVoiceEnabled, 
+      setEarlyReminderVoiceEnabled,
+      adhanVoice,
+      setAdhanVoice,
+      selectedAdhanSound: adhanVoice,
       setSelectedAdhanSound,
-      reciter,
-      setReciter,
-      selectedReciter,
-      setSelectedReciter,
-      changeReciter,
-      isPlaying,
-      setIsPlaying,
-      currentSurah,
-      setCurrentSurah,
-      playAudio,
-      pauseAudio,
-      togglePlay
+      resolvedUrl,
+      testAdhanInOneMinute,
+      testAdhanNow,
+      testAdhan
     }}>
       <audio ref={audioRef} style={{ display: 'none' }} />
       {children}
