@@ -9,6 +9,13 @@ const prayerNamesAr: Record<string, string> = {
   Isha: 'العشاء'
 };
 
+// قائمة أصوات الأذان المتاحة داخل مجلد android/app/src/main/res/raw/
+export const ADHAN_SOUNDS = [
+  { id: 'adhan_alafasy', name: 'أذان مشاري العفاسي' },
+  { id: 'adhan_makkah', name: 'أذان الحرم المكي' },
+  { id: 'adhan_madinah', name: 'أذان الحرم المدني' }
+];
+
 interface PrayerTimesContextType {
   timings: Record<string, string> | null;
   adhanEnabled: boolean;
@@ -16,13 +23,18 @@ interface PrayerTimesContextType {
   audioRef: React.RefObject<HTMLAudioElement | null>;
   testAdhanNow: () => Promise<void>;
   
-  // حالات ودوال اختيار القارئ والصوتيات
+  // التحكم بصوت الأذان المختار
+  selectedAdhanSound: string;
+  setSelectedAdhanSound: (soundId: string) => void;
+
+  // التحكم بالقارئ
   reciter: string;
   setReciter: (reciter: string) => void;
   selectedReciter: any;
   setSelectedReciter: (reciter: any) => void;
   changeReciter: (reciterObj: any) => void;
   
+  // التحكم بمشغل الصوتيات
   isPlaying: boolean;
   setIsPlaying: (playing: boolean) => void;
   currentSurah: any;
@@ -39,9 +51,20 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
   const [adhanEnabled, setAdhanEnabled] = useState<boolean>(() => {
     return localStorage.getItem('adhanEnabled') !== 'false';
   });
+
+  // حالة صوت الأذان المختار
+  const [selectedAdhanSound, setSelectedAdhanSoundState] = useState<string>(() => {
+    return localStorage.getItem('selectedAdhanSound') || 'adhan_alafasy';
+  });
+
+  const setSelectedAdhanSound = (soundId: string) => {
+    setSelectedAdhanSoundState(soundId);
+    localStorage.setItem('selectedAdhanSound', soundId);
+  };
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // --- حالات القارئ والمشغل ---
+  // حالة تشغيل السور والقراء
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentSurah, setCurrentSurah] = useState<any>(null);
 
@@ -75,7 +98,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     setSelectedReciter(reciterObj);
   };
 
-  // --- دوال تشغيل الصوتيات لتجنب انهيار الشاشة ---
+  // دوال التحكم بالصوت لتفادي خطأ O/S is not a function
   const playAudio = (url?: string) => {
     if (audioRef.current) {
       if (url) audioRef.current.src = url;
@@ -91,31 +114,30 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
   };
 
   const togglePlay = () => {
-    if (isPlaying) {
-      pauseAudio();
-    } else {
-      playAudio();
-    }
+    if (isPlaying) pauseAudio();
+    else playAudio();
   };
 
-  // 1. إنشاء قناة الإشعارات لصوت الأذان
-  const createAdhanChannel = async () => {
+  // 1. إنشاء قناة الإشعارات لصوت الأذان المحدد
+  const createAdhanChannel = async (soundId: string) => {
+    const channelId = `adhan_channel_${soundId}`;
     try {
       await LocalNotifications.createChannel({
-        id: 'adhan_channel',
-        name: 'أوقات الصلاة والآذان',
+        id: channelId,
+        name: `أوقات الصلاة - ${soundId}`,
         description: 'تشغيل صوت الأذان عند حلول موعد الصلاة',
-        sound: 'adhan.mp3',
+        sound: `${soundId}.mp3`,
         importance: 5,
         visibility: 1,
         vibration: true,
       });
     } catch (e) {
-      console.error("خطأ في إنشاء قناة الإشعارات:", e);
+      console.error("خطأ في إنشاء القناة:", e);
     }
+    return channelId;
   };
 
-  // 2. جلب أوقات الصلاة
+  // 2. جلب أوقات الصلاة تلقائياً
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -142,10 +164,10 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // 3. دالة تجربة الأذان
+  // 3. دالة تجربة الأذان بعد 10 ثوانٍ
   const testAdhanNow = async () => {
     try {
-      await createAdhanChannel();
+      const channelId = await createAdhanChannel(selectedAdhanSound);
       const perm = await LocalNotifications.requestPermissions();
       if (perm.display !== 'granted') return;
 
@@ -156,8 +178,8 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
             body: "حي على الصلاة، حي على الفلاح",
             id: 999,
             schedule: { at: new Date(Date.now() + 10000) },
-            sound: 'adhan.mp3',
-            channelId: 'adhan_channel',
+            sound: `${selectedAdhanSound}.mp3`,
+            channelId: channelId,
             actionTypeId: "",
             extra: null
           }
@@ -168,13 +190,13 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // 4. جدولة الصلوات الخمس
+  // 4. جدولة الصلوات الخمس الحقيقية
   useEffect(() => {
     if (!adhanEnabled || !timings) return;
 
     const scheduleAllPrayers = async () => {
       try {
-        await createAdhanChannel();
+        const channelId = await createAdhanChannel(selectedAdhanSound);
         const prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
         const notificationsList = [];
         let idCounter = 100;
@@ -196,8 +218,8 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
             body: "حي على الصلاة، حي على الفلاح",
             id: idCounter++,
             schedule: { at: prayerDate },
-            sound: 'adhan.mp3',
-            channelId: 'adhan_channel'
+            sound: `${selectedAdhanSound}.mp3`,
+            channelId: channelId
           });
         }
 
@@ -210,7 +232,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     };
 
     scheduleAllPrayers();
-  }, [timings, adhanEnabled]);
+  }, [timings, adhanEnabled, selectedAdhanSound]);
 
   return (
     <PrayerTimesContext.Provider value={{
@@ -219,6 +241,8 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
       setAdhanEnabled, 
       audioRef,
       testAdhanNow,
+      selectedAdhanSound,
+      setSelectedAdhanSound,
       reciter,
       setReciter,
       selectedReciter,
@@ -232,7 +256,6 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
       pauseAudio,
       togglePlay
     }}>
-      {/* عنصر صوت خلفي عام للتطبيق */}
       <audio ref={audioRef} style={{ display: 'none' }} />
       {children}
     </PrayerTimesContext.Provider>
