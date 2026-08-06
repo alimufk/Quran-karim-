@@ -11,7 +11,7 @@ const prayerNamesAr: Record<string, string> = {
 
 // قائمة أصوات الأذان المتاحة داخل مجلد android/app/src/main/res/raw/
 export const ADHAN_SOUNDS = [
-  { id: 'adhan_alafasy', name: 'أذان مشاري العفاسي' },
+  { id: 'adhan_eamir', name: 'أذان عامر الكاظمي' },
   { id: 'adhan_makkah', name: 'أذان الحرم المكي' },
   { id: 'adhan_madinah', name: 'أذان الحرم المدني' }
 ];
