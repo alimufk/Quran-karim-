@@ -11,18 +11,9 @@ const prayerNamesAr: Record<string, string> = {
 
 // قائمة أصوات الأذان المتاحة داخل مجلد android/app/src/main/res/raw/
 export const ADHAN_SOUNDS = [
-  { id: 'adhan_eamir', name: 'أذان عامر الكاظمي' },
+  { id: 'adhan_alafasy', name: 'أذان مشاري العفاسي' },
   { id: 'adhan_makkah', name: 'أذان الحرم المكي' },
   { id: 'adhan_madinah', name: 'أذان الحرم المدني' }
-];
-
-// قائمة القراء الافتراضية لحماية التطبيق عند استدعائها
-export const DEFAULT_RECITERS = [
-  { identifier: 'ar.alafasy', name: 'مشاري العفاسي', englishName: 'Mishary Rashid Alafasy' },
-  { identifier: 'ar.abdulbasitmurattal', name: 'عبد الباسط عبد الصمد', englishName: 'AbdulBaset AbdulSamad' },
-  { identifier: 'ar.saoodshuraym', name: 'سعود الشريم', englishName: 'Saood ash-Shuraym' },
-  { identifier: 'ar.mahermuaiqly', name: 'ماهر المعيقلي', englishName: 'Maher Al Muaiqly' },
-  { identifier: 'ar.hudhaify', name: 'علي الحذيفي', englishName: 'Ali Al-Hudhaify' }
 ];
 
 interface PrayerTimesContextType {
@@ -42,10 +33,8 @@ interface PrayerTimesContextType {
   selectedReciter: any;
   setSelectedReciter: (reciter: any) => void;
   changeReciter: (reciterObj: any) => void;
-  reciters: any[];
-  fetchReciters?: () => void;
   
-  // التحكم بمشغل الصوتيات والسور
+  // التحكم بمشغل الصوتيات
   isPlaying: boolean;
   setIsPlaying: (playing: boolean) => void;
   currentSurah: any;
@@ -53,10 +42,6 @@ interface PrayerTimesContextType {
   playAudio: (url?: string) => void;
   pauseAudio: () => void;
   togglePlay: () => void;
-  playSurah?: (surah: any, reciterId?: string) => void;
-  selectSurah?: (surah: any) => void;
-  audioUrl: string;
-  setAudioUrl: (url: string) => void;
 }
 
 const PrayerTimesContext = createContext<PrayerTimesContextType | undefined>(undefined);
@@ -69,7 +54,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
 
   // حالة صوت الأذان المختار
   const [selectedAdhanSound, setSelectedAdhanSoundState] = useState<string>(() => {
-    return localStorage.getItem('selectedAdhanSound') || 'adhan_eamir';
+    return localStorage.getItem('selectedAdhanSound') || 'adhan_alafasy';
   });
 
   const setSelectedAdhanSound = (soundId: string) => {
@@ -79,11 +64,9 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // حالة تشغيل السور والقراء والصوتيات
+  // حالة تشغيل السور والقراء
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentSurah, setCurrentSurah] = useState<any>(null);
-  const [audioUrl, setAudioUrl] = useState<string>('');
-  const [reciters] = useState<any[]>(DEFAULT_RECITERS);
 
   const [reciter, setReciterState] = useState<string>(() => {
     return localStorage.getItem('selectedReciter') || 'ar.alafasy';
@@ -115,15 +98,11 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     setSelectedReciter(reciterObj);
   };
 
-  // دوال تشغيل الصوت والسور مع أمان عالي لمنع Runtime Errors
+  // دوال التحكم بالصوت لتفادي خطأ O/S is not a function
   const playAudio = (url?: string) => {
-    const targetUrl = url || audioUrl;
-    if (audioRef.current && targetUrl) {
-      if (url) {
-        audioRef.current.src = url;
-        setAudioUrl(url);
-      }
-      audioRef.current.play().then(() => setIsPlaying(true)).catch((e) => console.error("Audio error:", e));
+    if (audioRef.current) {
+      if (url) audioRef.current.src = url;
+      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
     }
   };
 
@@ -137,19 +116,6 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
   const togglePlay = () => {
     if (isPlaying) pauseAudio();
     else playAudio();
-  };
-
-  const playSurah = (surah: any, customReciterId?: string) => {
-    setCurrentSurah(surah);
-    const reciterId = customReciterId || reciter;
-    const surahNumber = typeof surah === 'number' ? surah : surah?.number || 1;
-    const formattedNumber = String(surahNumber).padStart(3, '0');
-    const url = `https://download.quranicaudio.com/quran/${reciterId}/${formattedNumber}.mp3`;
-    playAudio(url);
-  };
-
-  const selectSurah = (surah: any) => {
-    setCurrentSurah(surah);
   };
 
   // 1. إنشاء قناة الإشعارات لصوت الأذان المحدد
@@ -171,7 +137,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     return channelId;
   };
 
-  // 2. جلب أوقات الصلاة
+  // 2. جلب أوقات الصلاة تلقائياً
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -282,18 +248,13 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
       selectedReciter,
       setSelectedReciter,
       changeReciter,
-      reciters,
       isPlaying,
       setIsPlaying,
       currentSurah,
       setCurrentSurah,
       playAudio,
       pauseAudio,
-      togglePlay,
-      playSurah,
-      selectSurah,
-      audioUrl,
-      setAudioUrl
+      togglePlay
     }}>
       <audio ref={audioRef} style={{ display: 'none' }} />
       {children}
