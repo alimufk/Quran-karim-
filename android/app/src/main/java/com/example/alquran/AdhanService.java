@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -44,8 +45,18 @@ public class AdhanService extends Service {
                 .setOngoing(true)
                 .build();
 
-        startForeground(1001, notification);
+        // دعم أندرويد 14 المتوافق مع خدمات التشغيل الصوتية
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            try {
+                startForeground(1001, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+            } catch (Exception e) {
+                startForeground(1001, notification);
+            }
+        } else {
+            startForeground(1001, notification);
+        }
 
+        // إيقاظ الشاشة والمعالج
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         if (pm != null) {
             wakeLock = pm.newWakeLock(
@@ -62,41 +73,45 @@ public class AdhanService extends Service {
                 mediaPlayer = null;
             }
 
+            mediaPlayer = new MediaPlayer();
+
+            // 1. تحديد نوع الصوت أولاً قبل التحضير لتجنب استثناء IllegalStateException
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mediaPlayer.setAudioAttributes(
+                        new AudioAttributes.Builder()
+                                .setUsage(AudioAttributes.USAGE_ALARM)
+                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                .build()
+                );
+            } else {
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+            }
+
+            // 2. تحديد مصدر الصوت (ملف محلي أو منبه النظام)
             int soundResId = getResources().getIdentifier("adhan1", "raw", getPackageName());
             if (soundResId != 0) {
-                // تشغيل الأذان المخصص إذا كان الملف موجوداً
-                mediaPlayer = MediaPlayer.create(this, soundResId);
+                Uri soundUri = Uri.parse("android.resource://" + getPackageName() + "/" + soundResId);
+                mediaPlayer.setDataSource(this, soundUri);
             } else {
-                // صوت احتياطي من النظام إذا لم يجد الملف
                 Uri defaultAlarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-                mediaPlayer = new MediaPlayer();
+                if (defaultAlarmUri == null) {
+                    defaultAlarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+                }
                 mediaPlayer.setDataSource(this, defaultAlarmUri);
-                mediaPlayer.prepare();
             }
 
-            if (mediaPlayer != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    mediaPlayer.setAudioAttributes(
-                            new AudioAttributes.Builder()
-                                    .setUsage(AudioAttributes.USAGE_ALARM)
-                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                    .build()
-                    );
-                } else {
-                    mediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
-                }
-
-                AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                if (audioManager != null) {
-                    int maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM);
-                    audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVol, 0);
-                }
-
-                mediaPlayer.setOnCompletionListener(mp -> stopSelf());
-                mediaPlayer.start();
-            } else {
-                stopSelf();
+            // 3. رفع مستوى صوت المنبه لأقصى درجة
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            if (audioManager != null) {
+                int maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+                audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVol, 0);
             }
+
+            // 4. تحضير المشغل وتشغيله بأمان
+            mediaPlayer.setOnCompletionListener(mp -> stopSelf());
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+
         } catch (Exception e) {
             e.printStackTrace();
             stopSelf();
