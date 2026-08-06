@@ -1,20 +1,11 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { registerPlugin } from '@capacitor/core';
 
-// تسجيل إضافة Java المخصصة لجدولة المنبهات
 interface AdhanSchedulerPluginType {
   scheduleAdhan(options: { timeInMillis: number; requestCode: number }): Promise<void>;
 }
 
 const AdhanScheduler = registerPlugin<AdhanSchedulerPluginType>('AdhanScheduler');
-
-const prayerNamesAr: Record<string, string> = {
-  Fajr: 'الفجر',
-  Dhuhr: 'الظهر',
-  Asr: 'العصر',
-  Maghrib: 'المغرب',
-  Isha: 'العشاء'
-};
 
 export const voicesConfig: Record<string, { name: string; url: string }> = {
   makkah: {
@@ -68,7 +59,6 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('adhanVoiceChanged'));
   };
 
-  // مرادف لدعم مسميات الأزرار المختلفة
   const setSelectedAdhanSound = (voice: string) => setAdhanVoice(voice);
 
   useEffect(() => {
@@ -149,10 +139,9 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('earlyReminderStateChanged'));
   };
 
-  // دالة لاختبار الأذان يدوياً بعد دقيقة واحدة عند الضغط على زر التجربة
   const testAdhanInOneMinute = async () => {
     try {
-      const testDate = new Date(Date.now() + 60 * 1000); // بعد 60 ثانية
+      const testDate = new Date(Date.now() + 60 * 1000);
       if (AdhanScheduler && typeof AdhanScheduler.scheduleAdhan === 'function') {
         await AdhanScheduler.scheduleAdhan({
           timeInMillis: testDate.getTime(),
@@ -168,11 +157,10 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // مرادفات لدعم الشاشات التي تنادي دالة التجربة بأسماء أخرى
   const testAdhanNow = () => testAdhanInOneMinute();
   const testAdhan = () => testAdhanInOneMinute();
 
-  // 🧪 الجدولة المباشرة عبر Native Plugin للصلوات الخمس فقط عند التفعيل أو تغيير التوقيت
+  // 🧪 الجدولة الآمنة والمباشرة عبر Native Plugin للصلوات الخمس
   useEffect(() => {
     if (!adhanEnabled || !timings) return;
 
@@ -187,11 +175,22 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
           const timeStr = timings[prayer];
           if (!timeStr) continue;
 
-          const [hours, minutes] = timeStr.split(':').map(Number);
+          // 🛠️ تنظيف وقت الصلاة واستخراج الساعات والدقائق بأمان لتجنب NaN
+          const cleanTime = timeStr.split(' ')[0].trim();
+          const [hStr, mStr] = cleanTime.split(':');
+          
+          const hours = parseInt(hStr, 10);
+          const minutes = parseInt(mStr, 10);
+
+          if (isNaN(hours) || isNaN(minutes)) {
+            console.error(`وقت غير صالح للصلاة ${prayer}:`, timeStr);
+            continue;
+          }
+
           const prayerDate = new Date();
           prayerDate.setHours(hours, minutes, 0, 0);
 
-          // إذا مضى وقت صلاة اليوم يتم جدولتها لليوم التالي تلقائياً
+          // إذا مضى وقت صلاة اليوم تتم جدولتها لليوم التالي تلقائياً
           if (prayerDate.getTime() <= Date.now()) {
             prayerDate.setDate(prayerDate.getDate() + 1);
           }
@@ -200,6 +199,8 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
             timeInMillis: prayerDate.getTime(),
             requestCode: reqCode++
           });
+
+          console.log(`تمت جدولة صلاة ${prayer} بنجاح على التوقيت: ${prayerDate.toLocaleString()}`);
         }
       } catch (err) {
         console.error("Adhan Scheduler Call Failed:", err);
@@ -228,7 +229,8 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
       testAdhanNow,
       testAdhan
     }}>
-      <audio ref={audioRef} style={{ display: 'none' }} />
+      {/* تم تصحيح وسم الصوت بوضع المصدر src لكي تعمل المعاينة */}
+      <audio ref={audioRef} src={resolvedUrl || undefined} style={{ display: 'none' }} />
       {children}
     </PrayerTimesContext.Provider>
   );
