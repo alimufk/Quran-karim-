@@ -15,11 +15,21 @@ interface PrayerTimesContextType {
   setAdhanEnabled: (enabled: boolean) => void;
   audioRef: React.RefObject<HTMLAudioElement | null>;
   testAdhanNow: () => Promise<void>;
-  // دوال ومتغيرات اختيار القارئ
+  
+  // حالات ودوال اختيار القارئ والصوتيات
   reciter: string;
   setReciter: (reciter: string) => void;
   selectedReciter: any;
   setSelectedReciter: (reciter: any) => void;
+  changeReciter: (reciterObj: any) => void;
+  
+  isPlaying: boolean;
+  setIsPlaying: (playing: boolean) => void;
+  currentSurah: any;
+  setCurrentSurah: (surah: any) => void;
+  playAudio: (url?: string) => void;
+  pauseAudio: () => void;
+  togglePlay: () => void;
 }
 
 const PrayerTimesContext = createContext<PrayerTimesContextType | undefined>(undefined);
@@ -31,7 +41,10 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
   });
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // --- حالات اختيار القارئ ---
+  // --- حالات القارئ والمشغل ---
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [currentSurah, setCurrentSurah] = useState<any>(null);
+
   const [reciter, setReciterState] = useState<string>(() => {
     return localStorage.getItem('selectedReciter') || 'ar.alafasy';
   });
@@ -58,7 +71,34 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // 1. إنشاء قناة الإشعارات المخصصة لصوت الأذان
+  const changeReciter = (reciterObj: any) => {
+    setSelectedReciter(reciterObj);
+  };
+
+  // --- دوال تشغيل الصوتيات لتجنب انهيار الشاشة ---
+  const playAudio = (url?: string) => {
+    if (audioRef.current) {
+      if (url) audioRef.current.src = url;
+      audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+    }
+  };
+
+  const pauseAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const togglePlay = () => {
+    if (isPlaying) {
+      pauseAudio();
+    } else {
+      playAudio();
+    }
+  };
+
+  // 1. إنشاء قناة الإشعارات لصوت الأذان
   const createAdhanChannel = async () => {
     try {
       await LocalNotifications.createChannel({
@@ -128,37 +168,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // 4. التجربة التلقائية عند الفتح
-  useEffect(() => {
-    const runAutoTest = async () => {
-      try {
-        await createAdhanChannel();
-        const perm = await LocalNotifications.requestPermissions();
-        if (perm.display !== 'granted') return;
-
-        await LocalNotifications.schedule({
-          notifications: [
-            {
-              title: "الله أكبر - حان الآن وقت الصلاة 🕌",
-              body: "حي على الصلاة، حي على الفلاح",
-              id: 999,
-              schedule: { at: new Date(Date.now() + 10000) },
-              sound: 'adhan.mp3',
-              channelId: 'adhan_channel',
-              actionTypeId: "",
-              extra: null
-            }
-          ]
-        });
-      } catch (e) {
-        console.error("خطأ التنبيه التلقائي:", e);
-      }
-    };
-
-    runAutoTest();
-  }, []);
-
-  // 5. جدولة الصلوات الخمس الحقيقية
+  // 4. جدولة الصلوات الخمس
   useEffect(() => {
     if (!adhanEnabled || !timings) return;
 
@@ -212,8 +222,18 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
       reciter,
       setReciter,
       selectedReciter,
-      setSelectedReciter
+      setSelectedReciter,
+      changeReciter,
+      isPlaying,
+      setIsPlaying,
+      currentSurah,
+      setCurrentSurah,
+      playAudio,
+      pauseAudio,
+      togglePlay
     }}>
+      {/* عنصر صوت خلفي عام للتطبيق */}
+      <audio ref={audioRef} style={{ display: 'none' }} />
       {children}
     </PrayerTimesContext.Provider>
   );
