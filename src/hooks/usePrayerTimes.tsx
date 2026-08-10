@@ -87,14 +87,15 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('adhanStateChanged', handleStorageChange);
   }, []);
 
-  // جلب أوقات الصلاة حسب الموقع الجغرافي
+  // جلب أوقات الصلاة حسب الموقع الجغرافي مع ضبط 18 دقيقة إضافية لأذان المغرب
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
             const { latitude, longitude } = position.coords;
-            const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${latitude}&longitude=${longitude}&method=4`);
+            // إضافة &tune=0,0,0,0,0,18,0,0,0 لزيادة 18 دقيقة على المغرب حصراً
+            const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${latitude}&longitude=${longitude}&method=4&tune=0,0,0,0,0,18,0,0,0`);
             const data = await res.json();
             if (data?.data?.timings) {
               setTimings(data.data.timings);
@@ -105,7 +106,7 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
         },
         async () => {
           try {
-             const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=Makkah&country=SA&method=4`);
+             const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=Makkah&country=SA&method=4&tune=0,0,0,0,0,18,0,0,0`);
              const data = await res.json();
              if (data?.data?.timings) {
                setTimings(data.data.timings);
@@ -229,7 +230,6 @@ export function PrayerTimesProvider({ children }: { children: ReactNode }) {
       testAdhanNow,
       testAdhan
     }}>
-      {/* تم تصحيح وسم الصوت بوضع المصدر src لكي تعمل المعاينة */}
       <audio ref={audioRef} src={resolvedUrl || undefined} style={{ display: 'none' }} />
       {children}
     </PrayerTimesContext.Provider>
