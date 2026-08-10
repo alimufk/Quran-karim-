@@ -104,7 +104,7 @@ const latmiyatList = [
   { id: 'latmia-6', name: 'قصيدة شد الثامة - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/shidalthaama.mp3' },
   { id: 'latmia-7', name: 'قصيدة بلله ياشمر - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/blahaesmar.mp3' },
   { id: 'latmia-8', name: 'قصيدة يمة اطمنج علية - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/m2.mp3' },
-  { id: 'latmia-9', name: 'قصيدة درب العشك - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/darab_aleishk.mp3' },
+  { id: 'latmia-9', name: 'قصيدة درب العشك - محمد الجنامي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/darabaleishk.mp3' },
   { id: 'latmia-10', name: 'قصيدة الله ياحامي الشريعة - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/allah_yahami.mp3' },
   { id: 'latmia-11', name: 'قصيدة هاي المنزلة - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/Al-Mazlou.mp3' },
   { id: 'latmia-12', name: 'قصيدة أنشأ الله - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/an-allah.mp3' },
