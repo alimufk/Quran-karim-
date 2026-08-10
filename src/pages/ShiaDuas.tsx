@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight, Play, Pause, Search, Headphones, BookOpen, Volume2, ShieldCheck, Download, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ArrowRight, Play, Pause, Search, Headphones, BookOpen, Volume2, 
+  ShieldCheck, Download, AlertCircle, CheckCircle2, Loader2, 
+  FileText, SkipForward, SkipBack, X, Maximize2
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // -------------------------------------------------------------
@@ -50,7 +54,7 @@ const getAudioBlob = async (id: string): Promise<Blob | null> => {
 };
 // -------------------------------------------------------------
 
-// 1. قائمة الأدعية الكاملة والمستقرة
+// 1. قائمة الأدعية الصوتية
 const duasList = [
   { id: 'kumail', name: 'دعاء كميل', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_kumayl_farahmand_fani.mp3' },
   { id: 'nudbah', name: 'دعاء الندبة', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa-nudbah-farahmand.MP3' },
@@ -142,10 +146,65 @@ const latmiyatList = [
   { id: 'latmia-48', name: ' قصيدة خرابة - باسم الكربلائي ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/baseim1985.mp3'}
 ];
 
+// 3. قائمة الأدعية المقروءة (المكتوبة)
+const writtenDuasList = [
+  {
+    id: 'w-faraj',
+    title: 'دعاء الفرج (إلهي عظم البلاء)',
+    content: `إِلَهِي عَظُمَ الْبَلاءُ ، وَبَرِحَ الْخَفَاءُ ، وَانْكَشَفَ الْغِطَاءُ ، وَانْقَطَعَ الرَّجَاءُ ، وَضَاقَتِ الأَرْضُ ، وَمُنِعَتِ السَّمَاءُ ، وَأَنْتَ الْمُسْتَعَانُ ، وَإِلَيْكَ الْمُشْتَكَى ، وَعَلَيْكَ الْمُعَوَّلُ فِي الشِّدَّةِ وَالرَّخَاءِ .
+
+اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَآلِ مُحَمَّدٍ ، أُولِي الأَمْرِ الَّذِينَ فَرَضْتَ عَلَيْنَا طَاعَتَهُمْ ، وَعَرَّفْتَنَا بِذَلِكَ مَنْزِلَتَهُمْ ، فَفَرِّجْ عَنَّا بِحَقِّهِمْ فَرَجاً عَاجِلاً قَرِيباً كَلَمْحِ الْبَصَرِ أَوْ هُوَ أَقْرَبُ .
+
+يَا مُحَمَّدُ يَا عَلِيُّ ، يَا عَلِيُّ يَا مُحَمَّدُ ، اكْفِيَانِي فَإِنَّكُمَا كَافِيَانِ ، وَانْصُرَانِي فَإِنَّكُمَا نَاصِرَانِ .
+
+يَا مَوْلانَا يَا صَاحِبَ الزَّمَانِ ، الْغَوْثَ الْغَوْثَ الْغَوْثَ ، أَدْرِكْنِي أَدْرِكْنِي أَدْرِكْنِي ، السَّاعَةَ السَّاعَةَ السَّاعَةَ ، الْعَجَلَ الْعَجَلَ الْعَجَلَ ، يَا أَرْحَمَ الرَّاحِمِينَ ، بِحَقِّ مُحَمَّدٍ وَآلِهِ الطَّاهِرِينَ .`
+  },
+  {
+    id: 'w-ahad',
+    title: 'دعاء العهد',
+    content: `اللَّهُمَّ رَبَّ النُّورِ الْعَظِيمِ ، وَرَبَّ الْكُرْسِيِّ الرَّفِيعِ ، وَرَبَّ الْبَحْرِ الْمَسْجُورِ ، وَمُنْزِلَ التَّوْرَاةِ وَالإِنْجِيلِ وَالزَّبُورِ ، وَرَبَّ الظِّلِّ وَالْحَرُورِ ، وَمُنْزِلَ الْقُرْآنِ الْعَظِيمِ ، وَرَبَّ الْمَلائِكَةِ الْمُقَرَّبِينَ وَالأَنْبِيَاءِ وَالْمُرْسَلِينَ .
+
+اللَّهُمَّ إِنِّي أَسْأَلُكَ بِوَجْهِكَ الْكَرِيمِ ، وَبِنُورِ وَجْهِكَ الْمُنِيرِ وَمُلْكِكَ الْقَدِيمِ ، يَا حَيُّ يَا قَيُّومُ ، أَسْأَلُكَ بِاسْمِكَ الَّذِي أَشْرَقَتْ بِهِ السَّمَاوَاتُ وَالأَرَضُونَ ، وَبِاسْمِكَ الَّذِي يَصْلَحُ بِهِ الأَوَّلُونَ وَالآخِرُونَ ، يَا حَيّاً قَبْلَ كُلِّ حَيٍّ ، وَيَا حَيّاً بَعْدَ كُلِّ حَيٍّ ، وَيَا حَيّاً حِينَ لا حَيَّ ، يَا مُحْيِيَ الْمَوْتَى وَمُمِيتَ الأَحْيَاءِ ، يَا حَيُّ لا إِلَهَ إِلا أَنْتَ .
+
+اللَّهُمَّ بَلِّغْ مَوْلانَا الإِمَامَ الْهَادِيَ الْمَهْدِيَّ الْقَائِمَ بِأَمْرِكَ ، صَلَوَاتُ اللَّهِ عَلَيْهِ وَعَلَى آبَائِهِ الطَّاهِرِينَ ، عَنْ جَمِيعِ الْمُؤْمِنِينَ وَالْمُؤْمِنَاتِ فِي مَشَارِقِ الأَرْضِ وَمَغَارِبِهَا ، سَهْلِهَا وَجَبَلِهَا ، وَبَرِّهَا وَبَحْرِهَا ، وَعَنِّي وَعَنْ وَالِدَيَّ مِنَ الصَّلَوَاتِ زِنَةَ عَرْشِ اللَّهِ ، وَمِدَادَ كَلِمَاتِهِ ، وَمَا أَحْصَاهُ عِلْمُهُ ، وَأَحَاطَ بِهِ كِتَابُهُ .
+
+اللَّهُمَّ إِنِّي أُجَدِّدُ لَهُ فِي صَبِيحَةِ يَوْمِي هَذَا وَمَا عِشْتُ مِنْ أَيَّامِي عَهْداً وَعَقْداً وَبَيْعَةً لَهُ فِي عُنُقِي ، لا أَحُولُ عَنْهَا وَلا أَزُولُ أَبَداً .`
+  },
+  {
+    id: 'w-kumail',
+    title: 'دعاء كميل بن زياد (مقتطفات مباركة)',
+    content: `اللَّهُمَّ إِنِّي أَسْأَلُكَ بِرَحْمَتِكَ الَّتِي وَسِعَتْ كُلَّ شَيْءٍ ، وَبِقُوَّتِكَ الَّتِي قَهَرْتَ بِهَا كُلَّ شَيْءٍ ، وَخَضَعَ لَهَا كُلُّ شَيْءٍ ، وَذَلَّ لَهَا كُلُّ شَيْءٍ ، وَبِجَبَرُوتِكَ الَّتِي غَلَبْتَ بِهَا كُلَّ شَيْءٍ ، وَبِعِزَّتِكَ الَّتِي لا يَقُومُ لَهَا شَيْءٌ ، وَبِعَظَمَتِكَ الَّتِي مَلأَتْ كُلَّ شَيْءٍ ، وَبِسُلْطَانِكَ الَّذِي عَلا كُلَّ شَيْءٍ ، وَبِوَجْهِكَ الْبَاقِي بَعْدَ فَنَاءِ كُلِّ شَيْءٍ .
+
+اللَّهُمَّ اغْفِرْ لِيَ الذُّنُوبَ الَّتِي تَهْتِكُ الْعِصَمَ ، اللَّهُمَّ اغْفِرْ لِيَ الذُّنُوبَ الَّتِي تُنْزِلُ النِّقَمَ ، اللَّهُمَّ اغْفِرْ لِيَ الذُّنُوبَ الَّتِي تُغَيِّرُ النِّعَمَ ، اللَّهُمَّ اغْفِرْ لِيَ الذُّنُوبَ الَّتِي تَحْبِسُ الدُّعَاءَ ، اللَّهُمَّ اغْفِرْ لِيَ الذُّنُوبَ الَّتِي تُنْزِلُ الْبَلاءَ .
+
+يَا سَيِّدِي فَأَسْأَلُكَ بِعِزَّتِكَ أَنْ لا يَحْجُبَ عَنْكَ دُعَائِي سُوءُ عَمَلِي وَفِعَالِي ، وَلا تَفْضَحْنِي بِخَفِيِّ مَا اطَّلَعْتَ عَلَيْهِ مِنْ سِرِّي ... يَا رَبِّ ارْحَمْ ضَعْفَ بَدَنِي ، وَرِقَّةَ جِلْدِي ، وَدِقَّةَ عَظْمِي ، يَا مَنْ بَدَأَ خَلْقِي وَذِكْرِي وَتَرْبِيَتِي وَبِرِّي وَتَغْذِيَتِي ، هَبْنِي لابْتِدَاءِ كَرَمِكَ وَسَالِفِ بِرِّكَ بِي .`
+  },
+  {
+    id: 'w-tawassul',
+    title: 'دعاء التوسل',
+    content: `اللَّهُمَّ إِنِّي أَسْأَلُكَ وَأَتَوَجَّهُ إِلَيْكَ بِنَبِيِّكَ نَبِيِّ الرَّحْمَةِ مُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَآلِهِ ، يَا أَبَا الْقَاسِمِ يَا رَسُولَ اللَّهِ يَا إِمَامَ الرَّحْمَةِ ، يَا سَيِّدَنَا وَمَوْلانَا إِنَّا تَوَجَّهْنَا وَاسْتَشْفَعْنَا وَتَوَسَّلْنَا بِكَ إِلَى اللَّهِ ، وَقَدَّمْنَاكَ بَيْنَ يَدَيْ حَاجَاتِنَا ، يَا وَجِيهاً عِنْدَ اللَّهِ اشْفَعْ لَنَا عِنْدَ اللَّهِ .
+
+يَا أَبَا الْحَسَنِ يَا أَمِيرَ الْمُؤْمِنِينَ يَا عَلِيَّ بْنَ أَبِي طَالِبٍ ، يَا حُجَّةَ اللَّهِ عَلَى خَلْقِهِ يَا سَيِّدَنَا وَمَوْلانَا إِنَّا تَوَجَّهْنَا وَاسْتَشْفَعْنَا وَتَوَسَّلْنَا بِكَ إِلَى اللَّهِ ، وَقَدَّمْنَاكَ بَيْنَ يَدَيْ حَاجَاتِنَا ، يَا وَجِيهاً عِنْدَ اللَّهِ اشْفَعْ لَنَا عِنْدَ اللَّهِ .
+
+يَا فَاطِمَةَ الزَّهْرَاءِ يَا بِنْتَ مُحَمَّدٍ ، يَا قُرَّةَ عَيْنِ الرَّسُولِ ، يَا سَيِّدَتَنَا وَمَوْلاتَنَا إِنَّا تَوَجَّهْنَا وَاسْتَشْفَعْنَا وَتَوَسَّلْنَا بِكِ إِلَى اللَّهِ ، وَقَدَّمْنَاكِ بَيْنَ يَدَيْ حَاجَاتِنَا ، يَا وَجِيهَةً عِنْدَ اللَّهِ اشْفَعِي لَنَا عِنْدَ اللَّهِ .`
+  },
+  {
+    id: 'w-sabah',
+    title: 'دعاء الصباح لأمير المؤمنين (ع)',
+    content: `اللَّهُمَّ يَا مَنْ دَلَعَ لِسَانَ الصَّبَاحِ بِنُطْقِ تَبَلُّجِهِ ، وَسَرَّحَ قِطَعَ اللَّيْلِ الْمُظْلِمِ بِغَيَاهِبِ تَلَجْلُجِهِ ، وَأَتْقَنَ صُنْعَ الْفَلَكِ الدَّوَّارِ فِي مَقَادِيرِ تَبَرُّجِهِ ، وَشَعْشَعَ ضِيَاءَ الشَّمْسِ بِبَزُوغِ تَأَهُّجِهِ .
+
+يَا مَنْ دَلَّ عَلَى ذَاتِهِ بِذَاتِهِ ، وَتَنَزَّهَ عَنْ مُجَانَسَةِ مَخْلُوقَاتِهِ ، وَجَلَّ عَنْ مُلاءَمَةِ كَيْفِيَّاتِهِ ، يَا مَنْ قَرُبَ مِنْ خَطَرَاتِ الظُّنُونِ ، وَبَعُدَ عَنْ لَحَظَاتِ الْعُيُونِ ، وَعَلِمَ بِمَا كَانَ قَبْلَ أَنْ يَكُونَ .
+
+يَا مَنْ أَرْجَسَنِي فِي أَكْنَافِ أَمْنِهِ وَأَمَانِهِ ، وَأَنَهَضَنِي إِلَى مَا يُحْيِينِي مِنْ لُطْفِهِ وَإِحْسَانِهِ ، صَلِّ اللَّهُمَّ عَلَى الدَّلِيلِ إِلَيْكَ فِي اللَّيْلِ الأَلْيَلِ ، وَالْمُتَمَسِّكِ بِحَبْلِكَ الأَطْوَلِ ، وَالنَّاصِعِ الْحَسَبِ فِي ذِرْوَةِ الْكاهِلِ الأَشْهَلِ .`
+  }
+];
+
 export function ShiaDuas() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<'duas' | 'latmiyat'>('duas');
+  const [duasSubTab, setDuasSubTab] = useState<'audio' | 'written'>('audio');
+  
   const [currentTrack, setCurrentTrack] = useState<any | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -155,9 +214,14 @@ export function ShiaDuas() {
   const [downloadedIds, setDownloadedIds] = useState<string[]>([]);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
+  // حالة عرض الدعاء المقروء
+  const [selectedWrittenDua, setSelectedWrittenDua] = useState<any | null>(null);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
   const filteredDuas = duasList.filter(d => d.name.includes(search));
   const filteredLatmiyat = latmiyatList.filter(l => l.name.includes(search));
+  const filteredWrittenDuas = writtenDuasList.filter(w => w.title.includes(search));
 
   useEffect(() => {
     const checkDownloadedFiles = async () => {
@@ -221,6 +285,47 @@ export function ShiaDuas() {
     };
   }, [isPlaying, currentTrack]);
 
+  // -------------------------------------------------------------------
+  // 🔄 تشغيل المقطع التالي تلقائياً عند انتهاء اللطمية أو الدعاء الحالي
+  // -------------------------------------------------------------------
+  const handleAudioEnded = () => {
+    if (!currentTrack) return;
+
+    // حدد القائمة التي يتم التشغيل منها حالياً
+    const currentList = activeTab === 'latmiyat' ? filteredLatmiyat : filteredDuas;
+    const currentIndex = currentList.findIndex(t => t.id === currentTrack.id);
+
+    if (currentIndex !== -1 && currentIndex < currentList.length - 1) {
+      // هناك مقطع تالي -> شغل المقطع الذي يليه فوراً
+      const nextTrack = currentList[currentIndex + 1];
+      setCurrentTrack(nextTrack);
+      setIsPlaying(true);
+    } else {
+      // انتهت القائمة
+      setIsPlaying(false);
+    }
+  };
+
+  const playNextTrack = () => {
+    if (!currentTrack) return;
+    const currentList = activeTab === 'latmiyat' ? filteredLatmiyat : filteredDuas;
+    const currentIndex = currentList.findIndex(t => t.id === currentTrack.id);
+    if (currentIndex < currentList.length - 1) {
+      setCurrentTrack(currentList[currentIndex + 1]);
+      setIsPlaying(true);
+    }
+  };
+
+  const playPrevTrack = () => {
+    if (!currentTrack) return;
+    const currentList = activeTab === 'latmiyat' ? filteredLatmiyat : filteredDuas;
+    const currentIndex = currentList.findIndex(t => t.id === currentTrack.id);
+    if (currentIndex > 0) {
+      setCurrentTrack(currentList[currentIndex - 1]);
+      setIsPlaying(true);
+    }
+  };
+
   const handleTrackSelect = (track: any) => {
     if (currentTrack?.id === track.id) {
       setIsPlaying(!isPlaying);
@@ -260,18 +365,20 @@ export function ShiaDuas() {
 
   return (
     <div className="flex flex-col h-full bg-[#022c22] relative font-['Cairo'] text-right" dir="rtl">
+      {/* Header */}
       <header className="bg-[#064e3b] shadow-lg border-b border-[#059669]/30 px-4 py-3 flex items-center gap-4 z-20">
         <button onClick={() => navigate(-1)} className="p-2 text-[#fbbf24]">
           <ArrowRight size={24} />
         </button>
         <div>
-          <h1 className="font-bold text-lg text-[#f0f9ff] tracking-tight">المكتبة الصوتية الشاملة</h1>
+          <h1 className="font-bold text-lg text-[#f0f9ff] tracking-tight">المكتبة الصوتية والأدعية</h1>
           <p className="text-xs text-[#fbbf24] flex items-center gap-1">
-            <ShieldCheck size={13} /> تشغيل وتحميل محلي آمن 100%
+            <ShieldCheck size={13} /> تشغيل تتابعي وتحميل محلي آمن
           </p>
         </div>
       </header>
 
+      {/* Tabs & Search */}
       <div className="px-6 py-4 z-10 bg-[#022c22]/90 backdrop-blur-md border-b border-[#059669]/10 space-y-4">
         <div className="relative">
           <input
@@ -284,13 +391,14 @@ export function ShiaDuas() {
           <Search className="absolute right-4 top-3.5 text-[#059669]" size={20} />
         </div>
 
+        {/* التبويبات الرئيسية */}
         <div className="grid grid-cols-2 gap-2 bg-[#064e3b]/40 p-1.5 rounded-2xl border border-[#059669]/15">
           <button
             onClick={() => { setActiveTab('duas'); setSearch(''); }}
             className={`py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all duration-200 ${activeTab === 'duas' ? 'bg-[#fbbf24] text-[#022c22] shadow-md' : 'text-[#f0f9ff]/70 hover:text-white'}`}
           >
             <BookOpen size={16} />
-            <span>الأدعية الصوتية ({duasList.length})</span>
+            <span>الأدعية والزيارات</span>
           </button>
           <button
             onClick={() => { setActiveTab('latmiyat'); setSearch(''); }}
@@ -300,10 +408,31 @@ export function ShiaDuas() {
             <span>اللطميات والمجالس ({latmiyatList.length})</span>
           </button>
         </div>
+
+        {/* التبويب الفرعي للأدعية: صوتي / مقروء */}
+        {activeTab === 'duas' && (
+          <div className="flex justify-center gap-3 pt-1">
+            <button
+              onClick={() => setDuasSubTab('audio')}
+              className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${duasSubTab === 'audio' ? 'bg-[#059669] text-white shadow-sm' : 'bg-[#064e3b]/50 text-[#f0f9ff]/60 border border-[#059669]/20'}`}
+            >
+              🔊 أدعية صوتية ({duasList.length})
+            </button>
+            <button
+              onClick={() => setDuasSubTab('written')}
+              className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${duasSubTab === 'written' ? 'bg-[#059669] text-white shadow-sm' : 'bg-[#064e3b]/50 text-[#f0f9ff]/60 border border-[#059669]/20'}`}
+            >
+              📖 أدعية مقروءة ({writtenDuasList.length})
+            </button>
+          </div>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 pb-32">
-        {activeTab === 'duas' && filteredDuas.map((dua) => {
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 pb-36">
+        
+        {/* 1️⃣ أدعية صوتية */}
+        {activeTab === 'duas' && duasSubTab === 'audio' && filteredDuas.map((dua) => {
           const isDownloaded = downloadedIds.includes(dua.id);
           const isDownloading = downloadingId === dua.id;
 
@@ -345,6 +474,33 @@ export function ShiaDuas() {
           );
         })}
 
+        {/* 2️⃣ أدعية مقروءة */}
+        {activeTab === 'duas' && duasSubTab === 'written' && filteredWrittenDuas.map((writtenDua) => (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={writtenDua.id}>
+            <div
+              onClick={() => setSelectedWrittenDua(writtenDua)}
+              className="flex items-center justify-between p-4 rounded-[24px] border border-[#059669]/20 bg-[#064e3b]/40 hover:bg-[#059669]/30 cursor-pointer transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center w-12 h-12 rounded-xl font-bold bg-[#059669]/30 text-[#fbbf24]">
+                  <FileText size={22} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-[#f0f9ff]">
+                    {writtenDua.title}
+                  </h3>
+                  <p className="text-xs text-[#059669]">قراءة واضحة مع التشكيل</p>
+                </div>
+              </div>
+
+              <div className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-colors">
+                <Maximize2 size={18} />
+              </div>
+            </div>
+          </motion.div>
+        ))}
+
+        {/* 3️⃣ قسم اللطميات */}
         {activeTab === 'latmiyat' && filteredLatmiyat.map((latmia) => {
           const isDownloaded = downloadedIds.includes(latmia.id);
           const isDownloading = downloadingId === latmia.id;
@@ -388,10 +544,37 @@ export function ShiaDuas() {
         })}
       </div>
 
+      {/* 📖 نافذة عرض الدعاء المقروء */}
+      <AnimatePresence>
+        {selectedWrittenDua && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="fixed inset-0 bg-[#022c22]/95 backdrop-blur-lg z-[100] flex flex-col p-6 overflow-hidden"
+          >
+            <div className="flex justify-between items-center border-b border-[#059669]/30 pb-4 mb-4">
+              <h2 className="font-bold text-lg text-[#fbbf24]">{selectedWrittenDua.title}</h2>
+              <button
+                onClick={() => setSelectedWrittenDua(null)}
+                className="p-2 text-white bg-[#064e3b] rounded-full hover:bg-red-600 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-2 pl-2 text-[#f0f9ff] text-lg leading-loose font-serif text-justify whitespace-pre-line bg-[#064e3b]/30 p-6 rounded-3xl border border-[#059669]/20 shadow-inner">
+              {selectedWrittenDua.content}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 🎧 مشغل الصوت السفلي المحسّن بالتشغيل التتابعي */}
       {currentTrack && (
-        <div className="absolute bottom-0 left-0 right-0 bg-[#064e3b] px-6 py-5 border-t border-[#059669]/50 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] rounded-t-[32px] z-50">
+        <div className="absolute bottom-0 left-0 right-0 bg-[#064e3b] px-6 py-4 border-t border-[#059669]/50 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] rounded-t-[32px] z-50">
           <div className="flex justify-between items-center">
-            <div className="text-right max-w-[70%]">
+            <div className="text-right max-w-[55%]">
               <h4 className="font-bold text-[#fbbf24] text-sm truncate">{currentTrack.name}</h4>
               <p className={`text-xs mt-0.5 ${hasError ? 'text-red-400 flex items-center gap-1' : 'text-[#059669]'}`}>
                 {hasError ? (
@@ -402,26 +585,46 @@ export function ShiaDuas() {
                   'جاري الاتصال الآمن بالسيرفر...'
                 ) : isPlaying ? (
                   isOfflineTrack ? (
-                    <span className="text-[#38ef7d] font-semibold">⚡ جاري التشغيل محلياً من ذاكرة الهاتف (Offline)</span>
+                    <span className="text-[#38ef7d] font-semibold">⚡ جاري التشغيل محلياً (Offline)</span>
                   ) : (
-                    'جاري الاستماع الفوري الداخلي...'
+                    'جاري التشغيل التتابعي...'
                   )
                 ) : (
                   'متوقف مؤقتاً'
                 )}
               </p>
             </div>
-            <button
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="p-4 bg-[#fbbf24] text-[#022c22] rounded-full shadow-lg hover:scale-105 transition-transform"
-            >
-              {isPlaying ? <Pause fill="currentColor" size={24} /> : <Play fill="currentColor" size={24} className="mr-0.5" />}
-            </button>
+
+            {/* أزرار التحكم بالتشغيل والتنقل */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={playPrevTrack}
+                className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-all"
+                title="المقطع السابق"
+              >
+                <SkipForward size={22} />
+              </button>
+
+              <button
+                onClick={() => setIsPlaying(!isPlaying)}
+                className="p-3.5 bg-[#fbbf24] text-[#022c22] rounded-full shadow-lg hover:scale-105 transition-transform"
+              >
+                {isPlaying ? <Pause fill="currentColor" size={22} /> : <Play fill="currentColor" size={22} className="mr-0.5" />}
+              </button>
+
+              <button
+                onClick={playNextTrack}
+                className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-all"
+                title="المقطع التالي"
+              >
+                <SkipBack size={22} />
+              </button>
+            </div>
           </div>
 
           <audio
             ref={audioRef}
-            onEnded={() => setIsPlaying(false)}
+            onEnded={handleAudioEnded} // 👈 الانقال التلقائي فور انتهاء الصوت
             onCanPlay={() => {
               setIsLoading(false);
               setHasError(false);
