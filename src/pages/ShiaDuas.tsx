@@ -990,14 +990,14 @@ export function ShiaDuas() {
             className={`py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all duration-200 ${activeTab === 'duas' ? 'bg-[#fbbf24] text-[#022c22] shadow-md' : 'text-[#f0f9ff]/70 hover:text-white'}`}
           >
             <BookOpen size={16} />
-            <span>الأدعية والزيارات</span>
+            <span>الأدعية</span>
           </button>
           <button
             onClick={() => { setActiveTab('latmiyat'); setSearch(''); }}
             className={`py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all duration-200 ${activeTab === 'latmiyat' ? 'bg-[#fbbf24] text-[#022c22] shadow-md' : 'text-[#f0f9ff]/70 hover:text-white'}`}
           >
             <Headphones size={16} />
-            <span>اللطميات والمجالس ({latmiyatList.length})</span>
+            <span>اللطميات({latmiyatList.length})</span>
           </button>
         </div>
 
