@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowRight, Play, Pause, Search, Headphones, BookOpen, Volume2, 
   ShieldCheck, Download, AlertCircle, CheckCircle2, Loader2, 
-  FileText, SkipForward, SkipBack, X, Maximize2, Copy, Check,
-  Plus, Minus, RotateCcw, Sun, Moon, Palette, Sparkles
+  FileText, SkipForward, SkipBack, X, Maximize2,
+  Sun, Moon, Copy, Check, ZoomIn, ZoomOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -149,7 +149,6 @@ const latmiyatList = [
 
 // 3. قائمة الأدعية المقروءة (المكتوبة)
 
-    
 // 3. قائمة الأدعية المقروءة (المكتوبة)
 const writtenDuasList = [
   {
@@ -1316,7 +1315,8 @@ id: 'nudba',
 }
 ];
 
-         export default function ShiaDuasApp() {
+
+export default function ShiaDuasApp() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'audioDuas' | 'latmiyat' | 'writtenDuas'>('audioDuas');
   const [searchTerm, setSearchTerm] = useState('');
