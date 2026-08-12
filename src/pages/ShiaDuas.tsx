@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowRight, Play, Pause, Search, Headphones, BookOpen, Volume2, 
   ShieldCheck, Download, AlertCircle, CheckCircle2, Loader2, 
-  FileText, SkipForward, SkipBack, X, Maximize2
+  FileText, SkipForward, SkipBack, X, Maximize2, Copy, Check,
+  Plus, Minus, RotateCcw, Sun, Moon, Palette, Sparkles
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -1312,443 +1313,522 @@ id: 'nudba',
 }
 ];
 
-export function ShiaDuas() {
+export default function ShiaDuasPage() {
   const navigate = useNavigate();
-  const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState<'duas' | 'latmiyat'>('duas');
-  const [duasSubTab, setDuasSubTab] = useState<'audio' | 'written'>('audio');
-  
-  const [currentTrack, setCurrentTrack] = useState<any | null>(null);
+  const [activeTab, setActiveTab] = useState<'duas' | 'latmiyat' | 'written'>('duas');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // حالة الصوتيات
+  const [currentAudio, setCurrentAudio] = useState<{ id: string; name: string; url: string } | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const [isOfflineTrack, setIsOfflineTrack] = useState(false);
-
-  const [downloadedIds, setDownloadedIds] = useState<string[]>([]);
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
-
-  // حالة عرض الدعاء المقروء
-  const [selectedWrittenDua, setSelectedWrittenDua] = useState<any | null>(null);
-
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const [downloadedAudios, setDownloadedAudios] = useState<Record<string, boolean>>({});
+  const [downloadProgress, setDownloadProgress] = useState<Record<string, boolean>>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const filteredDuas = duasList.filter(d => d.name.includes(search));
-  const filteredLatmiyat = latmiyatList.filter(l => l.name.includes(search));
-  const filteredWrittenDuas = writtenDuasList.filter(w => w.title.includes(search));
+  // حالة الدعاء المقروء المحدد
+  const [selectedWrittenDua, setSelectedWrittenDua] = useState<typeof writtenDuasList[0] | null>(null);
 
+  // ميزات التحكم بالدعاء المقروء (حجم الخط - الثيم - النسخ)
+  const [fontSize, setFontSize] = useState<number>(20); // الحجم الافتراضي للخط
+  const [readingTheme, setReadingTheme] = useState<'dark' | 'light' | 'sepia' | 'emerald'>('dark');
+  const [copied, setCopied] = useState(false);
+
+  // فحص الصوتيات المحملة أوفلاين عند بدء التشغيل
   useEffect(() => {
-    const checkDownloadedFiles = async () => {
-      const allTracks = [...duasList, ...latmiyatList];
-      const downloaded: string[] = [];
-      for (const track of allTracks) {
-        const savedBlob = await getAudioBlob(track.id);
-        if (savedBlob) {
-          downloaded.push(track.id);
+    const checkDownloads = async () => {
+      const allAudioItems = [...duasList, ...latmiyatList];
+      const downloadedMap: Record<string, boolean> = {};
+      for (const item of allAudioItems) {
+        const blob = await getAudioBlob(item.id);
+        if (blob) {
+          downloadedMap[item.id] = true;
         }
       }
-      setDownloadedIds(downloaded);
+      setDownloadedAudios(downloadedMap);
     };
-    checkDownloadedFiles();
+    checkDownloads();
   }, []);
 
-  useEffect(() => {
-    let objectUrlToRevoke: string | null = null;
-
-    const prepareAndPlay = async () => {
-      if (audioRef.current && currentTrack) {
-        if (isPlaying) {
-          setIsLoading(true);
-          setHasError(false);
-
-          try {
-            const localBlob = await getAudioBlob(currentTrack.id);
-
-            if (localBlob) {
-              const localUrl = URL.createObjectURL(localBlob);
-              objectUrlToRevoke = localUrl;
-              audioRef.current.src = localUrl;
-              setIsOfflineTrack(true);
-            } else {
-              audioRef.current.crossOrigin = "anonymous";
-              audioRef.current.src = encodeURI(currentTrack.url);
-              setIsOfflineTrack(false);
-            }
-
-            audioRef.current.load();
-            await audioRef.current.play();
-            setIsLoading(false);
-          } catch (err) {
-            console.error("خطأ في التشغيل:", err);
-            setIsPlaying(false);
-            setIsLoading(false);
-            setHasError(true);
-          }
-        } else {
-          audioRef.current.pause();
-        }
+  // تشغيل / إيقاف الصوت
+  const handlePlayAudio = async (item: { id: string; name: string; url: string }) => {
+    if (currentAudio?.id === item.id) {
+      if (isPlaying) {
+        audioRef.current?.pause();
+        setIsPlaying(false);
+      } else {
+        audioRef.current?.play();
+        setIsPlaying(true);
       }
-    };
-
-    prepareAndPlay();
-
-    return () => {
-      if (objectUrlToRevoke) {
-        URL.revokeObjectURL(objectUrlToRevoke);
-      }
-    };
-  }, [isPlaying, currentTrack]);
-
-  // -------------------------------------------------------------------
-  // 🔄 تشغيل المقطع التالي تلقائياً عند انتهاء اللطمية أو الدعاء الحالي
-  // -------------------------------------------------------------------
-  const handleAudioEnded = () => {
-    if (!currentTrack) return;
-
-    // حدد القائمة التي يتم التشغيل منها حالياً
-    const currentList = activeTab === 'latmiyat' ? filteredLatmiyat : filteredDuas;
-    const currentIndex = currentList.findIndex(t => t.id === currentTrack.id);
-
-    if (currentIndex !== -1 && currentIndex < currentList.length - 1) {
-      // هناك مقطع تالي -> شغل المقطع الذي يليه فوراً
-      const nextTrack = currentList[currentIndex + 1];
-      setCurrentTrack(nextTrack);
-      setIsPlaying(true);
-    } else {
-      // انتهت القائمة
-      setIsPlaying(false);
-    }
-  };
-
-  const playNextTrack = () => {
-    if (!currentTrack) return;
-    const currentList = activeTab === 'latmiyat' ? filteredLatmiyat : filteredDuas;
-    const currentIndex = currentList.findIndex(t => t.id === currentTrack.id);
-    if (currentIndex < currentList.length - 1) {
-      setCurrentTrack(currentList[currentIndex + 1]);
-      setIsPlaying(true);
-    }
-  };
-
-  const playPrevTrack = () => {
-    if (!currentTrack) return;
-    const currentList = activeTab === 'latmiyat' ? filteredLatmiyat : filteredDuas;
-    const currentIndex = currentList.findIndex(t => t.id === currentTrack.id);
-    if (currentIndex > 0) {
-      setCurrentTrack(currentList[currentIndex - 1]);
-      setIsPlaying(true);
-    }
-  };
-
-  const handleTrackSelect = (track: any) => {
-    if (currentTrack?.id === track.id) {
-      setIsPlaying(!isPlaying);
-    } else {
-      setHasError(false);
-      setCurrentTrack(track);
-      setIsPlaying(true);
-    }
-  };
-
-  const handleDownloadOffline = async (e: React.MouseEvent, track: any) => {
-    e.stopPropagation();
-
-    if (downloadedIds.includes(track.id)) {
-      alert(`🎉 "${track.name}" محفّظ محلياً ومتاح للاستماع بدون إنترنت!`);
       return;
     }
 
-    setDownloadingId(track.id);
+    setIsLoadingAudio(true);
+    setCurrentAudio(item);
+    setIsPlaying(false);
 
     try {
-      const response = await fetch(encodeURI(track.url));
-      if (!response.ok) throw new Error("فشل الاتصال بالخادم");
-      
-      const blob = await response.blob();
-      await saveAudioBlob(track.id, blob);
+      // المحاولة الأولى: جلب من IndexedDB
+      const offlineBlob = await getAudioBlob(item.id);
+      let audioSrc = item.url;
+      if (offlineBlob) {
+        audioSrc = URL.createObjectURL(offlineBlob);
+      }
 
-      setDownloadedIds(prev => [...prev, track.id]);
-      alert(`✅ تم تحميل "${track.name}" بنجاح! يمكنك الاستماع له الآن أوفلاين بدون إنترنت.`);
+      if (audioRef.current) {
+        audioRef.current.src = audioSrc;
+        await audioRef.current.play();
+        setIsPlaying(true);
+      }
     } catch (err) {
-      console.error("خطأ أثناء التحميل:", err);
-      alert("❌ تعذر التحميل أوفلاين، تحقق من الاتصال بالإنترنت وأعد المحاولة.");
+      console.error('خطأ في تشغيل الصوت:', err);
     } finally {
-      setDownloadingId(null);
+      setIsLoadingAudio(false);
     }
   };
 
+  // تنزيل الصوت لأوفلاين
+  const handleDownloadAudio = async (item: { id: string; name: string; url: string }, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (downloadedAudios[item.id] || downloadProgress[item.id]) return;
+
+    setDownloadProgress((prev) => ({ ...prev, [item.id]: true }));
+    try {
+      const response = await fetch(item.url);
+      const blob = await response.blob();
+      await saveAudioBlob(item.id, blob);
+      setDownloadedAudios((prev) => ({ ...prev, [item.id]: true }));
+    } catch (err) {
+      console.error('فشل تنزيل الملف الصوتي:', err);
+      alert('تعذر تنزيل الملف، يرجى التحقق من الاتصال بالإنترنت.');
+    } finally {
+      setDownloadProgress((prev) => ({ ...prev, [item.id]: false }));
+    }
+  };
+
+  // نسخ نص الدعاء إلى الحافظة
+  const handleCopyDua = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // ثيمات القراءة للأدعية المقروءة
+  const getThemeClasses = () => {
+    switch (readingTheme) {
+      case 'light':
+        return {
+          bg: 'bg-amber-50/90 text-slate-900 border-amber-200',
+          card: 'bg-white text-slate-900 border-amber-200 shadow-xl',
+          header: 'bg-amber-100/80 text-amber-950 border-amber-200',
+          accent: 'text-amber-800'
+        };
+      case 'sepia':
+        return {
+          bg: 'bg-[#fbf0d9] text-[#432c12] border-[#e6d5b8]',
+          card: 'bg-[#f4e4c1] text-[#33200b] border-[#deb887] shadow-xl',
+          header: 'bg-[#e8d2a7] text-[#2b1a08] border-[#d4b075]',
+          accent: 'text-amber-900'
+        };
+      case 'emerald':
+        return {
+          bg: 'bg-[#042018] text-emerald-100 border-emerald-800/50',
+          card: 'bg-[#062c22] text-emerald-50 border-emerald-700/60 shadow-xl',
+          header: 'bg-[#083b2e] text-emerald-200 border-emerald-700/50',
+          accent: 'text-emerald-400'
+        };
+      case 'dark':
+      default:
+        return {
+          bg: 'bg-slate-950 text-slate-100 border-slate-800',
+          card: 'bg-slate-900 text-slate-100 border-slate-800 shadow-2xl',
+          header: 'bg-slate-800/80 text-emerald-400 border-slate-700',
+          accent: 'text-emerald-400'
+        };
+    }
+  };
+
+  const themeStyle = getThemeClasses();
+
+  // تصفية العناصر بحسب البحث
+  const filteredDuas = duasList.filter((item) => item.name.includes(searchQuery));
+  const filteredLatmiyat = latmiyatList.filter((item) => item.name.includes(searchQuery));
+  const filteredWritten = writtenDuasList.filter((item) =>
+    item.title.includes(searchQuery) || item.content.includes(searchQuery)
+  );
+
   return (
-    <div className="flex flex-col h-full bg-[#022c22] relative font-['Cairo'] text-right" dir="rtl">
-      {/* Header */}
-      <header className="bg-[#064e3b] shadow-lg border-b border-[#059669]/30 px-4 py-3 flex items-center gap-4 z-20">
-        <button onClick={() => navigate(-1)} className="p-2 text-[#fbbf24]">
-          <ArrowRight size={24} />
-        </button>
-        <div>
-          <h1 className="font-bold text-lg text-[#f0f9ff] tracking-tight">المكتبة الصوتية والأدعية</h1>
-          <p className="text-xs text-[#fbbf24] flex items-center gap-1">
-            <ShieldCheck size={13} /> تشغيل تتابعي وتحميل محلي آمن
-          </p>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-950 text-slate-100 dir-rtl p-4 md:p-8 font-sans pb-32">
+      {/* مشغل صوت مخفي للتحكم */}
+      <audio
+        ref={audioRef}
+        onEnded={() => setIsPlaying(false)}
+        onError={() => setIsPlaying(false)}
+      />
 
-      {/* Tabs & Search */}
-      <div className="px-6 py-4 z-10 bg-[#022c22]/90 backdrop-blur-md border-b border-[#059669]/10 space-y-4">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder={activeTab === 'duas' ? "ابحث عن دعاء مبارك..." : "ابحث عن لطمية أو مجلس..."}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#064e3b]/60 border border-[#059669]/30 rounded-2xl py-3 pr-12 pl-4 text-[#f0f9ff] placeholder:text-[#059669]/70 focus:outline-none focus:ring-2 focus:ring-[#fbbf24] text-right"
-          />
-          <Search className="absolute right-4 top-3.5 text-[#059669]" size={20} />
-        </div>
-
-        {/* التبويبات الرئيسية */}
-        <div className="grid grid-cols-2 gap-2 bg-[#064e3b]/40 p-1.5 rounded-2xl border border-[#059669]/15">
-          <button
-            onClick={() => { setActiveTab('duas'); setSearch(''); }}
-            className={`py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all duration-200 ${activeTab === 'duas' ? 'bg-[#fbbf24] text-[#022c22] shadow-md' : 'text-[#f0f9ff]/70 hover:text-white'}`}
-          >
-            <BookOpen size={16} />
-            <span>الأدعية</span>
-          </button>
-          <button
-            onClick={() => { setActiveTab('latmiyat'); setSearch(''); }}
-            className={`py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all duration-200 ${activeTab === 'latmiyat' ? 'bg-[#fbbf24] text-[#022c22] shadow-md' : 'text-[#f0f9ff]/70 hover:text-white'}`}
-          >
-            <Headphones size={16} />
-            <span>اللطميات({latmiyatList.length})</span>
-          </button>
-        </div>
-
-        {/* التبويب الفرعي للأدعية: صوتي / مقروء */}
-        {activeTab === 'duas' && (
-          <div className="flex justify-center gap-3 pt-1">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* الهيدر العلوي */}
+        <div className="flex items-center justify-between bg-slate-900/80 backdrop-blur border border-slate-800 p-4 rounded-2xl">
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => setDuasSubTab('audio')}
-              className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${duasSubTab === 'audio' ? 'bg-[#059669] text-white shadow-sm' : 'bg-[#064e3b]/50 text-[#f0f9ff]/60 border border-[#059669]/20'}`}
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-slate-800 rounded-xl transition text-slate-400 hover:text-slate-200"
             >
-              🔊 أدعية صوتية ({duasList.length})
+              <ArrowRight className="w-6 h-6" />
+            </button>
+            <h1 className="text-xl md:text-2xl font-bold text-emerald-400 flex items-center gap-2">
+              <BookOpen className="w-7 h-7" />
+              مكتبة الأدعية والزيارات
+            </h1>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-emerald-400/80 bg-emerald-950/40 border border-emerald-800/40 px-3 py-1.5 rounded-full">
+            <ShieldCheck className="w-4 h-4" />
+            <span>يدعم التشغيل والتنزيل أوفلاين</span>
+          </div>
+        </div>
+
+        {/* شريط التبويب والبحث */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-900/50 p-3 rounded-2xl border border-slate-800/60">
+          <div className="flex gap-2 w-full md:w-auto">
+            <button
+              onClick={() => setActiveTab('duas')}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition ${
+                activeTab === 'duas'
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                  : 'bg-slate-800/60 text-slate-400 hover:bg-slate-800'
+              }`}
+            >
+              <Headphones className="w-4 h-4" />
+              الأدعية الصوتية ({duasList.length})
             </button>
             <button
-              onClick={() => setDuasSubTab('written')}
-              className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${duasSubTab === 'written' ? 'bg-[#059669] text-white shadow-sm' : 'bg-[#064e3b]/50 text-[#f0f9ff]/60 border border-[#059669]/20'}`}
+              onClick={() => setActiveTab('latmiyat')}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition ${
+                activeTab === 'latmiyat'
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                  : 'bg-slate-800/60 text-slate-400 hover:bg-slate-800'
+              }`}
             >
-              📖 أدعية مقروءة ({writtenDuasList.length})
+              <Volume2 className="w-4 h-4" />
+              اللطميات ({latmiyatList.length})
             </button>
+            <button
+              onClick={() => setActiveTab('written')}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition ${
+                activeTab === 'written'
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                  : 'bg-slate-800/60 text-slate-400 hover:bg-slate-800'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              الأدعية المقروءة ({writtenDuasList.length})
+            </button>
+          </div>
+
+          <div className="relative w-full md:w-72">
+            <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="بحث في القائمة..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl pr-9 pl-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* محتوى قسم الأدعية واللطميات الصوتية */}
+        {(activeTab === 'duas' || activeTab === 'latmiyat') && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {(activeTab === 'duas' ? filteredDuas : filteredLatmiyat).map((item) => {
+              const isCurrent = currentAudio?.id === item.id;
+              const isItemPlaying = isCurrent && isPlaying;
+              const isDownloaded = downloadedAudios[item.id];
+              const isDownloading = downloadProgress[item.id];
+
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => handlePlayAudio(item)}
+                  className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition ${
+                    isCurrent
+                      ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300'
+                      : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/70 hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <button className="p-2.5 bg-emerald-600/20 text-emerald-400 rounded-xl shrink-0">
+                      {isCurrent && isLoadingAudio ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : isItemPlaying ? (
+                        <Pause className="w-5 h-5 fill-current" />
+                      ) : (
+                        <Play className="w-5 h-5 fill-current mr-0.5" />
+                      )}
+                    </button>
+                    <span className="font-medium truncate text-sm md:text-base">
+                      {item.name}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={(e) => handleDownloadAudio(item, e)}
+                    disabled={isDownloaded || isDownloading}
+                    title={isDownloaded ? 'محمل أوفلاين' : 'تنزيل للأوفلاين'}
+                    className={`p-2 rounded-lg transition shrink-0 mr-2 ${
+                      isDownloaded
+                        ? 'text-emerald-400 bg-emerald-950/60'
+                        : isDownloading
+                        ? 'text-amber-400 bg-amber-950/40'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                    }`}
+                  >
+                    {isDownloading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : isDownloaded ? (
+                      <CheckCircle2 className="w-4 h-4" />
+                    ) : (
+                      <Download className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* محتوى قسم الأدعية المقروءة */}
+        {activeTab === 'written' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredWritten.map((dua) => (
+              <div
+                key={dua.id}
+                onClick={() => setSelectedWrittenDua(dua)}
+                className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 hover:border-emerald-500/50 hover:bg-slate-900 transition cursor-pointer flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-lg text-emerald-400 group-hover:text-emerald-300 transition">
+                      {dua.title}
+                    </h3>
+                    <BookOpen className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
+                  </div>
+                  <p className="text-slate-400 text-sm line-clamp-3 leading-relaxed font-serif">
+                    {dua.content}
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-500">
+                  <span>اضغط للقراءة الكاملة</span>
+                  <Maximize2 className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 pb-36">
-        
-        {/* 1️⃣ أدعية صوتية */}
-        {activeTab === 'duas' && duasSubTab === 'audio' && filteredDuas.map((dua) => {
-          const isDownloaded = downloadedIds.includes(dua.id);
-          const isDownloading = downloadingId === dua.id;
-
-          return (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={dua.id}>
-              <div
-                onClick={() => handleTrackSelect(dua)}
-                className={`flex items-center justify-between p-4 rounded-[24px] border cursor-pointer transition-all ${currentTrack?.id === dua.id ? 'bg-[#059669]/30 border-[#fbbf24]/50 shadow-md' : 'border-[#059669]/20 bg-[#064e3b]/40 hover:bg-[#059669]/30'}`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`flex items-center justify-center w-12 h-12 rounded-xl font-bold ${currentTrack?.id === dua.id ? 'bg-[#fbbf24] text-[#022c22]' : 'bg-[#fbbf24]/10 text-[#fbbf24]'}`}>
-                    {currentTrack?.id === dua.id && isPlaying ? <Volume2 size={24} className="animate-pulse" /> : <Play size={24} />}
-                  </div>
-                  <div>
-                    <h3 className={`font-bold text-base ${currentTrack?.id === dua.id ? 'text-[#fbbf24]' : 'text-[#f0f9ff]'}`}>
-                      {dua.name}
-                    </h3>
-                    <p className="text-xs text-[#059669] flex items-center gap-1">
-                      {isDownloaded ? <span className="text-[#38ef7d]">محفّظ أوفلاين (بدون نت)</span> : 'استماع وتحميل مباشر'}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={(e) => handleDownloadOffline(e, dua)}
-                  disabled={isDownloading}
-                  className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-colors"
-                >
-                  {isDownloading ? (
-                    <Loader2 size={20} className="animate-spin text-[#fbbf24]" />
-                  ) : isDownloaded ? (
-                    <CheckCircle2 size={20} className="text-[#38ef7d]" />
-                  ) : (
-                    <Download size={20} />
-                  )}
-                </button>
-              </div>
-            </motion.div>
-          );
-        })}
-
-        {/* 2️⃣ أدعية مقروءة */}
-        {activeTab === 'duas' && duasSubTab === 'written' && filteredWrittenDuas.map((writtenDua) => (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={writtenDua.id}>
-            <div
-              onClick={() => setSelectedWrittenDua(writtenDua)}
-              className="flex items-center justify-between p-4 rounded-[24px] border border-[#059669]/20 bg-[#064e3b]/40 hover:bg-[#059669]/30 cursor-pointer transition-all"
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-12 h-12 rounded-xl font-bold bg-[#059669]/30 text-[#fbbf24]">
-                  <FileText size={22} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-base text-[#f0f9ff]">
-                    {writtenDua.title}
-                  </h3>
-                  <p className="text-xs text-[#059669]">قراءة واضحة مع التشكيل</p>
-                </div>
-              </div>
-
-              <div className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-colors">
-                <Maximize2 size={18} />
-              </div>
-            </div>
-          </motion.div>
-        ))}
-
-        {/* 3️⃣ قسم اللطميات */}
-        {activeTab === 'latmiyat' && filteredLatmiyat.map((latmia) => {
-          const isDownloaded = downloadedIds.includes(latmia.id);
-          const isDownloading = downloadingId === latmia.id;
-
-          return (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={latmia.id}>
-              <div
-                onClick={() => handleTrackSelect(latmia)}
-                className={`flex items-center justify-between p-4 rounded-[24px] border cursor-pointer transition-all ${currentTrack?.id === latmia.id ? 'bg-[#059669]/30 border-[#fbbf24]/50 shadow-md' : 'border-[#059669]/20 bg-[#064e3b]/40 hover:bg-[#059669]/30'}`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`flex items-center justify-center w-12 h-12 rounded-xl font-bold ${currentTrack?.id === latmia.id ? 'bg-[#fbbf24] text-[#022c22]' : 'bg-[#059669]/20 text-[#fbbf24]'}`}>
-                    {currentTrack?.id === latmia.id && isPlaying ? <Volume2 size={24} className="animate-pulse" /> : <Play size={24} />}
-                  </div>
-                  <div>
-                    <h3 className={`font-bold text-base ${currentTrack?.id === latmia.id ? 'text-[#fbbf24]' : 'text-[#f0f9ff]'}`}>
-                      {latmia.name}
-                    </h3>
-                    <p className="text-xs text-[#059669]">
-                      {isDownloaded ? <span className="text-[#38ef7d]">محفّظ أوفلاين (بدون نت)</span> : 'ملف صوتي عالي الجودة'}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={(e) => handleDownloadOffline(e, latmia)}
-                  disabled={isDownloading}
-                  className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-colors"
-                >
-                  {isDownloading ? (
-                    <Loader2 size={20} className="animate-spin text-[#fbbf24]" />
-                  ) : isDownloaded ? (
-                    <CheckCircle2 size={20} className="text-[#38ef7d]" />
-                  ) : (
-                    <Download size={20} />
-                  )}
-                </button>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* 📖 نافذة عرض الدعاء المقروء */}
+      {/* مودال العرض المكبر للدعاء المقروء (مع زر النسخ والتكبير/التصغير والتغيير الثيم) */}
       <AnimatePresence>
         {selectedWrittenDua && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed inset-0 bg-[#022c22]/95 backdrop-blur-lg z-[100] flex flex-col p-6 overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 md:p-6"
           >
-            <div className="flex justify-between items-center border-b border-[#059669]/30 pb-4 mb-4">
-              <h2 className="font-bold text-lg text-[#fbbf24]">{selectedWrittenDua.title}</h2>
-              <button
-                onClick={() => setSelectedWrittenDua(null)}
-                className="p-2 text-white bg-[#064e3b] rounded-full hover:bg-red-600 transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className={`w-full max-w-4xl max-h-[90vh] rounded-3xl border flex flex-col overflow-hidden shadow-2xl transition-colors duration-300 ${themeStyle.card}`}
+            >
+              {/* شريط التحكم العلوي للمودال */}
+              <div className={`p-4 border-b flex flex-wrap items-center justify-between gap-3 ${themeStyle.header}`}>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-amber-500" />
+                  <h2 className="text-lg md:text-xl font-bold">{selectedWrittenDua.title}</h2>
+                </div>
 
-            <div className="flex-1 overflow-y-auto pr-2 pl-2 text-[#f0f9ff] text-lg leading-loose font-serif text-justify whitespace-pre-line bg-[#064e3b]/30 p-6 rounded-3xl border border-[#059669]/20 shadow-inner">
-              {selectedWrittenDua.content}
-            </div>
+                {/* أدوات تحكم الدعاء المقروء: ثيم + حجم الخط + زر النسخ */}
+                <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                  {/* أزرار اختيار الثيم */}
+                  <div className="flex items-center bg-black/10 dark:bg-white/10 p-1 rounded-xl border border-black/10 dark:border-white/10">
+                    <button
+                      onClick={() => setReadingTheme('dark')}
+                      title="ثيم ليلي"
+                      className={`p-1.5 rounded-lg transition ${readingTheme === 'dark' ? 'bg-slate-800 text-emerald-400 shadow' : 'opacity-70 hover:opacity-100'}`}
+                    >
+                      <Moon className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setReadingTheme('light')}
+                      title="ثيم فاتح"
+                      className={`p-1.5 rounded-lg transition ${readingTheme === 'light' ? 'bg-amber-200 text-amber-900 shadow' : 'opacity-70 hover:opacity-100'}`}
+                    >
+                      <Sun className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setReadingTheme('sepia')}
+                      title="ثيم ورقي (دافئ)"
+                      className={`p-1.5 rounded-lg transition ${readingTheme === 'sepia' ? 'bg-[#e0c497] text-[#3b230b] shadow' : 'opacity-70 hover:opacity-100'}`}
+                    >
+                      <Palette className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setReadingTheme('emerald')}
+                      title="ثيم إسلامي زمردي"
+                      className={`p-1.5 rounded-lg transition ${readingTheme === 'emerald' ? 'bg-emerald-800 text-emerald-100 shadow' : 'opacity-70 hover:opacity-100'}`}
+                    >
+                      <div className="w-4 h-4 rounded-full bg-emerald-500 border border-white/40" />
+                    </button>
+                  </div>
+
+                  {/* أدوات حجم الخط (تكبير/تصغير) */}
+                  <div className="flex items-center bg-black/10 dark:bg-white/10 p-1 rounded-xl border border-black/10 dark:border-white/10 gap-1">
+                    <button
+                      onClick={() => setFontSize((prev) => Math.min(prev + 2, 38))}
+                      title="تكبير الخط"
+                      className="p-1.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-lg transition"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setFontSize(20)}
+                      title="إعادة ضبط الخط"
+                      className="px-2 text-xs font-semibold hover:bg-black/10 dark:hover:bg-white/10 rounded-lg py-1 transition flex items-center gap-1"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>{fontSize}px</span>
+                    </button>
+                    <button
+                      onClick={() => setFontSize((prev) => Math.max(prev - 2, 14))}
+                      title="تصغير الخط"
+                      className="p-1.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-lg transition"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* زر النسخ */}
+                  <button
+                    onClick={() => handleCopyDua(selectedWrittenDua.content)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-medium transition shadow"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        <span>تم النسخ!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" />
+                        <span>نسخ النص</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* زر الإغلاق */}
+                  <button
+                    onClick={() => setSelectedWrittenDua(null)}
+                    className="p-1.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-xl transition mr-1"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+
+              {/* متن النص المقروء */}
+              <div className="p-6 md:p-8 overflow-y-auto space-y-6 text-center font-serif leading-loose select-text">
+                <p style={{ fontSize: `${fontSize}px`, lineHeight: 2.2 }} className="whitespace-pre-line">
+                  {selectedWrittenDua.content}
+                </p>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* 🎧 مشغل الصوت السفلي المحسّن بالتشغيل التتابعي */}
-      {currentTrack && (
-        <div className="absolute bottom-0 left-0 right-0 bg-[#064e3b] px-6 py-4 border-t border-[#059669]/50 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] rounded-t-[32px] z-50">
-          <div className="flex justify-between items-center">
-            <div className="text-right max-w-[55%]">
-              <h4 className="font-bold text-[#fbbf24] text-sm truncate">{currentTrack.name}</h4>
-              <p className={`text-xs mt-0.5 ${hasError ? 'text-red-400 flex items-center gap-1' : 'text-[#059669]'}`}>
-                {hasError ? (
-                  <>
-                    <AlertCircle size={12} /> تعذر الاتصال بالسيرفر، حمّل الملف أولاً للاستماع بدون إنترنت.
-                  </>
-                ) : isLoading ? (
-                  'جاري الاتصال الآمن بالسيرفر...'
+      {/* المشغل المباشر المستمر الأسفل */}
+      <AnimatePresence>
+        {currentAudio && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-4 left-4 right-4 max-w-4xl mx-auto z-40 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="p-3 bg-emerald-600 text-white rounded-xl shrink-0">
+                <Volume2 className="w-5 h-5 animate-pulse" />
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-xs text-emerald-400 font-medium">جاري التشغيل الآن</p>
+                <p className="text-sm md:text-base font-bold text-slate-100 truncate">
+                  {currentAudio.name}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => {
+                  if (audioRef.current) {
+                    audioRef.current.currentTime -= 10;
+                  }
+                }}
+                className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-slate-200 transition"
+              >
+                <SkipBack className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={() => handlePlayAudio(currentAudio)}
+                className="p-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl transition shadow-lg shadow-emerald-500/20"
+              >
+                {isLoadingAudio ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
                 ) : isPlaying ? (
-                  isOfflineTrack ? (
-                    <span className="text-[#38ef7d] font-semibold">⚡ جاري التشغيل محلياً (Offline)</span>
-                  ) : (
-                    'جاري التشغيل التتابعي...'
-                  )
+                  <Pause className="w-6 h-6 fill-current" />
                 ) : (
-                  'متوقف مؤقتاً'
+                  <Play className="w-6 h-6 fill-current mr-0.5" />
                 )}
-              </p>
-            </div>
-
-            {/* أزرار التحكم بالتشغيل والتنقل */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={playPrevTrack}
-                className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-all"
-                title="المقطع السابق"
-              >
-                <SkipForward size={22} />
               </button>
 
               <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="p-3.5 bg-[#fbbf24] text-[#022c22] rounded-full shadow-lg hover:scale-105 transition-transform"
+                onClick={() => {
+                  if (audioRef.current) {
+                    audioRef.current.currentTime += 10;
+                  }
+                }}
+                className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-slate-200 transition"
               >
-                {isPlaying ? <Pause fill="currentColor" size={22} /> : <Play fill="currentColor" size={22} className="mr-0.5" />}
+                <SkipForward className="w-5 h-5" />
               </button>
 
               <button
-                onClick={playNextTrack}
-                className="p-2 text-[#fbbf24] hover:bg-[#059669]/40 rounded-full transition-all"
-                title="المقطع التالي"
+                onClick={() => {
+                  if (audioRef.current) {
+                    audioRef.current.pause();
+                  }
+                  setCurrentAudio(null);
+                  setIsPlaying(false);
+                }}
+                className="p-2 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-xl transition mr-2"
               >
-                <SkipBack size={22} />
+                <X className="w-5 h-5" />
               </button>
             </div>
-          </div>
-
-          <audio
-            ref={audioRef}
-            onEnded={handleAudioEnded} // 👈 الانقال التلقائي فور انتهاء الصوت
-            onCanPlay={() => {
-              setIsLoading(false);
-              setHasError(false);
-            }}
-            onError={() => {
-              setHasError(true);
-              setIsPlaying(false);
-            }}
-          />
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
