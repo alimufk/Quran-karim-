@@ -8,7 +8,7 @@ import { Qibla } from './pages/Qibla';
 import { Reciters } from './pages/Reciters';
 import { Listen } from './pages/Listen';
 import { PrayerTimes } from './pages/PrayerTimes';
-import { ShiaDuas } from './pages/ShiaDuas';
+import  ShiaDuas  from './pages/ShiaDuas';
 import { Tasbeeh } from './pages/Tasbeeh';
 import { NamesOfAllah } from './pages/NamesOfAllah';
 import { Radios } from './pages/Radios';
