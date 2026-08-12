@@ -148,6 +148,9 @@ const latmiyatList = [
 ];
 
 // 3. قائمة الأدعية المقروءة (المكتوبة)
+
+    
+// 3. قائمة الأدعية المقروءة (المكتوبة)
 const writtenDuasList = [
   {
     id: 'Faraj',
@@ -1313,45 +1316,23 @@ id: 'nudba',
 }
 ];
 
-export default function ShiaDuasPage() {
+export default function ShiaDuasApp() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'duas' | 'latmiyat' | 'written'>('duas');
+  const [activeTab, setActiveTab] = useState<'audio' | 'latmiyat' | 'written'>('written');
   const [searchQuery, setSearchQuery] = useState('');
-
-  // حالة الصوتيات
+  
+  // مشغل الصوتيات
   const [currentAudio, setCurrentAudio] = useState<{ id: string; name: string; url: string } | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
-  const [downloadedAudios, setDownloadedAudios] = useState<Record<string, boolean>>({});
-  const [downloadProgress, setDownloadProgress] = useState<Record<string, boolean>>({});
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // حالة الدعاء المقروء المحدد
-  const [selectedWrittenDua, setSelectedWrittenDua] = useState<typeof writtenDuasList[0] | null>(null);
-
-  // ميزات التحكم بالدعاء المقروء (حجم الخط - الثيم - النسخ)
-  const [fontSize, setFontSize] = useState<number>(20); // الحجم الافتراضي للخط
-  const [readingTheme, setReadingTheme] = useState<'dark' | 'light' | 'sepia' | 'emerald'>('dark');
+  // قارئ الأدعية المقروءة
+  const [selectedWritten, setSelectedWritten] = useState<typeof writtenDuasList[0] | null>(null);
+  const [fontSize, setFontSize] = useState(20);
   const [copied, setCopied] = useState(false);
 
-  // فحص الصوتيات المحملة أوفلاين عند بدء التشغيل
-  useEffect(() => {
-    const checkDownloads = async () => {
-      const allAudioItems = [...duasList, ...latmiyatList];
-      const downloadedMap: Record<string, boolean> = {};
-      for (const item of allAudioItems) {
-        const blob = await getAudioBlob(item.id);
-        if (blob) {
-          downloadedMap[item.id] = true;
-        }
-      }
-      setDownloadedAudios(downloadedMap);
-    };
-    checkDownloads();
-  }, []);
-
-  // تشغيل / إيقاف الصوت
-  const handlePlayAudio = async (item: { id: string; name: string; url: string }) => {
+  // التحكم في مشغل الصوت
+  const togglePlay = (item: { id: string; name: string; url: string }) => {
     if (currentAudio?.id === item.id) {
       if (isPlaying) {
         audioRef.current?.pause();
@@ -1360,475 +1341,277 @@ export default function ShiaDuasPage() {
         audioRef.current?.play();
         setIsPlaying(true);
       }
-      return;
-    }
-
-    setIsLoadingAudio(true);
-    setCurrentAudio(item);
-    setIsPlaying(false);
-
-    try {
-      // المحاولة الأولى: جلب من IndexedDB
-      const offlineBlob = await getAudioBlob(item.id);
-      let audioSrc = item.url;
-      if (offlineBlob) {
-        audioSrc = URL.createObjectURL(offlineBlob);
-      }
-
+    } else {
+      setCurrentAudio(item);
+      setIsPlaying(true);
       if (audioRef.current) {
-        audioRef.current.src = audioSrc;
-        await audioRef.current.play();
-        setIsPlaying(true);
+        audioRef.current.src = item.url;
+        audioRef.current.play();
       }
-    } catch (err) {
-      console.error('خطأ في تشغيل الصوت:', err);
-    } finally {
-      setIsLoadingAudio(false);
     }
   };
 
-  // تنزيل الصوت لأوفلاين
-  const handleDownloadAudio = async (item: { id: string; name: string; url: string }, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (downloadedAudios[item.id] || downloadProgress[item.id]) return;
-
-    setDownloadProgress((prev) => ({ ...prev, [item.id]: true }));
-    try {
-      const response = await fetch(item.url);
-      const blob = await response.blob();
-      await saveAudioBlob(item.id, blob);
-      setDownloadedAudios((prev) => ({ ...prev, [item.id]: true }));
-    } catch (err) {
-      console.error('فشل تنزيل الملف الصوتي:', err);
-      alert('تعذر تنزيل الملف، يرجى التحقق من الاتصال بالإنترنت.');
-    } finally {
-      setDownloadProgress((prev) => ({ ...prev, [item.id]: false }));
-    }
-  };
-
-  // نسخ نص الدعاء إلى الحافظة
-  const handleCopyDua = (text: string) => {
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // ثيمات القراءة للأدعية المقروءة
-  const getThemeClasses = () => {
-    switch (readingTheme) {
-      case 'light':
-        return {
-          bg: 'bg-amber-50/90 text-slate-900 border-amber-200',
-          card: 'bg-white text-slate-900 border-amber-200 shadow-xl',
-          header: 'bg-amber-100/80 text-amber-950 border-amber-200',
-          accent: 'text-amber-800'
-        };
-      case 'sepia':
-        return {
-          bg: 'bg-[#fbf0d9] text-[#432c12] border-[#e6d5b8]',
-          card: 'bg-[#f4e4c1] text-[#33200b] border-[#deb887] shadow-xl',
-          header: 'bg-[#e8d2a7] text-[#2b1a08] border-[#d4b075]',
-          accent: 'text-amber-900'
-        };
-      case 'emerald':
-        return {
-          bg: 'bg-[#042018] text-emerald-100 border-emerald-800/50',
-          card: 'bg-[#062c22] text-emerald-50 border-emerald-700/60 shadow-xl',
-          header: 'bg-[#083b2e] text-emerald-200 border-emerald-700/50',
-          accent: 'text-emerald-400'
-        };
-      case 'dark':
-      default:
-        return {
-          bg: 'bg-slate-950 text-slate-100 border-slate-800',
-          card: 'bg-slate-900 text-slate-100 border-slate-800 shadow-2xl',
-          header: 'bg-slate-800/80 text-emerald-400 border-slate-700',
-          accent: 'text-emerald-400'
-        };
-    }
-  };
-
-  const themeStyle = getThemeClasses();
-
-  // تصفية العناصر بحسب البحث
-  const filteredDuas = duasList.filter((item) => item.name.includes(searchQuery));
-  const filteredLatmiyat = latmiyatList.filter((item) => item.name.includes(searchQuery));
-  const filteredWritten = writtenDuasList.filter((item) =>
-    item.title.includes(searchQuery) || item.content.includes(searchQuery)
-  );
+  // فلترة القوائم حسب البحث
+  const filteredAudioDuas = duasList.filter(d => d.name.includes(searchQuery));
+  const filteredLatmiyat = latmiyatList.filter(l => l.name.includes(searchQuery));
+  const filteredWrittenDuas = writtenDuasList.filter(w => w.title.includes(searchQuery));
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 dir-rtl p-4 md:p-8 font-sans pb-32">
-      {/* مشغل صوت مخفي للتحكم */}
-      <audio
-        ref={audioRef}
-        onEnded={() => setIsPlaying(false)}
-        onError={() => setIsPlaying(false)}
-      />
-
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-3 md:p-6 font-sans border-box" dir="rtl">
+      
+      {/* الإطار الرئيسي للتطبيق */}
+      <div className="max-w-4xl mx-auto bg-slate-900 border border-emerald-900/60 rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[80vh]">
+        
         {/* الهيدر العلوي */}
-        <div className="flex items-center justify-between bg-slate-900/80 backdrop-blur border border-slate-800 p-4 rounded-2xl">
+        <div className="p-4 md:p-6 bg-slate-900/90 border-b border-emerald-900/40 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 hover:bg-slate-800 rounded-xl transition text-slate-400 hover:text-slate-200"
+            <button 
+              onClick={() => navigate(-1)} 
+              className="p-2 rounded-xl bg-slate-800 text-emerald-400 hover:bg-slate-700 transition"
             >
-              <ArrowRight className="w-6 h-6" />
+              <ArrowRight className="w-5 h-5" />
             </button>
             <h1 className="text-xl md:text-2xl font-bold text-emerald-400 flex items-center gap-2">
-              <BookOpen className="w-7 h-7" />
-              مكتبة الأدعية والزيارات
+              <Sparkles className="w-6 h-6 text-emerald-500" />
+              الأدعية واللطميات
             </h1>
           </div>
-          <div className="flex items-center gap-2 text-xs text-emerald-400/80 bg-emerald-950/40 border border-emerald-800/40 px-3 py-1.5 rounded-full">
-            <ShieldCheck className="w-4 h-4" />
-            <span>يدعم التشغيل والتنزيل أوفلاين</span>
+
+          {/* شريط البحث */}
+          <div className="relative w-40 md:w-60">
+            <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="بحث..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-950 border border-emerald-800/50 rounded-xl py-1.5 pr-9 pl-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500"
+            />
           </div>
         </div>
 
-        {/* شريط التبويب والبحث */}
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-900/50 p-3 rounded-2xl border border-slate-800/60">
-          <div className="flex gap-2 w-full md:w-auto">
+        {/* ======================================================== */}
+        {/* شريط التبويب باللون الأخضر المميز المحتفظ به بناءً على الطلب */}
+        {/* ======================================================== */}
+        <div className="bg-emerald-900/90 p-2 border-b border-emerald-700/50">
+          <div className="flex bg-emerald-950/70 p-1.5 rounded-2xl gap-2 overflow-x-auto">
+            
             <button
-              onClick={() => setActiveTab('duas')}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition ${
-                activeTab === 'duas'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                  : 'bg-slate-800/60 text-slate-400 hover:bg-slate-800'
+              onClick={() => { setActiveTab('written'); setSelectedWritten(null); }}
+              className={`flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+                activeTab === 'written'
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50'
+                  : 'text-emerald-200 hover:bg-emerald-800/40 hover:text-white'
               }`}
             >
-              <Headphones className="w-4 h-4" />
-              الأدعية الصوتية ({duasList.length})
+              <BookOpen className="w-4 h-4" />
+              أدعية مقروءة
             </button>
+
             <button
-              onClick={() => setActiveTab('latmiyat')}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition ${
-                activeTab === 'latmiyat'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                  : 'bg-slate-800/60 text-slate-400 hover:bg-slate-800'
+              onClick={() => setActiveTab('audio')}
+              className={`flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+                activeTab === 'audio'
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50'
+                  : 'text-emerald-200 hover:bg-emerald-800/40 hover:text-white'
               }`}
             >
               <Volume2 className="w-4 h-4" />
-              اللطميات ({latmiyatList.length})
+              أدعية صوتية
             </button>
+
             <button
-              onClick={() => setActiveTab('written')}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition ${
-                activeTab === 'written'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                  : 'bg-slate-800/60 text-slate-400 hover:bg-slate-800'
+              onClick={() => setActiveTab('latmiyat')}
+              className={`flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+                activeTab === 'latmiyat'
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50'
+                  : 'text-emerald-200 hover:bg-emerald-800/40 hover:text-white'
               }`}
             >
-              <FileText className="w-4 h-4" />
-              الأدعية المقروءة ({writtenDuasList.length})
+              <Headphones className="w-4 h-4" />
+              لطميات
             </button>
-          </div>
 
-          <div className="relative w-full md:w-72">
-            <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="بحث في القائمة..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl pr-9 pl-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-emerald-500 transition"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
           </div>
         </div>
 
-        {/* محتوى قسم الأدعية واللطميات الصوتية */}
-        {(activeTab === 'duas' || activeTab === 'latmiyat') && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {(activeTab === 'duas' ? filteredDuas : filteredLatmiyat).map((item) => {
-              const isCurrent = currentAudio?.id === item.id;
-              const isItemPlaying = isCurrent && isPlaying;
-              const isDownloaded = downloadedAudios[item.id];
-              const isDownloading = downloadProgress[item.id];
-
-              return (
-                <div
-                  key={item.id}
-                  onClick={() => handlePlayAudio(item)}
-                  className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition ${
-                    isCurrent
-                      ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300'
-                      : 'bg-slate-900/60 border-slate-800 hover:bg-slate-800/70 hover:border-slate-700'
-                  }`}
+        {/* ======================================================== */}
+        {/* محتوى التبويبات والمحفوظ دائماً داخل نطاق الإطار */}
+        {/* ======================================================== */}
+        <div className="p-4 md:p-6 flex-1 overflow-y-auto max-h-[60vh] bg-slate-900/40">
+          
+          {/* 1. تبويب الأدعية المقروءة */}
+          {activeTab === 'written' && (
+            <AnimatePresence mode="wait">
+              {!selectedWritten ? (
+                /* شبكة عرض كروت الأدعية المقروءة داخل الإطار */
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
                 >
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <button className="p-2.5 bg-emerald-600/20 text-emerald-400 rounded-xl shrink-0">
-                      {isCurrent && isLoadingAudio ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : isItemPlaying ? (
-                        <Pause className="w-5 h-5 fill-current" />
-                      ) : (
-                        <Play className="w-5 h-5 fill-current mr-0.5" />
-                      )}
+                  {filteredWrittenDuas.map((dua) => (
+                    <div 
+                      key={dua.id}
+                      onClick={() => setSelectedWritten(dua)}
+                      className="bg-slate-950/60 border border-emerald-900/30 hover:border-emerald-500/60 p-4 rounded-2xl cursor-pointer hover:bg-emerald-950/20 transition group flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-emerald-900/30 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition">
+                          <BookOpen className="w-5 h-5" />
+                        </div>
+                        <span className="font-semibold text-slate-200 group-hover:text-emerald-300">
+                          {dua.title}
+                        </span>
+                      </div>
+                      <FileText className="w-4 h-4 text-slate-500 group-hover:text-emerald-400" />
+                    </div>
+                  ))}
+                </motion.div>
+              ) : (
+                /* شاشة قراءة الدعاء داخل الإطار بدلاً من الخروج لخارجه */
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col h-full bg-slate-950/80 rounded-2xl border border-emerald-800/40 p-4 md:p-6"
+                >
+                  {/* أشرطة التحكم في القارئ */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
+                    <button 
+                      onClick={() => setSelectedWritten(null)}
+                      className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 bg-emerald-950/60 px-3 py-1.5 rounded-xl border border-emerald-800/40"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                      رجوع للائحة
                     </button>
-                    <span className="font-medium truncate text-sm md:text-base">
-                      {item.name}
-                    </span>
+
+                    <h2 className="text-lg font-bold text-emerald-400">
+                      {selectedWritten.title}
+                    </h2>
+
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => setFontSize(prev => Math.min(prev + 2, 34))}
+                        className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700"
+                        title="تكبير الخط"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => setFontSize(prev => Math.max(prev - 2, 14))}
+                        className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700"
+                        title="تصغير الخط"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => copyToClipboard(selectedWritten.content)}
+                        className="p-1.5 rounded-lg bg-slate-800 text-emerald-400 hover:bg-slate-700 transition"
+                        title="نسخ الدعاء"
+                      >
+                        {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
 
+                  {/* نص الدعاء المكتوب المنسق */}
+                  <div className="py-6 px-2 overflow-y-auto leading-loose text-center text-slate-200 whitespace-pre-line font-serif" style={{ fontSize: `${fontSize}px` }}>
+                    {selectedWritten.content}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
+
+          {/* 2. تبويب الأدعية الصوتية */}
+          {activeTab === 'audio' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {filteredAudioDuas.map((item) => (
+                <div 
+                  key={item.id}
+                  className="p-3.5 rounded-2xl bg-slate-950/60 border border-emerald-900/30 flex items-center justify-between hover:border-emerald-700/50 transition"
+                >
+                  <span className="font-medium text-slate-200">{item.name}</span>
                   <button
-                    onClick={(e) => handleDownloadAudio(item, e)}
-                    disabled={isDownloaded || isDownloading}
-                    title={isDownloaded ? 'محمل أوفلاين' : 'تنزيل للأوفلاين'}
-                    className={`p-2 rounded-lg transition shrink-0 mr-2 ${
-                      isDownloaded
-                        ? 'text-emerald-400 bg-emerald-950/60'
-                        : isDownloading
-                        ? 'text-amber-400 bg-amber-950/40'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                    onClick={() => togglePlay(item)}
+                    className={`p-2.5 rounded-xl transition ${
+                      currentAudio?.id === item.id && isPlaying 
+                        ? 'bg-emerald-500 text-slate-950' 
+                        : 'bg-emerald-900/40 text-emerald-400 hover:bg-emerald-600 hover:text-white'
                     }`}
                   >
-                    {isDownloading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : isDownloaded ? (
-                      <CheckCircle2 className="w-4 h-4" />
+                    {currentAudio?.id === item.id && isPlaying ? (
+                      <Pause className="w-4 h-4 fill-current" />
                     ) : (
-                      <Download className="w-4 h-4" />
+                      <Play className="w-4 h-4 fill-current" />
                     )}
                   </button>
                 </div>
-              );
-            })}
+              ))}
+            </div>
+          )}
+
+          {/* 3. تبويب اللطميات */}
+          {activeTab === 'latmiyat' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {filteredLatmiyat.map((item) => (
+                <div 
+                  key={item.id}
+                  className="p-3.5 rounded-2xl bg-slate-950/60 border border-emerald-900/30 flex items-center justify-between hover:border-emerald-700/50 transition"
+                >
+                  <span className="font-medium text-slate-200">{item.name}</span>
+                  <button
+                    onClick={() => togglePlay(item)}
+                    className={`p-2.5 rounded-xl transition ${
+                      currentAudio?.id === item.id && isPlaying 
+                        ? 'bg-emerald-500 text-slate-950' 
+                        : 'bg-emerald-900/40 text-emerald-400 hover:bg-emerald-600 hover:text-white'
+                    }`}
+                  >
+                    {currentAudio?.id === item.id && isPlaying ? (
+                      <Pause className="w-4 h-4 fill-current" />
+                    ) : (
+                      <Play className="w-4 h-4 fill-current" />
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+        </div>
+
+        {/* المشغل الصوتي المدمج بالأسفل عند تشغيل إحدى المقاطع الصوتية */}
+        {currentAudio && (
+          <div className="p-4 bg-emerald-950/90 border-t border-emerald-800/50 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-emerald-600 text-white animate-pulse">
+                <Volume2 className="w-5 h-5" />
+              </div>
+              <span className="text-sm font-semibold text-emerald-100">
+                {currentAudio.name}
+              </span>
+            </div>
+            <button
+              onClick={() => togglePlay(currentAudio)}
+              className="p-3 rounded-full bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition"
+            >
+              {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
+            </button>
           </div>
         )}
 
-        {/* محتوى قسم الأدعية المقروءة */}
-        {activeTab === 'written' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredWritten.map((dua) => (
-              <div
-                key={dua.id}
-                onClick={() => setSelectedWrittenDua(dua)}
-                className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 hover:border-emerald-500/50 hover:bg-slate-900 transition cursor-pointer flex flex-col justify-between group"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold text-lg text-emerald-400 group-hover:text-emerald-300 transition">
-                      {dua.title}
-                    </h3>
-                    <BookOpen className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
-                  </div>
-                  <p className="text-slate-400 text-sm line-clamp-3 leading-relaxed font-serif">
-                    {dua.content}
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-500">
-                  <span>اضغط للقراءة الكاملة</span>
-                  <Maximize2 className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
-      {/* مودال العرض المكبر للدعاء المقروء (مع زر النسخ والتكبير/التصغير والتغيير الثيم) */}
-      <AnimatePresence>
-        {selectedWrittenDua && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 md:p-6"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className={`w-full max-w-4xl max-h-[90vh] rounded-3xl border flex flex-col overflow-hidden shadow-2xl transition-colors duration-300 ${themeStyle.card}`}
-            >
-              {/* شريط التحكم العلوي للمودال */}
-              <div className={`p-4 border-b flex flex-wrap items-center justify-between gap-3 ${themeStyle.header}`}>
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-amber-500" />
-                  <h2 className="text-lg md:text-xl font-bold">{selectedWrittenDua.title}</h2>
-                </div>
-
-                {/* أدوات تحكم الدعاء المقروء: ثيم + حجم الخط + زر النسخ */}
-                <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                  {/* أزرار اختيار الثيم */}
-                  <div className="flex items-center bg-black/10 dark:bg-white/10 p-1 rounded-xl border border-black/10 dark:border-white/10">
-                    <button
-                      onClick={() => setReadingTheme('dark')}
-                      title="ثيم ليلي"
-                      className={`p-1.5 rounded-lg transition ${readingTheme === 'dark' ? 'bg-slate-800 text-emerald-400 shadow' : 'opacity-70 hover:opacity-100'}`}
-                    >
-                      <Moon className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setReadingTheme('light')}
-                      title="ثيم فاتح"
-                      className={`p-1.5 rounded-lg transition ${readingTheme === 'light' ? 'bg-amber-200 text-amber-900 shadow' : 'opacity-70 hover:opacity-100'}`}
-                    >
-                      <Sun className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setReadingTheme('sepia')}
-                      title="ثيم ورقي (دافئ)"
-                      className={`p-1.5 rounded-lg transition ${readingTheme === 'sepia' ? 'bg-[#e0c497] text-[#3b230b] shadow' : 'opacity-70 hover:opacity-100'}`}
-                    >
-                      <Palette className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setReadingTheme('emerald')}
-                      title="ثيم إسلامي زمردي"
-                      className={`p-1.5 rounded-lg transition ${readingTheme === 'emerald' ? 'bg-emerald-800 text-emerald-100 shadow' : 'opacity-70 hover:opacity-100'}`}
-                    >
-                      <div className="w-4 h-4 rounded-full bg-emerald-500 border border-white/40" />
-                    </button>
-                  </div>
-
-                  {/* أدوات حجم الخط (تكبير/تصغير) */}
-                  <div className="flex items-center bg-black/10 dark:bg-white/10 p-1 rounded-xl border border-black/10 dark:border-white/10 gap-1">
-                    <button
-                      onClick={() => setFontSize((prev) => Math.min(prev + 2, 38))}
-                      title="تكبير الخط"
-                      className="p-1.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-lg transition"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setFontSize(20)}
-                      title="إعادة ضبط الخط"
-                      className="px-2 text-xs font-semibold hover:bg-black/10 dark:hover:bg-white/10 rounded-lg py-1 transition flex items-center gap-1"
-                    >
-                      <RotateCcw className="w-3 h-3" />
-                      <span>{fontSize}px</span>
-                    </button>
-                    <button
-                      onClick={() => setFontSize((prev) => Math.max(prev - 2, 14))}
-                      title="تصغير الخط"
-                      className="p-1.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-lg transition"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* زر النسخ */}
-                  <button
-                    onClick={() => handleCopyDua(selectedWrittenDua.content)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-medium transition shadow"
-                  >
-                    {copied ? (
-                      <>
-                        <Check className="w-4 h-4" />
-                        <span>تم النسخ!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4" />
-                        <span>نسخ النص</span>
-                      </>
-                    )}
-                  </button>
-
-                  {/* زر الإغلاق */}
-                  <button
-                    onClick={() => setSelectedWrittenDua(null)}
-                    className="p-1.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-xl transition mr-1"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-
-              {/* متن النص المقروء */}
-              <div className="p-6 md:p-8 overflow-y-auto space-y-6 text-center font-serif leading-loose select-text">
-                <p style={{ fontSize: `${fontSize}px`, lineHeight: 2.2 }} className="whitespace-pre-line">
-                  {selectedWrittenDua.content}
-                </p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* المشغل المباشر المستمر الأسفل */}
-      <AnimatePresence>
-        {currentAudio && (
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-4 left-4 right-4 max-w-4xl mx-auto z-40 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4"
-          >
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="p-3 bg-emerald-600 text-white rounded-xl shrink-0">
-                <Volume2 className="w-5 h-5 animate-pulse" />
-              </div>
-              <div className="overflow-hidden">
-                <p className="text-xs text-emerald-400 font-medium">جاري التشغيل الآن</p>
-                <p className="text-sm md:text-base font-bold text-slate-100 truncate">
-                  {currentAudio.name}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => {
-                  if (audioRef.current) {
-                    audioRef.current.currentTime -= 10;
-                  }
-                }}
-                className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-slate-200 transition"
-              >
-                <SkipBack className="w-5 h-5" />
-              </button>
-
-              <button
-                onClick={() => handlePlayAudio(currentAudio)}
-                className="p-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl transition shadow-lg shadow-emerald-500/20"
-              >
-                {isLoadingAudio ? (
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                ) : isPlaying ? (
-                  <Pause className="w-6 h-6 fill-current" />
-                ) : (
-                  <Play className="w-6 h-6 fill-current mr-0.5" />
-                )}
-              </button>
-
-              <button
-                onClick={() => {
-                  if (audioRef.current) {
-                    audioRef.current.currentTime += 10;
-                  }
-                }}
-                className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-slate-200 transition"
-              >
-                <SkipForward className="w-5 h-5" />
-              </button>
-
-              <button
-                onClick={() => {
-                  if (audioRef.current) {
-                    audioRef.current.pause();
-                  }
-                  setCurrentAudio(null);
-                  setIsPlaying(false);
-                }}
-                className="p-2 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-xl transition mr-2"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <audio ref={audioRef} onEnded={() => setIsPlaying(false)} className="hidden" />
     </div>
   );
 }
