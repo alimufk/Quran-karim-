@@ -1,4 +1,11 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { registerPlugin } from '@capacitor/core';
+
+interface AdhanSchedulerPluginType {
+  scheduleAdhan(options: { timeInMillis: number; requestCode: number }): Promise<void>;
+}
+
+const AdhanScheduler = registerPlugin<AdhanSchedulerPluginType>('AdhanScheduler');
 
 export interface NotificationSettings {
   morningEnabled: boolean;
@@ -29,9 +36,6 @@ export function useNotifications() {
     };
   });
 
-  const lastFiredMorning = useRef<string | null>(null);
-  const lastFiredEvening = useRef<string | null>(null);
-
   const saveSettings = useCallback((newSettings: NotificationSettings) => {
     setSettings(newSettings);
     localStorage.setItem('local_morning_time', newSettings.morningTime);
@@ -40,83 +44,78 @@ export function useNotifications() {
     localStorage.setItem('local_evening_enabled', String(newSettings.eveningEnabled));
   }, []);
 
+  // دالة حساب وقت الجدولة القادم بـ Milliseconds
+  const getNextTriggerTime = (timeStr: string): number => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    const targetDate = new Date();
+    targetDate.setHours(hours, minutes, 0, 0);
+
+    // إذا مضى التوقيت اليوم، نجدوله للغد
+    if (targetDate.getTime() <= Date.now()) {
+      targetDate.setDate(targetDate.getDate() + 1);
+    }
+
+    return targetDate.getTime();
+  };
+
+  // 🧪 تجربة إشعار فوري للأذكار
   const triggerNotificationNow = useCallback(async (
     title = "تنبيه الأذكار 🔔", 
     body = "أصبحنا وأصبح الملك لله، حان موعد أذكار الصباح العطرة ✨"
   ) => {
-    if ('serviceWorker' in navigator) {
-      try {
-        const registration = await navigator.serviceWorker.ready;
-        if (registration && registration.showNotification) {
-          await registration.showNotification(title, {
-            body: body,
-            icon: "/favicon.ico",
-            badge: "/favicon.ico",
-            vibrate: [200, 100, 200],
-            tag: 'athkar-notification'
-          });
-          return;
-        }
-      } catch (e) {
-        console.warn("Service Worker Notification error:", e);
+    try {
+      if (AdhanScheduler && typeof AdhanScheduler.scheduleAdhan === 'function') {
+        // جدولة بعد 2 ثانية فقط للاختبار الفوري عبر النظام
+        await AdhanScheduler.scheduleAdhan({
+          timeInMillis: Date.now() + 2000,
+          requestCode: 9999
+        });
+        return;
       }
+    } catch (e) {
+      console.warn("Native Notification test failed:", e);
     }
 
-    if ('Notification' in window) {
-      if (Notification.permission === 'granted') {
-        try {
-          new Notification(title, { body, icon: "/favicon.ico" });
-          return;
-        } catch (e) {
-          console.error("Direct notification failed:", e);
-        }
-      } else if (Notification.permission !== 'denied') {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          new Notification(title, { body, icon: "/favicon.ico" });
-          return;
-        }
-      }
+    // fallback للويب فقط
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, { body, icon: "/favicon.ico" });
+    } else {
+      alert(`${title}\n${body}`);
     }
-
-    alert("لضمان وصول الإشعارات، يرجى تفعيل إذن الإشعارات من إعدادات المتصفح 🔔");
   }, []);
 
+  // 🚀 جدولة أذكار الصباح والمساء في النظام المباشر (Native Scheduler)
   useEffect(() => {
-    const checkNotificationTime = () => {
-      const now = new Date();
-      const currentHours = now.getHours().toString().padStart(2, '0');
-      const currentMinutes = now.getMinutes().toString().padStart(2, '0');
-      const currentTimeStr = `${currentHours}:${currentMinutes}`;
+    const scheduleAthkar = async () => {
+      try {
+        if (!AdhanScheduler || typeof AdhanScheduler.scheduleAdhan !== 'function') return;
 
-      if (
-        settings.morningEnabled &&
-        settings.morningTime === currentTimeStr &&
-        lastFiredMorning.current !== currentTimeStr
-      ) {
-        lastFiredMorning.current = currentTimeStr;
-        triggerNotificationNow(
-          "🌅 أذكار الصباح",
-          "أصبحنا وأصبح الملك لله، حان وقت أذكار الصباح المباركة."
-        );
-      }
+        // 1. جدولة أذكار الصباح (requestCode = 2001)
+        if (settings.morningEnabled && settings.morningTime) {
+          const morningTimeMs = getNextTriggerTime(settings.morningTime);
+          await AdhanScheduler.scheduleAdhan({
+            timeInMillis: morningTimeMs,
+            requestCode: 2001
+          });
+          console.log(`تمت جدولة أذكار الصباح بنجاح: ${new Date(morningTimeMs).toLocaleString()}`);
+        }
 
-      if (
-        settings.eveningEnabled &&
-        settings.eveningTime === currentTimeStr &&
-        lastFiredEvening.current !== currentTimeStr
-      ) {
-        lastFiredEvening.current = currentTimeStr;
-        triggerNotificationNow(
-          "🌇 أذكار المساء",
-          "أمسينَا وأمسَى المُلْكُ لله، حان وقت قراءة أذكار المساء العطرة."
-        );
+        // 2. جدولة أذكار المساء (requestCode = 2002)
+        if (settings.eveningEnabled && settings.eveningTime) {
+          const eveningTimeMs = getNextTriggerTime(settings.eveningTime);
+          await AdhanScheduler.scheduleAdhan({
+            timeInMillis: eveningTimeMs,
+            requestCode: 2002
+          });
+          console.log(`تمت جدولة أذكار المساء بنجاح: ${new Date(eveningTimeMs).toLocaleString()}`);
+        }
+      } catch (err) {
+        console.error("خطأ في جدولة الأذكار عبر النظام المحمول:", err);
       }
     };
 
-    const interval = setInterval(checkNotificationTime, 10000);
-    return () => clearInterval(interval);
-  }, [settings, triggerNotificationNow]);
+    scheduleAthkar();
+  }, [settings]);
 
   return {
     settings,
