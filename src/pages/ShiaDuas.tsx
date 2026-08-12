@@ -2,14 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowRight, Play, Pause, Search, Headphones, BookOpen, Volume2, 
-  ShieldCheck, Download, AlertCircle, CheckCircle2, Loader2, 
-  FileText, SkipForward, SkipBack, X, Maximize2,
-  Sun, Moon, Copy, Check, ZoomIn, ZoomOut
+  Download, Loader2, CheckCircle2,
+  SkipForward, SkipBack, X, Sun, Moon, Copy, Check, ZoomIn, ZoomOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // -------------------------------------------------------------
-// محرك تخزين صوتيات أوفلاين بسيط باستخدام IndexedDB المدمج في المتصفح
+// محرك تخزين صوتيات أوفلاين باستخدام IndexedDB المدمج في المتصفح
 // -------------------------------------------------------------
 const DB_NAME = 'ShiaDuasAudioDB';
 const STORE_NAME = 'audio_files';
@@ -95,7 +94,7 @@ const duasList = [
   { id: 'alhialuilli', name: 'دعاء الهي الويل لي للامام السجاد علية السلام', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/duaa_alhialuilli_abadhar.mp3' }
 ];
 
-// 2. قائمة اللطميات الرسمية
+// 2. قائمة اللطميات
 const latmiyatList = [
   { id: 'latmia-1', name: 'قصيدة درب احبابي - مرتضى حرب', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/darib_ahbabi.mp3' },
   { id: 'latmia-2', name: 'قصيدة يسجلني - باسم الكربلائي', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/yusajiluni.mp3' },
@@ -147,7 +146,6 @@ const latmiyatList = [
   { id: 'latmia-48', name: ' قصيدة خرابة - باسم الكربلائي ', url: 'https://raw.githubusercontent.com/alimufk/Quran-karim-/main/audio/baseim1985.mp3'}
 ];
 
-// 3. قائمة الأدعية المقروءة (المكتوبة)
 
 // 3. قائمة الأدعية المقروءة (المكتوبة)
 const writtenDuasList = [
@@ -1315,7 +1313,6 @@ id: 'nudba',
 }
 ];
 
-
 export default function ShiaDuasApp() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'audioDuas' | 'latmiyat' | 'writtenDuas'>('audioDuas');
@@ -1327,14 +1324,14 @@ export default function ShiaDuasApp() {
   const [downloadingIds, setDownloadingIds] = useState<{ [key: string]: boolean }>({});
   const [offlineStatus, setOfflineStatus] = useState<{ [key: string]: boolean }>({});
   
-  // الميزات الجديدة المطلوبة فقط
-  const [isDarkMode, setIsDarkMode] = useState(true); // زر تغيير الثيم
-  const [fontSize, setFontSize] = useState(18);       // زر تكبير وتصغير
-  const [copiedId, setCopiedId] = useState<string | null>(null); // زر النسخ
+  // الميزات الإضافية
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [fontSize, setFontSize] = useState(18);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // التحقق من الملفات المحفوظة أوفلاين
+  // فحص الملفات المحفوظة أوفلاين عند التشغيل
   useEffect(() => {
     const checkOfflineFiles = async () => {
       const statusMap: { [key: string]: boolean } = {};
@@ -1348,29 +1345,63 @@ export default function ShiaDuasApp() {
     checkOfflineFiles();
   }, []);
 
-  // تشغيل / إيقاف الصوت
-  const handlePlayPause = async (item: { id: string; name: string; url: string }) => {
-    if (currentTrack?.id === item.id) {
-      if (isPlaying) {
-        audioRef.current?.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current?.play();
-        setIsPlaying(true);
-      }
-    } else {
-      setCurrentTrack(item);
-      setIsPlaying(true);
-      const offlineBlob = await getAudioBlob(item.id);
-      const src = offlineBlob ? URL.createObjectURL(offlineBlob) : item.url;
-      if (audioRef.current) {
-        audioRef.current.src = src;
-        audioRef.current.play();
-      }
+  // تشغيل مقطع صوتي
+  const playTrack = async (item: { id: string; name: string; url: string }) => {
+    setCurrentTrack(item);
+    setIsPlaying(true);
+    const offlineBlob = await getAudioBlob(item.id);
+    const src = offlineBlob ? URL.createObjectURL(offlineBlob) : item.url;
+    if (audioRef.current) {
+      audioRef.current.src = src;
+      audioRef.current.play().catch(() => setIsPlaying(false));
     }
   };
 
-  // زر تحميل الصوت وحفظه أوفلاين (الذي كان مفقوداً)
+  // تبديل حالة التشغيل / الإيقاف المؤقت
+  const togglePlayPause = () => {
+    if (!audioRef.current || !currentTrack) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };
+
+  // الحصول على القائمة الحالية المتشغلة (أدعية أو لطميات)
+  const getCurrentActiveList = () => {
+    if (!currentTrack) return [];
+    const isDua = duasList.some((d) => d.id === currentTrack.id);
+    return isDua ? duasList : latmiyatList;
+  };
+
+  // الانتقال للمطع التالي (التقديم)
+  const handleNextTrack = () => {
+    const list = getCurrentActiveList();
+    if (!list.length || !currentTrack) return;
+    const currentIndex = list.findIndex((item) => item.id === currentTrack.id);
+    if (currentIndex !== -1 && currentIndex < list.length - 1) {
+      playTrack(list[currentIndex + 1]);
+    } else if (list.length > 0) {
+      // إعادة التشغيل من أول القائمة عند الوصول للنهاية
+      playTrack(list[0]);
+    }
+  };
+
+  // الانتقال للمقطع السابق (التأخير)
+  const handlePrevTrack = () => {
+    const list = getCurrentActiveList();
+    if (!list.length || !currentTrack) return;
+    const currentIndex = list.findIndex((item) => item.id === currentTrack.id);
+    if (currentIndex > 0) {
+      playTrack(list[currentIndex - 1]);
+    } else {
+      playTrack(list[list.length - 1]);
+    }
+  };
+
+  // تحميل الصوت وحفظه أوفلاين
   const handleDownloadAudio = async (item: { id: string; name: string; url: string }) => {
     try {
       setDownloadingIds((prev) => ({ ...prev, [item.id]: true }));
@@ -1379,7 +1410,6 @@ export default function ShiaDuasApp() {
       await saveAudioBlob(item.id, blob);
       setOfflineStatus((prev) => ({ ...prev, [item.id]: true }));
 
-      // تحميل الملف للجهاز مباشر أيضاً
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -1388,21 +1418,21 @@ export default function ShiaDuasApp() {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-    } catch (err) {
+    } catch {
       alert('حدث خطأ أثناء تحميل الملف الصوتى');
     } finally {
       setDownloadingIds((prev) => ({ ...prev, [item.id]: false }));
     }
   };
 
-  // زر النسخ المضاف للأدعية المكتوبة
+  // نسخ النص
   const handleCopyText = (id: string, title: string, content: string) => {
     navigator.clipboard.writeText(`${title}\n\n${content}`);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // التصفية بحسب البحث
+  // تصفية نتائج البحث
   const filterList = (list: any[]) => {
     return list.filter((item) => 
       (item.name || item.title).toLowerCase().includes(searchTerm.toLowerCase())
@@ -1412,8 +1442,11 @@ export default function ShiaDuasApp() {
   return (
     <div className={`min-h-screen transition-colors duration-300 dir-rtl ${isDarkMode ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-800'}`} style={{ direction: 'rtl' }}>
       
-      {/* مشغل الصوت الخفي */}
-      <audio ref={audioRef} onEnded={() => setIsPlaying(false)} />
+      {/* عنصر الصوت المدمج - مع خاصية الانتقال التلقائي لل다음 عند الانتهاء */}
+      <audio 
+        ref={audioRef} 
+        onEnded={handleNextTrack}
+      />
 
       {/* الهيدر الرئيسي */}
       <header className={`sticky top-0 z-40 backdrop-blur-md border-b p-4 ${isDarkMode ? 'bg-gray-900/80 border-gray-800' : 'bg-white/80 border-gray-200'}`}>
@@ -1427,7 +1460,6 @@ export default function ShiaDuasApp() {
             </h1>
           </div>
 
-          {/* زر تغيير الثيم (ليلي / نهاري) */}
           <button 
             onClick={() => setIsDarkMode(!isDarkMode)}
             className={`p-2 rounded-xl border transition-all ${isDarkMode ? 'bg-gray-800 border-gray-700 text-amber-400 hover:bg-gray-700' : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'}`}
@@ -1438,7 +1470,7 @@ export default function ShiaDuasApp() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-4 pb-28">
+      <main className="max-w-4xl mx-auto p-4 pb-36">
         
         {/* شريط البحث */}
         <div className="relative mb-6">
@@ -1452,7 +1484,7 @@ export default function ShiaDuasApp() {
           />
         </div>
 
-        {/* التبويبات */}
+        {/* التبويبات الثلاثة */}
         <div className={`flex p-1.5 rounded-2xl mb-6 border ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-200 border-gray-300'}`}>
           <button
             onClick={() => setActiveTab('audioDuas')}
@@ -1474,7 +1506,7 @@ export default function ShiaDuasApp() {
           </button>
         </div>
 
-        {/* أدوات التحكم بالخط (تظهر فقط في تبويب الأدعية المكتوبة) */}
+        {/* أدوات التحكم بالخط (للأدعية المكتوبة) */}
         {activeTab === 'writtenDuas' && (
           <div className={`flex items-center justify-between p-3 rounded-2xl mb-6 border ${isDarkMode ? 'bg-gray-900/50 border-gray-800' : 'bg-white border-gray-200'}`}>
             <span className="text-sm text-gray-400 font-medium">حجم خط القراءة:</span>
@@ -1498,54 +1530,70 @@ export default function ShiaDuasApp() {
           </div>
         )}
 
-        {/* محتوى التبويبات الصوتية: أدعية صوتية + لطميات */}
+        {/* قوائم الأدعية الصوتية واللطميات */}
         {(activeTab === 'audioDuas' || activeTab === 'latmiyat') && (
           <div className="grid gap-3">
-            {filterList(activeTab === 'audioDuas' ? duasList : latmiyatList).map((item) => (
-              <div
-                key={item.id}
-                className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${isDarkMode ? 'bg-gray-900/60 border-gray-800/80 hover:border-emerald-500/50' : 'bg-white border-gray-200 hover:border-emerald-500/50'}`}
-              >
-                <div className="flex items-center space-x-3 space-x-reverse">
-                  <button
-                    onClick={() => handlePlayPause(item)}
-                    className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all"
-                  >
-                    {currentTrack?.id === item.id && isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                  </button>
-                  <div>
-                    <h3 className="font-semibold text-base">{item.name}</h3>
-                    {offlineStatus[item.id] && (
-                      <span className="text-xs text-emerald-500 flex items-center gap-1 mt-1">
-                        <CheckCircle2 className="w-3 h-3" /> محفوظ أوفلاين
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* زر التحميل والتخزين أوفلاين */}
-                <button
-                  onClick={() => handleDownloadAudio(item)}
-                  disabled={downloadingIds[item.id]}
-                  className={`p-2.5 rounded-xl border transition-all ${
-                    offlineStatus[item.id]
-                      ? 'border-emerald-500/30 text-emerald-500 bg-emerald-500/5'
-                      : isDarkMode ? 'border-gray-800 text-gray-400 hover:text-white hover:bg-gray-800' : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+            {filterList(activeTab === 'audioDuas' ? duasList : latmiyatList).map((item) => {
+              const isSelected = currentTrack?.id === item.id;
+              return (
+                <div
+                  key={item.id}
+                  className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
+                    isSelected 
+                      ? 'border-emerald-500 bg-emerald-500/10' 
+                      : isDarkMode ? 'bg-gray-900/60 border-gray-800/80 hover:border-emerald-500/40' : 'bg-white border-gray-200 hover:border-emerald-500/40'
                   }`}
-                  title="تحميل وحفظ أوفلاين"
                 >
-                  {downloadingIds[item.id] ? (
-                    <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
-                  ) : (
-                    <Download className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            ))}
+                  <div className="flex items-center space-x-3 space-x-reverse">
+                    <button
+                      onClick={() => {
+                        if (isSelected) {
+                          togglePlayPause();
+                        } else {
+                          playTrack(item);
+                        }
+                      }}
+                      className={`p-3 rounded-xl transition-all ${
+                        isSelected && isPlaying 
+                          ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' 
+                          : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white'
+                      }`}
+                    >
+                      {isSelected && isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                    </button>
+                    <div>
+                      <h3 className={`font-semibold text-base ${isSelected ? 'text-emerald-400' : ''}`}>{item.name}</h3>
+                      {offlineStatus[item.id] && (
+                        <span className="text-xs text-emerald-500 flex items-center gap-1 mt-1">
+                          <CheckCircle2 className="w-3 h-3" /> محفوظ أوفلاين
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleDownloadAudio(item)}
+                    disabled={downloadingIds[item.id]}
+                    className={`p-2.5 rounded-xl border transition-all ${
+                      offlineStatus[item.id]
+                        ? 'border-emerald-500/30 text-emerald-500 bg-emerald-500/5'
+                        : isDarkMode ? 'border-gray-800 text-gray-400 hover:text-white hover:bg-gray-800' : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+                    }`}
+                    title="تحميل وحفظ أوفلاين"
+                  >
+                    {downloadingIds[item.id] ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
+                    ) : (
+                      <Download className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
 
-        {/* محتوى تبويب: أدعية مكتوبة */}
+        {/* الأدعية المكتوبة */}
         {activeTab === 'writtenDuas' && (
           <div className="grid gap-6">
             {filterList(writtenDuasList).map((item) => (
@@ -1556,7 +1604,6 @@ export default function ShiaDuasApp() {
                 <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-800/40">
                   <h3 className="text-xl font-bold text-emerald-500">{item.title}</h3>
 
-                  {/* زر النسخ المضاف */}
                   <button
                     onClick={() => handleCopyText(item.id, item.title, item.content)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${
@@ -1577,7 +1624,6 @@ export default function ShiaDuasApp() {
                   </button>
                 </div>
 
-                {/* نص الدعاء مع حجم خط متغير */}
                 <p 
                   className="leading-relaxed whitespace-pre-line text-justify font-serif"
                   style={{ fontSize: `${fontSize}px` }}
@@ -1590,6 +1636,87 @@ export default function ShiaDuasApp() {
         )}
 
       </main>
+
+      {/* ------------------------------------------------------------- */}
+      {/* المشغل الصوتي العائم والثابت في الأسفل (الذي تم إرجاعه بالكامل) */}
+      {/* ------------------------------------------------------------- */}
+      <AnimatePresence>
+        {currentTrack && (
+          <motion.div 
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className={`fixed bottom-0 left-0 right-0 z-50 p-4 border-t backdrop-blur-xl shadow-2xl transition-colors ${
+              isDarkMode ? 'bg-gray-900/95 border-gray-800 text-white' : 'bg-white/95 border-gray-200 text-gray-900'
+            }`}
+          >
+            <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+              
+              {/* معلومات المقطع الحالي */}
+              <div className="flex items-center gap-3 overflow-hidden flex-1">
+                <div className="p-3 bg-emerald-500/20 text-emerald-500 rounded-2xl flex-shrink-0">
+                  <Volume2 className={`w-5 h-5 ${isPlaying ? 'animate-pulse' : ''}`} />
+                </div>
+                <div className="truncate">
+                  <p className="font-semibold text-sm sm:text-base truncate">{currentTrack.name}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {isPlaying ? 'جاري التشغيل...' : 'متوقف مؤقتاً'}
+                  </p>
+                </div>
+              </div>
+
+              {/* أزرار التحكم بالصوت (تقديم، تأخير، تشغيل/إيقاف، إغلاق) */}
+              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                {/* زر المقطع السابق */}
+                <button 
+                  onClick={handlePrevTrack}
+                  className={`p-2.5 rounded-xl transition-colors ${
+                    isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
+                  title="المقطع السابق (تأخير)"
+                >
+                  <SkipBack className="w-5 h-5" />
+                </button>
+
+                {/* زر التشغيل / الإيقاف المؤقت */}
+                <button 
+                  onClick={togglePlayPause}
+                  className="p-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-500/30 transition-all transform active:scale-95"
+                  title={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
+                >
+                  {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current ml-0.5" />}
+                </button>
+
+                {/* زر المقطع التالي */}
+                <button 
+                  onClick={handleNextTrack}
+                  className={`p-2.5 rounded-xl transition-colors ${
+                    isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
+                  }`}
+                  title="المقطع التالي (تقديم)"
+                >
+                  <SkipForward className="w-5 h-5" />
+                </button>
+
+                {/* زر إغلاق المشغل */}
+                <button 
+                  onClick={() => {
+                    if (audioRef.current) audioRef.current.pause();
+                    setIsPlaying(false);
+                    setCurrentTrack(null);
+                  }}
+                  className="p-2 rounded-xl hover:bg-red-500/10 text-gray-400 hover:text-red-500 transition-colors mr-1"
+                  title="إغلاق المشغل"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
