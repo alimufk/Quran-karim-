@@ -1316,24 +1316,41 @@ id: 'nudba',
 }
 ];
 
-export default function ShiaDuasApp() {
+         export default function ShiaDuasApp() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'audio' | 'latmiyat' | 'written'>('written');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'audioDuas' | 'latmiyat' | 'writtenDuas'>('audioDuas');
+  const [searchTerm, setSearchTerm] = useState('');
   
-  // مشغل الصوتيات
-  const [currentAudio, setCurrentAudio] = useState<{ id: string; name: string; url: string } | null>(null);
+  // التحكم في المشغل الصوتي
+  const [currentTrack, setCurrentTrack] = useState<{ id: string; name: string; url: string } | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [downloadingIds, setDownloadingIds] = useState<{ [key: string]: boolean }>({});
+  const [offlineStatus, setOfflineStatus] = useState<{ [key: string]: boolean }>({});
+  
+  // الميزات الجديدة المطلوبة فقط
+  const [isDarkMode, setIsDarkMode] = useState(true); // زر تغيير الثيم
+  const [fontSize, setFontSize] = useState(18);       // زر تكبير وتصغير
+  const [copiedId, setCopiedId] = useState<string | null>(null); // زر النسخ
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // قارئ الأدعية المقروءة
-  const [selectedWritten, setSelectedWritten] = useState<typeof writtenDuasList[0] | null>(null);
-  const [fontSize, setFontSize] = useState(20);
-  const [copied, setCopied] = useState(false);
+  // التحقق من الملفات المحفوظة أوفلاين
+  useEffect(() => {
+    const checkOfflineFiles = async () => {
+      const statusMap: { [key: string]: boolean } = {};
+      const allAudioItems = [...duasList, ...latmiyatList];
+      for (const item of allAudioItems) {
+        const blob = await getAudioBlob(item.id);
+        if (blob) statusMap[item.id] = true;
+      }
+      setOfflineStatus(statusMap);
+    };
+    checkOfflineFiles();
+  }, []);
 
-  // التحكم في مشغل الصوت
-  const togglePlay = (item: { id: string; name: string; url: string }) => {
-    if (currentAudio?.id === item.id) {
+  // تشغيل / إيقاف الصوت
+  const handlePlayPause = async (item: { id: string; name: string; url: string }) => {
+    if (currentTrack?.id === item.id) {
       if (isPlaying) {
         audioRef.current?.pause();
         setIsPlaying(false);
@@ -1342,276 +1359,237 @@ export default function ShiaDuasApp() {
         setIsPlaying(true);
       }
     } else {
-      setCurrentAudio(item);
+      setCurrentTrack(item);
       setIsPlaying(true);
+      const offlineBlob = await getAudioBlob(item.id);
+      const src = offlineBlob ? URL.createObjectURL(offlineBlob) : item.url;
       if (audioRef.current) {
-        audioRef.current.src = item.url;
+        audioRef.current.src = src;
         audioRef.current.play();
       }
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  // زر تحميل الصوت وحفظه أوفلاين (الذي كان مفقوداً)
+  const handleDownloadAudio = async (item: { id: string; name: string; url: string }) => {
+    try {
+      setDownloadingIds((prev) => ({ ...prev, [item.id]: true }));
+      const response = await fetch(item.url);
+      const blob = await response.blob();
+      await saveAudioBlob(item.id, blob);
+      setOfflineStatus((prev) => ({ ...prev, [item.id]: true }));
+
+      // تحميل الملف للجهاز مباشر أيضاً
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${item.name}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('حدث خطأ أثناء تحميل الملف الصوتى');
+    } finally {
+      setDownloadingIds((prev) => ({ ...prev, [item.id]: false }));
+    }
   };
 
-  // فلترة القوائم حسب البحث
-  const filteredAudioDuas = duasList.filter(d => d.name.includes(searchQuery));
-  const filteredLatmiyat = latmiyatList.filter(l => l.name.includes(searchQuery));
-  const filteredWrittenDuas = writtenDuasList.filter(w => w.title.includes(searchQuery));
+  // زر النسخ المضاف للأدعية المكتوبة
+  const handleCopyText = (id: string, title: string, content: string) => {
+    navigator.clipboard.writeText(`${title}\n\n${content}`);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  // التصفية بحسب البحث
+  const filterList = (list: any[]) => {
+    return list.filter((item) => 
+      (item.name || item.title).toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-3 md:p-6 font-sans border-box" dir="rtl">
+    <div className={`min-h-screen transition-colors duration-300 dir-rtl ${isDarkMode ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-800'}`} style={{ direction: 'rtl' }}>
       
-      {/* الإطار الرئيسي للتطبيق */}
-      <div className="max-w-4xl mx-auto bg-slate-900 border border-emerald-900/60 rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[80vh]">
-        
-        {/* الهيدر العلوي */}
-        <div className="p-4 md:p-6 bg-slate-900/90 border-b border-emerald-900/40 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => navigate(-1)} 
-              className="p-2 rounded-xl bg-slate-800 text-emerald-400 hover:bg-slate-700 transition"
-            >
-              <ArrowRight className="w-5 h-5" />
+      {/* مشغل الصوت الخفي */}
+      <audio ref={audioRef} onEnded={() => setIsPlaying(false)} />
+
+      {/* الهيدر الرئيسي */}
+      <header className={`sticky top-0 z-40 backdrop-blur-md border-b p-4 ${isDarkMode ? 'bg-gray-900/80 border-gray-800' : 'bg-white/80 border-gray-200'}`}>
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-3 space-x-reverse">
+            <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-emerald-500/10">
+              <ArrowRight className="w-6 h-6 text-emerald-500" />
             </button>
-            <h1 className="text-xl md:text-2xl font-bold text-emerald-400 flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-emerald-500" />
+            <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-teal-500 bg-clip-text text-transparent">
               الأدعية واللطميات
             </h1>
           </div>
 
-          {/* شريط البحث */}
-          <div className="relative w-40 md:w-60">
-            <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input 
-              type="text" 
-              placeholder="بحث..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-950 border border-emerald-800/50 rounded-xl py-1.5 pr-9 pl-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
+          {/* زر تغيير الثيم (ليلي / نهاري) */}
+          <button 
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`p-2 rounded-xl border transition-all ${isDarkMode ? 'bg-gray-800 border-gray-700 text-amber-400 hover:bg-gray-700' : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'}`}
+            title="تغيير الثيم"
+          >
+            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+        </div>
+      </header>
+
+      <main className="max-w-4xl mx-auto p-4 pb-28">
+        
+        {/* شريط البحث */}
+        <div className="relative mb-6">
+          <Search className="absolute right-3 top-3.5 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="بحث..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={`w-full pr-11 pl-4 py-3 rounded-2xl border outline-none transition-all ${isDarkMode ? 'bg-gray-900 border-gray-800 focus:border-emerald-500 text-white' : 'bg-white border-gray-200 focus:border-emerald-500 text-gray-800'}`}
+          />
         </div>
 
-        {/* ======================================================== */}
-        {/* شريط التبويب باللون الأخضر المميز المحتفظ به بناءً على الطلب */}
-        {/* ======================================================== */}
-        <div className="bg-emerald-900/90 p-2 border-b border-emerald-700/50">
-          <div className="flex bg-emerald-950/70 p-1.5 rounded-2xl gap-2 overflow-x-auto">
-            
-            <button
-              onClick={() => { setActiveTab('written'); setSelectedWritten(null); }}
-              className={`flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${
-                activeTab === 'written'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50'
-                  : 'text-emerald-200 hover:bg-emerald-800/40 hover:text-white'
-              }`}
-            >
-              <BookOpen className="w-4 h-4" />
-              أدعية مقروءة
-            </button>
-
-            <button
-              onClick={() => setActiveTab('audio')}
-              className={`flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${
-                activeTab === 'audio'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50'
-                  : 'text-emerald-200 hover:bg-emerald-800/40 hover:text-white'
-              }`}
-            >
-              <Volume2 className="w-4 h-4" />
-              أدعية صوتية
-            </button>
-
-            <button
-              onClick={() => setActiveTab('latmiyat')}
-              className={`flex-1 min-w-[120px] py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${
-                activeTab === 'latmiyat'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50'
-                  : 'text-emerald-200 hover:bg-emerald-800/40 hover:text-white'
-              }`}
-            >
-              <Headphones className="w-4 h-4" />
-              لطميات
-            </button>
-
-          </div>
+        {/* التبويبات */}
+        <div className={`flex p-1.5 rounded-2xl mb-6 border ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-200 border-gray-300'}`}>
+          <button
+            onClick={() => setActiveTab('audioDuas')}
+            className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${activeTab === 'audioDuas' ? 'bg-emerald-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+          >
+            <Headphones className="w-4 h-4" /> أدعية صوتية
+          </button>
+          <button
+            onClick={() => setActiveTab('latmiyat')}
+            className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${activeTab === 'latmiyat' ? 'bg-emerald-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+          >
+            <Volume2 className="w-4 h-4" /> لطميات
+          </button>
+          <button
+            onClick={() => setActiveTab('writtenDuas')}
+            className={`flex-1 py-2.5 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2 ${activeTab === 'writtenDuas' ? 'bg-emerald-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+          >
+            <BookOpen className="w-4 h-4" /> أدعية مكتوبة
+          </button>
         </div>
 
-        {/* ======================================================== */}
-        {/* محتوى التبويبات والمحفوظ دائماً داخل نطاق الإطار */}
-        {/* ======================================================== */}
-        <div className="p-4 md:p-6 flex-1 overflow-y-auto max-h-[60vh] bg-slate-900/40">
-          
-          {/* 1. تبويب الأدعية المقروءة */}
-          {activeTab === 'written' && (
-            <AnimatePresence mode="wait">
-              {!selectedWritten ? (
-                /* شبكة عرض كروت الأدعية المقروءة داخل الإطار */
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
-                >
-                  {filteredWrittenDuas.map((dua) => (
-                    <div 
-                      key={dua.id}
-                      onClick={() => setSelectedWritten(dua)}
-                      className="bg-slate-950/60 border border-emerald-900/30 hover:border-emerald-500/60 p-4 rounded-2xl cursor-pointer hover:bg-emerald-950/20 transition group flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-emerald-900/30 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition">
-                          <BookOpen className="w-5 h-5" />
-                        </div>
-                        <span className="font-semibold text-slate-200 group-hover:text-emerald-300">
-                          {dua.title}
-                        </span>
-                      </div>
-                      <FileText className="w-4 h-4 text-slate-500 group-hover:text-emerald-400" />
-                    </div>
-                  ))}
-                </motion.div>
-              ) : (
-                /* شاشة قراءة الدعاء داخل الإطار بدلاً من الخروج لخارجه */
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex flex-col h-full bg-slate-950/80 rounded-2xl border border-emerald-800/40 p-4 md:p-6"
-                >
-                  {/* أشرطة التحكم في القارئ */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
-                    <button 
-                      onClick={() => setSelectedWritten(null)}
-                      className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 bg-emerald-950/60 px-3 py-1.5 rounded-xl border border-emerald-800/40"
-                    >
-                      <ArrowRight className="w-4 h-4" />
-                      رجوع للائحة
-                    </button>
-
-                    <h2 className="text-lg font-bold text-emerald-400">
-                      {selectedWritten.title}
-                    </h2>
-
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => setFontSize(prev => Math.min(prev + 2, 34))}
-                        className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700"
-                        title="تكبير الخط"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => setFontSize(prev => Math.max(prev - 2, 14))}
-                        className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700"
-                        title="تصغير الخط"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => copyToClipboard(selectedWritten.content)}
-                        className="p-1.5 rounded-lg bg-slate-800 text-emerald-400 hover:bg-slate-700 transition"
-                        title="نسخ الدعاء"
-                      >
-                        {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* نص الدعاء المكتوب المنسق */}
-                  <div className="py-6 px-2 overflow-y-auto leading-loose text-center text-slate-200 whitespace-pre-line font-serif" style={{ fontSize: `${fontSize}px` }}>
-                    {selectedWritten.content}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          )}
-
-          {/* 2. تبويب الأدعية الصوتية */}
-          {activeTab === 'audio' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {filteredAudioDuas.map((item) => (
-                <div 
-                  key={item.id}
-                  className="p-3.5 rounded-2xl bg-slate-950/60 border border-emerald-900/30 flex items-center justify-between hover:border-emerald-700/50 transition"
-                >
-                  <span className="font-medium text-slate-200">{item.name}</span>
-                  <button
-                    onClick={() => togglePlay(item)}
-                    className={`p-2.5 rounded-xl transition ${
-                      currentAudio?.id === item.id && isPlaying 
-                        ? 'bg-emerald-500 text-slate-950' 
-                        : 'bg-emerald-900/40 text-emerald-400 hover:bg-emerald-600 hover:text-white'
-                    }`}
-                  >
-                    {currentAudio?.id === item.id && isPlaying ? (
-                      <Pause className="w-4 h-4 fill-current" />
-                    ) : (
-                      <Play className="w-4 h-4 fill-current" />
-                    )}
-                  </button>
-                </div>
-              ))}
+        {/* أدوات التحكم بالخط (تظهر فقط في تبويب الأدعية المكتوبة) */}
+        {activeTab === 'writtenDuas' && (
+          <div className={`flex items-center justify-between p-3 rounded-2xl mb-6 border ${isDarkMode ? 'bg-gray-900/50 border-gray-800' : 'bg-white border-gray-200'}`}>
+            <span className="text-sm text-gray-400 font-medium">حجم خط القراءة:</span>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setFontSize(prev => Math.max(14, prev - 2))}
+                className={`p-2 rounded-xl border ${isDarkMode ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-gray-100 border-gray-200 hover:bg-gray-200'}`}
+                title="تصغير الخط"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </button>
+              <span className="w-8 text-center font-bold text-emerald-500">{fontSize}</span>
+              <button 
+                onClick={() => setFontSize(prev => Math.min(32, prev + 2))}
+                className={`p-2 rounded-xl border ${isDarkMode ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-gray-100 border-gray-200 hover:bg-gray-200'}`}
+                title="تكبير الخط"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </button>
             </div>
-          )}
-
-          {/* 3. تبويب اللطميات */}
-          {activeTab === 'latmiyat' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {filteredLatmiyat.map((item) => (
-                <div 
-                  key={item.id}
-                  className="p-3.5 rounded-2xl bg-slate-950/60 border border-emerald-900/30 flex items-center justify-between hover:border-emerald-700/50 transition"
-                >
-                  <span className="font-medium text-slate-200">{item.name}</span>
-                  <button
-                    onClick={() => togglePlay(item)}
-                    className={`p-2.5 rounded-xl transition ${
-                      currentAudio?.id === item.id && isPlaying 
-                        ? 'bg-emerald-500 text-slate-950' 
-                        : 'bg-emerald-900/40 text-emerald-400 hover:bg-emerald-600 hover:text-white'
-                    }`}
-                  >
-                    {currentAudio?.id === item.id && isPlaying ? (
-                      <Pause className="w-4 h-4 fill-current" />
-                    ) : (
-                      <Play className="w-4 h-4 fill-current" />
-                    )}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-        </div>
-
-        {/* المشغل الصوتي المدمج بالأسفل عند تشغيل إحدى المقاطع الصوتية */}
-        {currentAudio && (
-          <div className="p-4 bg-emerald-950/90 border-t border-emerald-800/50 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-emerald-600 text-white animate-pulse">
-                <Volume2 className="w-5 h-5" />
-              </div>
-              <span className="text-sm font-semibold text-emerald-100">
-                {currentAudio.name}
-              </span>
-            </div>
-            <button
-              onClick={() => togglePlay(currentAudio)}
-              className="p-3 rounded-full bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition"
-            >
-              {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
-            </button>
           </div>
         )}
 
-      </div>
+        {/* محتوى التبويبات الصوتية: أدعية صوتية + لطميات */}
+        {(activeTab === 'audioDuas' || activeTab === 'latmiyat') && (
+          <div className="grid gap-3">
+            {filterList(activeTab === 'audioDuas' ? duasList : latmiyatList).map((item) => (
+              <div
+                key={item.id}
+                className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${isDarkMode ? 'bg-gray-900/60 border-gray-800/80 hover:border-emerald-500/50' : 'bg-white border-gray-200 hover:border-emerald-500/50'}`}
+              >
+                <div className="flex items-center space-x-3 space-x-reverse">
+                  <button
+                    onClick={() => handlePlayPause(item)}
+                    className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all"
+                  >
+                    {currentTrack?.id === item.id && isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                  </button>
+                  <div>
+                    <h3 className="font-semibold text-base">{item.name}</h3>
+                    {offlineStatus[item.id] && (
+                      <span className="text-xs text-emerald-500 flex items-center gap-1 mt-1">
+                        <CheckCircle2 className="w-3 h-3" /> محفوظ أوفلاين
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-      <audio ref={audioRef} onEnded={() => setIsPlaying(false)} className="hidden" />
+                {/* زر التحميل والتخزين أوفلاين */}
+                <button
+                  onClick={() => handleDownloadAudio(item)}
+                  disabled={downloadingIds[item.id]}
+                  className={`p-2.5 rounded-xl border transition-all ${
+                    offlineStatus[item.id]
+                      ? 'border-emerald-500/30 text-emerald-500 bg-emerald-500/5'
+                      : isDarkMode ? 'border-gray-800 text-gray-400 hover:text-white hover:bg-gray-800' : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+                  }`}
+                  title="تحميل وحفظ أوفلاين"
+                >
+                  {downloadingIds[item.id] ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
+                  ) : (
+                    <Download className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* محتوى تبويب: أدعية مكتوبة */}
+        {activeTab === 'writtenDuas' && (
+          <div className="grid gap-6">
+            {filterList(writtenDuasList).map((item) => (
+              <div
+                key={item.id}
+                className={`p-6 rounded-3xl border transition-all ${isDarkMode ? 'bg-gray-900/60 border-gray-800' : 'bg-white border-gray-200'}`}
+              >
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-800/40">
+                  <h3 className="text-xl font-bold text-emerald-500">{item.title}</h3>
+
+                  {/* زر النسخ المضاف */}
+                  <button
+                    onClick={() => handleCopyText(item.id, item.title, item.content)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${
+                      copiedId === item.id
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                        : isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {copiedId === item.id ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" /> تم النسخ
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" /> نسخ النص
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* نص الدعاء مع حجم خط متغير */}
+                <p 
+                  className="leading-relaxed whitespace-pre-line text-justify font-serif"
+                  style={{ fontSize: `${fontSize}px` }}
+                >
+                  {item.content}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+      </main>
     </div>
   );
 }
