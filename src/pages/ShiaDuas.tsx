@@ -1345,6 +1345,31 @@ export default function ShiaDuasApp() {
     checkOfflineFiles();
   }, []);
 
+  // دالة تنظيف وتطبيع النص العربي (تزيل الحركات وتوحد الألف والياء والتاء المربوطة)
+  const normalizeArabic = (text: string) => {
+    if (!text) return '';
+    return text
+      .replace(/[\u064B-\u0652\u0670]/g, '') // إزالة التشكيل
+      .replace(/[أإآ]/g, 'ا')               // توحيد الألف
+      .replace(/ى/g, 'ي')                   // توحيد الياء
+      .replace(/ة/g, 'ه')                   // توحيد التاء المربوطة
+      .toLowerCase()
+      .trim();
+  };
+
+  // تصفية نتائج البحث الذكية
+  const filterList = (list: any[]) => {
+    if (!searchTerm.trim()) return list;
+    const cleanSearch = normalizeArabic(searchTerm);
+
+    return list.filter((item) => {
+      const titleOrName = normalizeArabic(item.name || item.title || '');
+      const content = normalizeArabic(item.content || '');
+      // البحث داخل الاسم/العنوان، أو داخل نص الدعاء نفسه
+      return titleOrName.includes(cleanSearch) || content.includes(cleanSearch);
+    });
+  };
+
   // تشغيل مقطع صوتي
   const playTrack = async (item: { id: string; name: string; url: string }) => {
     setCurrentTrack(item);
@@ -1369,14 +1394,14 @@ export default function ShiaDuasApp() {
     }
   };
 
-  // الحصول على القائمة الحالية المتشغلة (أدعية أو لطميات)
+  // الحصول على القائمة الحالية المتشغلة
   const getCurrentActiveList = () => {
     if (!currentTrack) return [];
     const isDua = duasList.some((d) => d.id === currentTrack.id);
     return isDua ? duasList : latmiyatList;
   };
 
-  // الانتقال للمطع التالي (التقديم)
+  // الانتقال للمقطع التالي
   const handleNextTrack = () => {
     const list = getCurrentActiveList();
     if (!list.length || !currentTrack) return;
@@ -1384,12 +1409,11 @@ export default function ShiaDuasApp() {
     if (currentIndex !== -1 && currentIndex < list.length - 1) {
       playTrack(list[currentIndex + 1]);
     } else if (list.length > 0) {
-      // إعادة التشغيل من أول القائمة عند الوصول للنهاية
       playTrack(list[0]);
     }
   };
 
-  // الانتقال للمقطع السابق (التأخير)
+  // الانتقال للمقطع السابق
   const handlePrevTrack = () => {
     const list = getCurrentActiveList();
     if (!list.length || !currentTrack) return;
@@ -1432,17 +1456,10 @@ export default function ShiaDuasApp() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // تصفية نتائج البحث
-  const filterList = (list: any[]) => {
-    return list.filter((item) => 
-      (item.name || item.title).toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  };
-
   return (
-    <div className={`min-h-screen transition-colors duration-300 dir-rtl ${isDarkMode ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-800'}`} style={{ direction: 'rtl' }}>
+    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-800'}`} style={{ direction: 'rtl' }}>
       
-      {/* عنصر الصوت المدمج - مع خاصية الانتقال التلقائي لل다음 عند الانتهاء */}
+      {/* عنصر الصوت المدمج */}
       <audio 
         ref={audioRef} 
         onEnded={handleNextTrack}
@@ -1472,16 +1489,24 @@ export default function ShiaDuasApp() {
 
       <main className="max-w-4xl mx-auto p-4 pb-36">
         
-        {/* شريط البحث */}
+        {/* شريط البحث المطور */}
         <div className="relative mb-6">
           <Search className="absolute right-3 top-3.5 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="بحث..."
+            placeholder="ابحث بالعنوان أو الكلمات المكتوبة..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className={`w-full pr-11 pl-4 py-3 rounded-2xl border outline-none transition-all ${isDarkMode ? 'bg-gray-900 border-gray-800 focus:border-emerald-500 text-white' : 'bg-white border-gray-200 focus:border-emerald-500 text-gray-800'}`}
+            className={`w-full pr-11 pl-10 py-3 rounded-2xl border outline-none transition-all ${isDarkMode ? 'bg-gray-900 border-gray-800 focus:border-emerald-500 text-white' : 'bg-white border-gray-200 focus:border-emerald-500 text-gray-800'}`}
           />
+          {searchTerm && (
+            <button 
+              onClick={() => setSearchTerm('')} 
+              className="absolute left-3 top-3.5 text-gray-400 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* التبويبات الثلاثة */}
@@ -1637,9 +1662,7 @@ export default function ShiaDuasApp() {
 
       </main>
 
-      {/* ------------------------------------------------------------- */}
-      {/* المشغل الصوتي العائم والثابت في الأسفل (الذي تم إرجاعه بالكامل) */}
-      {/* ------------------------------------------------------------- */}
+      {/* المشغل الصوتي العائم الثابت بالأسفل */}
       <AnimatePresence>
         {currentTrack && (
           <motion.div 
@@ -1652,7 +1675,6 @@ export default function ShiaDuasApp() {
           >
             <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
               
-              {/* معلومات المقطع الحالي */}
               <div className="flex items-center gap-3 overflow-hidden flex-1">
                 <div className="p-3 bg-emerald-500/20 text-emerald-500 rounded-2xl flex-shrink-0">
                   <Volume2 className={`w-5 h-5 ${isPlaying ? 'animate-pulse' : ''}`} />
@@ -1665,20 +1687,17 @@ export default function ShiaDuasApp() {
                 </div>
               </div>
 
-              {/* أزرار التحكم بالصوت (تقديم، تأخير، تشغيل/إيقاف، إغلاق) */}
               <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                {/* زر المقطع السابق */}
                 <button 
                   onClick={handlePrevTrack}
                   className={`p-2.5 rounded-xl transition-colors ${
                     isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
                   }`}
-                  title="المقطع السابق (تأخير)"
+                  title="المقطع السابق"
                 >
                   <SkipBack className="w-5 h-5" />
                 </button>
 
-                {/* زر التشغيل / الإيقاف المؤقت */}
                 <button 
                   onClick={togglePlayPause}
                   className="p-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-500/30 transition-all transform active:scale-95"
@@ -1687,18 +1706,16 @@ export default function ShiaDuasApp() {
                   {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current ml-0.5" />}
                 </button>
 
-                {/* زر المقطع التالي */}
                 <button 
                   onClick={handleNextTrack}
                   className={`p-2.5 rounded-xl transition-colors ${
                     isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-600'
                   }`}
-                  title="المقطع التالي (تقديم)"
+                  title="المقطع التالي"
                 >
                   <SkipForward className="w-5 h-5" />
                 </button>
 
-                {/* زر إغلاق المشغل */}
                 <button 
                   onClick={() => {
                     if (audioRef.current) audioRef.current.pause();
