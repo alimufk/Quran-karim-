@@ -8,7 +8,7 @@ export interface ZikrItem {
 export interface ZikrSection { 
   title: string; 
   subtitle: string; 
-  icon?: string; // تم إضافة حقل الأيقونة هنا
+  icon?: string; 
   items: ZikrItem[]; 
 }
 
@@ -161,7 +161,7 @@ export const occasionsList: ZikrItem[] = [
   }
 ];
 
-// أُضيفت الأيقونات الخاصة بكل قسم هنا (بما في ذلك أيقونة "Calendar" لتبويب المناسبات)
+// تجميع كافة الأقسام مع الأيقونات الخاصة بها
 export const azkarData: Record<string, ZikrSection> = {
   monajat: { title: "15 من المناجاة", subtitle: "المناجاة الخمس عشرة المروية عن الإمام زين العابدين (ع)", icon: "Heart", items: monajatList },
   tasbehat: { title: "7 تسبيحات", subtitle: "التسبيحات اليومية المستحبة وتسبيح الزهراء (ع)", icon: "Disc", items: tasbehatList },
@@ -170,7 +170,8 @@ export const azkarData: Record<string, ZikrSection> = {
   generalDuas: { title: "خطب نهج البلاغة 20", subtitle: "أدعية مباركة ومأثورة لقضاء الحوائج والأمان والرزق", icon: "BookText", items: generalDuas },
   hujaj: { title: "الصلاة على الحجج", subtitle: "الصلوات المأثورة على النبي والأئمة الأطهار (ع)", icon: "Sparkles", items: HujajPrayers },
   adeiat: { title: "أدعية الأنبياء (ع)", subtitle: "الأدعية المأثورة للأنبياء الكرام (ع)", icon: "HandsHorizontal", items: adeiatAlianbia },
-  occasions: { title: "الأعمال والمناسبات", subtitle: "أعمال ومستحبات الشهور والأيام والمناسبات الإسلامية", icon: "Calendar", items: occasionsList }
+  // تم ضبط أيقونة "CalendarDays" هنا
+  occasions: { title: "الأعمال والمناسبات", subtitle: "أعمال ومستحبات الشهور والأيام والمناسبات الإسلامية", icon: "CalendarDays", items: occasionsList }
 };
 
 // ----------------------------------------------------------------------
