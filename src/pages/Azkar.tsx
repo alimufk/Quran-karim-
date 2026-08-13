@@ -1,9 +1,22 @@
 import React, { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { azkarData } from './data/azkarData';
-import { ArrowRight, Play, Pause, ChevronLeft, Heart, BookOpen, Clock, Sparkles, Feather, ShieldCheck } from 'lucide-react';
+import { 
+  ArrowRight, 
+  Play, 
+  Pause, 
+  ChevronLeft, 
+  Heart, 
+  BookOpen, 
+  Clock, 
+  Sparkles, 
+  Feather, 
+  ShieldCheck, 
+  CalendarDays, // أُضيفت لمناسبات
+  Scroll        // أُضيفت لأدعية الأنبياء
+} from 'lucide-react';
 
-// ألوان وأيقونات للأقسام
+// ألوان وأيقونات للأقسام (تم إضافة أدعية الأنبياء والمناسبات هنا)
 const categoriesMeta: Record<string, { icon: React.ElementType; color: string }> = {
   monajat: { icon: Heart, color: 'from-amber-500/20 to-amber-600/10 text-amber-400 border-amber-500/30' },
   tasbehat: { icon: Sparkles, color: 'from-emerald-500/20 to-emerald-600/10 text-emerald-400 border-emerald-500/30' },
@@ -11,6 +24,8 @@ const categoriesMeta: Record<string, { icon: React.ElementType; color: string }>
   weekDuas: { icon: BookOpen, color: 'from-purple-500/20 to-purple-600/10 text-purple-400 border-purple-500/30' },
   generalDuas: { icon: Feather, color: 'from-teal-500/20 to-teal-600/10 text-teal-400 border-teal-500/30' },
   hujaj: { icon: ShieldCheck, color: 'from-rose-500/20 to-rose-600/10 text-rose-400 border-rose-500/30' },
+  adeiat: { icon: Scroll, color: 'from-yellow-500/20 to-yellow-600/10 text-yellow-400 border-yellow-500/30' },
+  occasions: { icon: CalendarDays, color: 'from-indigo-500/20 to-indigo-600/10 text-indigo-400 border-indigo-500/30' },
 };
 
 export default function Azkar() {
@@ -23,7 +38,6 @@ export default function Azkar() {
 
   // -------------------------------------------------------------
   // الحالة الأولى: إذا لم يتم تحديد قسم (الرابط هو /azkar فقط)
-  // نعرض قائمة الأقسام لكي يختار المستخدم منها
   // -------------------------------------------------------------
   if (!id) {
     const sections = Object.keys(azkarData).map((key) => ({
@@ -67,7 +81,7 @@ export default function Azkar() {
   }
 
   // -------------------------------------------------------------
-  // الحالة الثانية: إذا كان الـ id غير موجود بالبيانات اصلاً
+  // الحالة الثانية: إذا كان الـ id غير موجود بالبيانات أصلاً
   // -------------------------------------------------------------
   const section = azkarData[id];
   if (!section) {
@@ -82,7 +96,7 @@ export default function Azkar() {
   }
 
   // -------------------------------------------------------------
-  // الحالة الثالثة: عرض تفاصيل القسم المختار والصوتيات (كودك الخص بك)
+  // الحالة الثالثة: عرض تفاصيل القسم المختار والصوتيات
   // -------------------------------------------------------------
   const handlePlayAudio = (itemId: number, url?: string) => {
     if (!url) return;
