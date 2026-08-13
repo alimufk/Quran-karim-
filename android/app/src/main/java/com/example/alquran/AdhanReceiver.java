@@ -18,6 +18,7 @@ import androidx.core.app.NotificationCompat;
 
 public class AdhanReceiver extends BroadcastReceiver {
     private static final String CHANNEL_ID = "adhan_alarm_channel_v3";
+    private static final String ATHKAR_CHANNEL_ID = "athkar_alarm_channel_v1";
     private static MediaPlayer staticMediaPlayer;
 
     @Override
@@ -31,9 +32,75 @@ public class AdhanReceiver extends BroadcastReceiver {
             wakeLock.acquire(3 * 60 * 1000L);
         }
 
-        showNotificationAndPlaySound(context);
+        // قراءة بيانات التنبيه الممررة من مشروع React
+        int requestCode = intent.getIntExtra("requestCode", 0);
+        String title = intent.getStringExtra("title");
+        String body = intent.getStringExtra("body");
+        String type = intent.getStringExtra("type");
+
+        // إذا كان التنبيه أذكار (نوع athkar أو رقم الطلب أكبر من أو يساوي 2000)
+        boolean isAthkar = "athkar".equals(type) || requestCode >= 2000;
+
+        if (isAthkar) {
+            showAthkarNotification(context, title, body, requestCode);
+        } else {
+            showNotificationAndPlaySound(context);
+        }
     }
 
+    // 🔔 دالة إشعار الأذكار (إشعار ناعم بصوت التنبيهات المعتاد)
+    private void showAthkarNotification(Context context, String title, String body, int requestCode) {
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager == null) return;
+
+        if (title == null || title.isEmpty()) title = "تنبيه الأذكار 🔔";
+        if (body == null || body.isEmpty()) body = "حان موعد الأذكار ✨";
+
+        Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    ATHKAR_CHANNEL_ID,
+                    "تنبيهات الأذكار",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription("قناة إشعارات أذكار الصباح والمساء");
+            channel.enableVibration(true);
+
+            if (soundUri != null) {
+                AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .build();
+                channel.setSound(soundUri, audioAttributes);
+            }
+
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        Intent openIntent = new Intent(context, MainActivity.class);
+        int pendingFlags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            pendingFlags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent contentIntent = PendingIntent.getActivity(context, requestCode, openIntent, pendingFlags);
+
+        int iconId = context.getResources().getIdentifier("ic_launcher", "mipmap", context.getPackageName());
+        if (iconId == 0) iconId = android.R.drawable.ic_popup_reminder;
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ATHKAR_CHANNEL_ID)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setSmallIcon(iconId)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setContentIntent(contentIntent)
+                .setAutoCancel(true);
+
+        notificationManager.notify(requestCode, builder.build());
+    }
+
+    // 🕌 دالة الأذان الأصلية لديك
     private void showNotificationAndPlaySound(Context context) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager == null) return;
