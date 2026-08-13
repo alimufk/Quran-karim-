@@ -32,7 +32,7 @@ const DEFAULT_SETTINGS: NotificationSettings = {
 };
 
 // المعرفات المخصصة للأذكار
-export className AthkarRequestCodes {
+export class AthkarRequestCodes {
   static MORNING = 2001;
   static EVENING = 2002;
   static TEST = 9999;
