@@ -18,7 +18,7 @@ import androidx.core.app.NotificationCompat;
 
 public class AdhanReceiver extends BroadcastReceiver {
     private static final String CHANNEL_ID = "adhan_alarm_channel_v3";
-    private static final String ATHKAR_CHANNEL_ID = "athkar_alarm_channel_v2";
+    private static final String ATHKAR_CHANNEL_ID = "athkar_alarm_channel_v1";
     private static MediaPlayer staticMediaPlayer;
 
     @Override
