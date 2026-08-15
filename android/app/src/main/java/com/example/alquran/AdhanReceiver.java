@@ -18,7 +18,9 @@ import androidx.core.app.NotificationCompat;
 
 public class AdhanReceiver extends BroadcastReceiver {
     private static final String CHANNEL_ID = "adhan_alarm_channel_v3";
-    private static final String ATHKAR_CHANNEL_ID = "athkar_alarm_channel_v1";
+    
+    // 1️⃣ تحديث اسم القناة لتجبر أندرويد على اعتماد الصوت الجديد
+    private static final String ATHKAR_CHANNEL_ID = "athkar_alarm_channel_v2";
     private static MediaPlayer staticMediaPlayer;
 
     @Override
@@ -38,8 +40,8 @@ public class AdhanReceiver extends BroadcastReceiver {
         String body = intent.getStringExtra("body");
         String type = intent.getStringExtra("type");
 
-        // إذا كان التنبيه أذكار (نوع athkar أو رقم الطلب أكبر من أو يساوي 2000)
-        boolean isAthkar = "athkar".equals(type) || requestCode >= 2000;
+        // 2️⃣ الاعتماد الفعلي والكامل على type بدلاً من الأرقام لتجنب تداخل الأذان مع الأذكار
+        boolean isAthkar = "athkar".equals(type);
 
         if (isAthkar) {
             showAthkarNotification(context, title, body, requestCode);
@@ -48,7 +50,7 @@ public class AdhanReceiver extends BroadcastReceiver {
         }
     }
 
-    // 🔔 دالة إشعار الأذكار (إشعار ناعم بصوت التنبيهات المعتاد)
+    // 🔔 دالة إشعار الأذكار (ربط ملف athkar.mp3 المخصص)
     private void showAthkarNotification(Context context, String title, String body, int requestCode) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager == null) return;
@@ -56,7 +58,14 @@ public class AdhanReceiver extends BroadcastReceiver {
         if (title == null || title.isEmpty()) title = "تنبيه الأذكار 🔔";
         if (body == null || body.isEmpty()) body = "حان موعد الأذكار ✨";
 
-        Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        // 3️⃣ البحث عن ملف الصوت athkar.mp3 في مجلد res/raw
+        Uri soundUri = null;
+        int soundResId = context.getResources().getIdentifier("athkar", "raw", context.getPackageName());
+        if (soundResId != 0) {
+            soundUri = Uri.parse("android.resource://" + context.getPackageName() + "/" + soundResId);
+        } else {
+            soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
@@ -97,10 +106,14 @@ public class AdhanReceiver extends BroadcastReceiver {
                 .setContentIntent(contentIntent)
                 .setAutoCancel(true);
 
+        if (soundUri != null) {
+            builder.setSound(soundUri);
+        }
+
         notificationManager.notify(requestCode, builder.build());
     }
 
-    // 🕌 دالة الأذان الأصلية لديك
+    // 🕌 دالة الأذان الأصلية
     private void showNotificationAndPlaySound(Context context) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager == null) return;
