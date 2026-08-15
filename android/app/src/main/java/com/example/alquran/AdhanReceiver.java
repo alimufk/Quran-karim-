@@ -106,7 +106,7 @@ public class AdhanReceiver extends BroadcastReceiver {
         if (notificationManager == null) return;
 
         Uri soundUri = null;
-        int soundResId = context.getResources().getIdentifier("athkar", "raw", context.getPackageName());
+        int soundResId = context.getResources().getIdentifier("adhan1", "raw", context.getPackageName());
         if (soundResId != 0) {
             soundUri = Uri.parse("android.resource://" + context.getPackageName() + "/" + soundResId);
         } else {
