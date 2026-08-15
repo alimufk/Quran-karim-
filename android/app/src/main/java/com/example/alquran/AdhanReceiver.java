@@ -18,7 +18,7 @@ import androidx.core.app.NotificationCompat;
 
 public class AdhanReceiver extends BroadcastReceiver {
     private static final String CHANNEL_ID = "adhan_alarm_channel_v3";
-    private static final String ATHKAR_CHANNEL_ID = "athkar_alarm_channel_v1";
+    private static final String ATHKAR_CHANNEL_ID = "athkar_alarm_channel_v2";
     private static MediaPlayer staticMediaPlayer;
 
     @Override
@@ -106,7 +106,7 @@ public class AdhanReceiver extends BroadcastReceiver {
         if (notificationManager == null) return;
 
         Uri soundUri = null;
-        int soundResId = context.getResources().getIdentifier("adhan1", "raw", context.getPackageName());
+        int soundResId = context.getResources().getIdentifier("athkar", "raw", context.getPackageName());
         if (soundResId != 0) {
             soundUri = Uri.parse("android.resource://" + context.getPackageName() + "/" + soundResId);
         } else {
